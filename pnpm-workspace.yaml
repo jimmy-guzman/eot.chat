@@ -3,6 +3,8 @@ ignoredBuiltDependencies:
   - sharp
   - unrs-resolver
 onlyBuiltDependencies:
+  - '@openrouter/sdk'
   - esbuild
+  - workerd
 saveExact: true
 savePrefix: ""

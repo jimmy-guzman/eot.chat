@@ -1,36 +1,30 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Salita.chat
 
-## Getting Started
+A ephemeral chat room where the layout is a living thing. You create a room, share a link, people join — but instead of a static chat interface, the room's UI is prompt-driven. Type "make this a standup board" and the room morphs for everyone simultaneously. The AI — constrained to a component catalog — reshapes the layout in real time. When everyone leaves, the room dissolves.
 
-First, run the development server:
+## The core loop
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+1. Create a room, get a shareable link
+2. Participants join, default layout is a simple chat
+3. Anyone can prompt the room to reshape itself
+4. AI generates a new json-render tree, Partykit broadcasts it
+5. Everyone sees the new layout instantly
+6. Room is gone when it's empty
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## What makes it distinct
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- The UI itself is the collaborative surface, not just the content
+- AI is constrained — it can only use components you've defined, no hallucinated UI
+- Ephemeral by design — no accounts, no history, no persistence
+- The room is alive but you're the ghost passing through
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Stack serving the concept
 
-## Learn More
+- Partykit — the room's heartbeat
+- json-render — the constrained UI grammar
+- Effect-TS — typed pipelines for every room operation
+- OpenRouter — model flexibility for layout generation
+- PandaCSS + Base UI — catalog components with no style opinions
+- Next.js + Vercel — shell and hosting
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Small room. Temporary. Shaped by whoever's in it.
