@@ -1,3 +1,11 @@
 {
-  "cSpell.words": ["codegen", "pandacss", "Partykit", "partysocket", "salita"]
+  "cSpell.words": [
+    "codegen",
+    "openrouter",
+    "pandacss",
+    "Partykit",
+    "partysocket",
+    "salita",
+    "supabase"
+  ]
 }

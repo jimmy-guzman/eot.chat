@@ -15,7 +15,7 @@ A ephemeral chat room where the layout is a living thing. You create a room, sha
 
 - The UI itself is the collaborative surface, not just the content
 - AI is constrained — it can only use components you've defined, no hallucinated UI
-- Ephemeral by design — no accounts, no history, no persistence
+- Ephemeral by design — no accounts, no login, rooms dissolve when everyone leaves
 - The room is alive but you're the ghost passing through
 
 ## Stack serving the concept
@@ -25,6 +25,8 @@ A ephemeral chat room where the layout is a living thing. You create a room, sha
 - Effect-TS — typed pipelines for every room operation
 - OpenRouter — model flexibility for layout generation
 - PandaCSS + Base UI — catalog components with no style opinions
+- Supabase — room and message persistence
+- Drizzle — type-safe database access
 - Next.js + Vercel — shell and hosting
 
 Small room. Temporary. Shaped by whoever's in it.

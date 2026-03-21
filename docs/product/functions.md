@@ -1,6 +1,6 @@
 # Function Definition — Salita.chat
 
-Derived from wireframes in `docs/prompt.excalidraw.md` and the Excalidraw diagram.
+Derived from wireframes in `docs/prompts/excalidraw.md` and the Excalidraw diagram.
 
 ---
 
@@ -28,27 +28,27 @@ Salita.chat is a minimal, ephemeral chat application organized around **Rooms**.
 
 **Navigation:**
 
-- Nav links to "Create a Room" (current) and "Join a Room"
+- The landing page (`/`) is the only entry point for creating a room. Nav links to "Create a Room" (current) and "Join a Room".
 
 ---
 
 ### Screen 2 — Join a Room
 
-**Purpose:** Entry point for a user who has been invited to an existing room.
+**Purpose:** Entry point for a user who has a room link. Collects the room URL (or bare room ID) and navigates to it. The actual credential entry (password + display name) happens on the room page itself.
 
 **Inputs:**
 
-- `roomName` — string, required. Must match an existing room.
-- `password` — string, required. Must match the room's password.
-- `displayName` — string, required. The name this user will appear as in the room.
+- `roomLink` — string, required. A full `https://salita.chat/r/<room-id>` URL or a bare room ID.
 
 **Action:**
 
-- `Join` button — validates credentials against the existing room, then transitions the user into the Chat Room screen.
+- `Join` button — extracts the room ID from the input and navigates to `/r/<room-id>`.
 
 **Navigation:**
 
 - Nav links to "Create a Room" and "Join a Room" (current)
+
+**Note:** Password and display name are not collected here. They are collected on the room page (`/r/<room-id>`) when a user arrives without an active session for that room.
 
 ---
 
@@ -65,7 +65,7 @@ Salita.chat is a minimal, ephemeral chat application organized around **Rooms**.
 
 - Scrollable list of messages, ordered chronologically
 - Each message displays: `displayName: message text`
-- The current user's own messages are visually distinguished (left-aligned in wireframe)
+- The current user's own messages are visually distinguished and left-aligned
 - Other participants' messages are right-aligned
 - Messages are separated by a horizontal rule
 
@@ -86,24 +86,50 @@ Salita.chat is a minimal, ephemeral chat application organized around **Rooms**.
 
 ### `/reshape`
 
-Typed into the message input field. Allows a participant to modify the room's configuration or behavior mid-session. Exact parameters TBD, but the command is a first-class affordance — surfaced in the placeholder text.
+Typed into the message input field. Triggers an AI-driven UI transformation that affects all participants simultaneously.
+
+**Syntax:** `/reshape <natural language prompt>`
+
+**Examples:**
+
+- `/reshape make this a standup board`
+- `/reshape turn this into a kanban board with three columns`
+- `/reshape show messages as a timeline`
+
+**Behavior:**
+
+1. Client sends a `reshape` message to the PartyKit server with the prompt text
+2. PartyKit server invokes the reshape pipeline (OpenRouter → validated spec)
+3. AI generates a new json-render spec tree, constrained to the component catalog
+4. The new spec replaces the entire current layout — it is not a partial update
+5. PartyKit broadcasts the new spec to all connected participants
+6. Every client re-renders immediately from the new spec tree
+
+**Constraints:**
+
+- The AI may only use components defined in the component catalog — unknown component types are rejected and the reshape is aborted
+- The reshape command is visible in the message thread as a system event
+
+The `/reshape` command is a power-user affordance, not a primary CTA — surfaced in the input placeholder text.
 
 ---
 
-## Data Model (inferred)
+## Data Model
 
 ### Room
 
-| Field          | Type          | Notes                                       |
-| -------------- | ------------- | ------------------------------------------- |
-| `id`           | string        | URL-safe identifier, used in shareable link |
-| `name`         | string        | Human-readable name                         |
-| `password`     | string        | Required to join                            |
-| `createdAt`    | timestamp     |                                             |
-| `participants` | Participant[] | Active members                              |
-| `messages`     | Message[]     | Ordered message history                     |
+| Field            | Type      | Notes                                                     |
+| ---------------- | --------- | --------------------------------------------------------- |
+| `id`             | string    | URL-safe identifier, used in shareable link               |
+| `name`           | string    | Human-readable name                                       |
+| `password_hash`  | string    | Bcrypt hash of the room password                          |
+| `layout`         | jsonb     | Current json-render spec tree; updated on each `/reshape` |
+| `created_at`     | timestamp |                                                           |
+| `last_active_at` | timestamp | Updated on each message; used for room dissolution        |
 
 ### Participant
+
+Participants are not persisted to the database. They exist only in PartyKit's in-memory room state for the duration of their connection.
 
 | Field         | Type      | Notes                                    |
 | ------------- | --------- | ---------------------------------------- |
@@ -112,13 +138,14 @@ Typed into the message input field. Allows a participant to modify the room's co
 
 ### Message
 
-| Field               | Type      | Notes                           |
-| ------------------- | --------- | ------------------------------- |
-| `id`                | string    |                                 |
-| `authorDisplayName` | string    |                                 |
-| `body`              | string    |                                 |
-| `sentAt`            | timestamp |                                 |
-| `isCommand`         | boolean   | True if message begins with `/` |
+| Field                 | Type      | Notes                           |
+| --------------------- | --------- | ------------------------------- |
+| `id`                  | string    |                                 |
+| `room_id`             | string    | Foreign key → Room.id           |
+| `author_display_name` | string    |                                 |
+| `body`                | string    |                                 |
+| `sent_at`             | timestamp |                                 |
+| `is_command`          | boolean   | True if message begins with `/` |
 
 ---
 
