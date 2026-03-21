@@ -1,12 +1,14 @@
 # Function Definition — Salita.chat
 
-Derived from wireframes in `docs/prompts/excalidraw.md` and the Excalidraw diagram.
+Derived from wireframes in `docs/prompts/excalidraw.md` and the [Excalidraw diagram](/docs/reference/wireframe.excalidraw.png).
 
 ---
 
 ## Application Overview
 
-Salita.chat is a minimal, ephemeral chat application organized around **Rooms**. Users create or join a room with a password, then exchange messages in real time. There are no user accounts — identity is a display name chosen at entry.
+Salita.chat is an ephemeral chat room where messages are alive. Not text bubbles — rich, AI-generated components shaped by what you share. Paste a GitHub link, get a repo card. Drop a CSV, get a table. Ask a question, get a poll. The AI classifies every message and renders the right component. When everyone leaves, the room dissolves.
+
+There are no user accounts — identity is a display name chosen at entry.
 
 ---
 
@@ -19,7 +21,6 @@ Salita.chat is a minimal, ephemeral chat application organized around **Rooms**.
 **Inputs:**
 
 - `roomName` — string, required. The name of the room to create.
-- `password` — string, required. Password that others must use to join.
 - `displayName` — string, required. The name this user will appear as in the room.
 
 **Action:**
@@ -28,33 +29,29 @@ Salita.chat is a minimal, ephemeral chat application organized around **Rooms**.
 
 **Navigation:**
 
-- The landing page (`/`) is the only entry point for creating a room. Nav links to "Create a Room" (current) and "Join a Room".
+- The landing page (`/`) is the only screen here. There is no Join tab — joiners navigate directly to `/r/<room-id>` via the shared link.
 
 ---
 
-### Screen 2 — Join a Room
+### Screen 2 — Join (display name prompt)
 
-**Purpose:** Entry point for a user who has a room link. Collects the room URL (or bare room ID) and navigates to it. The actual credential entry (password + display name) happens on the room page itself.
+**Purpose:** When a user opens `/r/<room-id>` without a stored display name for that room, the room page shows an inline prompt before admitting them.
 
 **Inputs:**
 
-- `roomLink` — string, required. A full `https://salita.chat/r/<room-id>` URL or a bare room ID.
+- `displayName` — string, required. The name this user will appear as in the room.
 
 **Action:**
 
-- `Join` button — extracts the room ID from the input and navigates to `/r/<room-id>`.
+- `Enter Room` button — stores the display name and connects the user to the room.
 
-**Navigation:**
-
-- Nav links to "Create a Room" and "Join a Room" (current)
-
-**Note:** Password and display name are not collected here. They are collected on the room page (`/r/<room-id>`) when a user arrives without an active session for that room.
+**Note:** There is no password. The room ID in the URL is the only access control — if you have the link, you can join.
 
 ---
 
 ### Screen 3 — Chat Room
 
-**Purpose:** The primary surface. A live, shared message thread inside a named room.
+**Purpose:** The primary surface. A live, shared message thread inside a named room where every message is a rendered component.
 
 **Header:**
 
@@ -64,53 +61,21 @@ Salita.chat is a minimal, ephemeral chat application organized around **Rooms**.
 **Message Area:**
 
 - Scrollable list of messages, ordered chronologically
-- Each message displays: `displayName: message text`
+- Each message is rendered as an AI-classified component — not a plain text bubble
+- The component type is determined by the content: a URL becomes a link preview, a GitHub repo becomes a repo card, a CSV becomes a table, a question becomes a poll, a code snippet becomes a code block, plain text becomes a text message
 - The current user's own messages are visually distinguished and left-aligned
 - Other participants' messages are right-aligned
-- Messages are separated by a horizontal rule
+- New participants receive the full message history from the start of the session
 
 **Message Input:**
 
-- Wide text field with placeholder: `Message or /reshape the room...`
-- Supports a `/reshape` slash command (see below)
+- Wide text field with placeholder: `Send anything...`
 
 **Actions:**
 
-- `Send` — submits the typed message to the room
+- `Send` — submits the input, triggers AI classification, broadcasts the rendered component to all participants
 - `Copy Link` — copies the shareable room URL to clipboard
-- `Exit Room` — removes the user from the room and returns them to the home/landing state
-
----
-
-## Slash Commands
-
-### `/reshape`
-
-Typed into the message input field. Triggers an AI-driven UI transformation that affects all participants simultaneously.
-
-**Syntax:** `/reshape <natural language prompt>`
-
-**Examples:**
-
-- `/reshape make this a standup board`
-- `/reshape turn this into a kanban board with three columns`
-- `/reshape show messages as a timeline`
-
-**Behavior:**
-
-1. Client sends a `reshape` message to the PartyKit server with the prompt text
-2. PartyKit server invokes the reshape pipeline (OpenRouter → validated spec)
-3. AI generates a new json-render spec tree, constrained to the component catalog
-4. The new spec replaces the entire current layout — it is not a partial update
-5. PartyKit broadcasts the new spec to all connected participants
-6. Every client re-renders immediately from the new spec tree
-
-**Constraints:**
-
-- The AI may only use components defined in the component catalog — unknown component types are rejected and the reshape is aborted
-- The reshape command is visible in the message thread as a system event
-
-The `/reshape` command is a power-user affordance, not a primary CTA — surfaced in the input placeholder text.
+- `Exit Room` — removes the user from the room and returns them to the landing page
 
 ---
 
@@ -118,18 +83,17 @@ The `/reshape` command is a power-user affordance, not a primary CTA — surface
 
 ### Room
 
-| Field            | Type      | Notes                                                     |
-| ---------------- | --------- | --------------------------------------------------------- |
-| `id`             | string    | URL-safe identifier, used in shareable link               |
-| `name`           | string    | Human-readable name                                       |
-| `password_hash`  | string    | Bcrypt hash of the room password                          |
-| `layout`         | jsonb     | Current json-render spec tree; updated on each `/reshape` |
-| `created_at`     | timestamp |                                                           |
-| `last_active_at` | timestamp | Updated on each message; used for room dissolution        |
+Room state lives entirely in PartyKit's in-memory server and storage. Nothing is persisted to a database.
+
+| Field        | Type      | Notes                                                                  |
+| ------------ | --------- | ---------------------------------------------------------------------- |
+| `id`         | string    | URL-safe nanoid, used in shareable link — also the only access control |
+| `name`       | string    | Human-readable name — stored in PartyKit `room.storage`                |
+| `created_at` | timestamp | In-memory only                                                         |
 
 ### Participant
 
-Participants are not persisted to the database. They exist only in PartyKit's in-memory room state for the duration of their connection.
+Participants live in PartyKit's in-memory room state for the duration of their connection.
 
 | Field         | Type      | Notes                                    |
 | ------------- | --------- | ---------------------------------------- |
@@ -138,14 +102,15 @@ Participants are not persisted to the database. They exist only in PartyKit's in
 
 ### Message
 
-| Field                 | Type      | Notes                           |
-| --------------------- | --------- | ------------------------------- |
-| `id`                  | string    |                                 |
-| `room_id`             | string    | Foreign key → Room.id           |
-| `author_display_name` | string    |                                 |
-| `body`                | string    |                                 |
-| `sent_at`             | timestamp |                                 |
-| `is_command`          | boolean   | True if message begins with `/` |
+Messages live in PartyKit's in-memory room state. They are sent to new participants on join but are not persisted after the room dissolves.
+
+| Field               | Type      | Notes                                                    |
+| ------------------- | --------- | -------------------------------------------------------- |
+| `id`                | string    | nanoid                                                   |
+| `authorDisplayName` | string    |                                                          |
+| `rawInput`          | string    | The original text the user sent                          |
+| `component`         | UIElement | The AI-classified json-render element (`type` + `props`) |
+| `sentAt`            | timestamp |                                                          |
 
 ---
 
@@ -160,8 +125,11 @@ Participants are not persisted to the database. They exist only in PartyKit's in
 
 ## Key Constraints
 
-- No user accounts or authentication beyond the room password
+- No user accounts or authentication beyond knowing the room link
+- The room ID is the secret — share the link only with intended participants
 - Display names are scoped to a single room session
 - Rooms are identified by a short URL-safe ID
 - The shareable link (`/r/<room-id>`) is the primary invite mechanism
-- The `/reshape` command is a power-user affordance, not a primary CTA
+- Every message is classified by AI — plain text is a valid fallback (`TextMessage`)
+- AI is constrained to the component catalog — no hallucinated component types
+- Rooms and messages are ephemeral — no database, no persistence after dissolution

@@ -2,21 +2,21 @@
 
 ## Reference Collection: Cosmos
 
-The visual identity is derived from 10 reference assets (`docs/reference/cosmos/`) after removing Euro maximalism. The remaining set defines the aesthetic direction.
+The visual identity is derived from 10 reference assets in `docs/reference/cosmos/`.
 
 ---
 
 ## Core Thesis
 
-**Interiors as emotional worlds.** Spaces are intimate, over-populated with objects, and quietly surreal — one impossible element woven into an otherwise domestic scene. The uncanny is never threatening; it coexists with the everyday as naturally as a houseplant.
+**Rooms as private universes.** Every space in the reference set is over-personalised — crammed with objects, art, and life to the point where the room itself becomes a self-portrait. The emotional register is warm, sincere, and slightly impossible: water flooding a floor, an ocean above a glass ceiling, a doorway made of teeth. The uncanny is never frightening — it coexists with the domestic as naturally as a houseplant.
 
-The identity sits at the intersection of **Japanese illustration culture** (kawaii, shonen, cyberpunk) and **handmade graphic boldness**, filtered through lone figures inhabiting dense, personal worlds.
+The identity sits at the intersection of **Japanese illustration culture** (kawaii isometric, painterly anime) and **maximalist interior boldness**, filtered through spaces that feel lived-in to the point of overflow.
 
 ---
 
 ## Medium
 
-**Illustration-first.** Everything should feel drawn, not photographed or rendered. Imprecision is welcomed — hand-drawn line weight, ink texture, analog warmth. Flat vectors are acceptable only if they carry visible craft. Avoid clean, frictionless digital polish.
+**Illustration-first.** Everything should feel drawn, not photographed or rendered. Ink line weight, hand-drawn warmth, and deliberate imprecision are welcome. Flat vectors are acceptable only if they carry visible craft. Avoid frictionless digital polish — the aesthetic is analog warmth, not tech smoothness.
 
 ---
 
@@ -24,66 +24,71 @@ The identity sits at the intersection of **Japanese illustration culture** (kawa
 
 Two registers, used deliberately:
 
-### Soft / Pastel
+### Soft / Pastel register
 
-Soft pink, mint, cream, lavender, sky blue, chartreuse. Feels intimate, kawaii-adjacent, nostalgic. Use for UI backgrounds, empty states, ambient surfaces.
+Drawn from csms--003, csms--004, csms--008, csms--009: soft pink, mint, warm cream, lavender, chartreuse, powder blue. Intimate, kawaii-adjacent, nostalgic. Use for UI backgrounds, empty states, ambient surfaces.
 
-| Role            | Value                  |
-| --------------- | ---------------------- |
-| Background base | `#FEFAE8` (warm cream) |
-| Primary soft    | `#F9C4D2` (soft pink)  |
-| Secondary soft  | `#B8EDE8` (mint)       |
-| Accent soft     | `#C8E6A0` (chartreuse) |
-| Sky             | `#A8D8EA` (pale blue)  |
-| Lavender        | `#D4B8E0`              |
+| Token           | Value     | Source feel                       |
+| --------------- | --------- | --------------------------------- |
+| `bg`            | `#FEFAE8` | Warm cream — csms--008 plaster    |
+| `soft-pink`     | `#F7C5D0` | Anthurium pink — csms--003, 004   |
+| `mint`          | `#B6EDE6` | Teal flood water — csms--003      |
+| `chartreuse`    | `#C9EB8A` | Lime accent — csms--009 borders   |
+| `powder-blue`   | `#A9D9EC` | Sky / kawaii ceiling — csms--008  |
+| `lavender`      | `#D3B8E2` | Purple sofa glow — csms--001      |
 
-### Saturated / Bold
+### Saturated / Bold register
 
-Fire red, deep cobalt, acid yellow, neon lime, orange. Use for emphasis, interactive states, illustration accents, and graphic moments — never as background fill.
+Drawn from csms--001, csms--002, csms--005, csms--006, csms--010: fire red, cobalt blue, sunflower yellow, orange, ink black. Use for emphasis, interactive states, illustration accents, and graphic moments — never as a background fill.
 
-| Role        | Value     |
-| ----------- | --------- |
-| Bold red    | `#E8291C` |
-| Deep cobalt | `#1A3A8F` |
-| Acid yellow | `#F5E642` |
-| Neon lime   | `#AAED2C` |
-| Orange      | `#F47920` |
-| Ink black   | `#1A1A1A` |
+| Token        | Value     | Source feel                             |
+| ------------ | --------- | --------------------------------------- |
+| `red`        | `#E8291C` | Red chairs / gallery frames — csms--005 |
+| `cobalt`     | `#1A3ABF` | Cobalt wall / poster blue — csms--006   |
+| `yellow`     | `#F5E135` | Sunflower chairs, acid poster — csms--006, csms--002 |
+| `orange`     | `#F47B1F` | Orange chairs / warm lamp — csms--005, csms--001 |
+| `sage`       | `#5A8A6A` | Mural sage — csms--010                  |
+| `ink`        | `#1A1A1A` | Line art ink — csms--003, csms--004     |
 
-**Rule:** No desaturated neutrals as a primary choice. Even "neutral" surfaces should carry a subtle warm or cool tint. Pure `#FFFFFF` and `#000000` are reserved for line work only.
+**Rule:** No desaturated neutrals as a primary choice. Even "neutral" surfaces carry a subtle warm tint. Pure `#FFFFFF` and `#000000` are reserved for line work only.
 
 ---
 
 ## Typography
 
-**Typeface: M PLUS Rounded 1c** — warm, rounded, with a slightly handmade quality. Japanese-designed, works across Latin and Japanese scripts. Avoid geometric sans-serifs that read as tech-neutral (Inter, DM Sans, etc.).
+**Typeface: M PLUS Rounded 1c** — warm, rounded, slightly handmade. Japanese-designed, works across Latin and Japanese scripts. Reflects the kawaii-adjacent softness of csms--008 and the warm hand-lettered quality of the gallery-wall art in csms--001.
 
-- **Display / headings:** M PLUS Rounded 1c, heavier weights (700–800), loose tracking
-- **Body:** M PLUS Rounded 1c, regular weight (400), comfortable line height
-- **Labels / UI:** M PLUS Rounded 1c, small size, slightly loose tracking, never compressed
+Avoid geometric sans-serifs that read as tech-neutral (Inter, DM Sans, etc.).
+
+| Role              | Weight  | Usage                                      |
+| ----------------- | ------- | ------------------------------------------ |
+| Display / heading | 800     | Room names, large labels, splash text      |
+| UI / emphasis     | 700     | Buttons, nav, participant names            |
+| Body / ambient    | 400     | Message text, descriptions, form labels    |
+
+Loose tracking on display weights. Comfortable line height (1.6–1.7) on body. Never compressed.
 
 ---
 
 ## Illustration Language
 
-### Recurring Motifs
+### Recurring Motifs (from the reference set)
 
-- **Plants** — tropical, lush, overgrown. Monstera, anthuriums, ivy, vines crawling out of frame
-- **Cats** — small, incidental, never the main subject
-- **Screens inside screens** — TVs, windows, portals; media as a layer of reality
-- **Books and shelves** — accumulated knowledge as ambient texture
-- **A single human figure** — alone in a large, dense world; introspective, not lonely
+- **Plants** — tropical, lush, overgrown. Monstera, anthuriums, ivy climbing out of frame (csms--003, csms--009)
+- **Cats** — small, incidental, never the main subject (csms--004, csms--007)
+- **Screens inside screens** — TVs, portals, media as a layer of reality (csms--007, csms--008)
+- **Books and shelves** — accumulated objects as ambient texture (csms--007, csms--009)
+- **A single human figure** — alone in a large, dense world; introspective, not lonely (csms--003, csms--009)
+- **Art on walls** — gallery walls, posters, murals bleeding off frames (csms--001, csms--002, csms--006)
 
 ### Surreal Boundary Dissolve
 
-Every illustration should contain one element where physical rules quietly break:
+Every illustration should contain one element where physical rules quietly break — matter-of-fact, never dramatic:
 
-- Water flooding a domestic floor
-- The ocean existing above a glass ceiling
-- A doorway becoming something organic
-- The indoor and outdoor merging without acknowledgment
-
-This should feel **matter-of-fact**, not dramatic.
+- Water flooding a domestic floor without panic (csms--003)
+- The ocean existing above a glass ceiling (csms--007)
+- A doorway becoming something organic (csms--004)
+- The indoor and outdoor merging without acknowledgment (csms--009)
 
 ### Density and Detail
 
@@ -93,16 +98,18 @@ Spaces should feel lived-in to the point of overflow. Empty corners are an oppor
 
 ## Tonal Influences (by reference)
 
-| Asset       | Influence                                                                |
-| ----------- | ------------------------------------------------------------------------ |
-| `csms--001` | Flat ink line art, flooded-room surrealism, plant density                |
-| `csms--002` | Surreal domestic horror rendered cute; bold shape language               |
-| `csms--005` | Isometric cozy gaming aesthetic; underwater-above-interior               |
-| `csms--006` | Sailor Moon / kawaii isometric; pastel palette ceiling                   |
-| `csms--007` | Painterly anime warmth; glass-ceiling-as-sky; solitary figure            |
-| `csms--008` | Earthy architectural restraint; mural geometry; terracotta + sage        |
-| `csms--009` | Bold graphic poster illustration; neon lime border; flat folk energy     |
-| `csms--010` | Masamune Shirow cyberpunk; analog ink; mechanical density; electric blue |
+| Asset       | What it contributes                                                          |
+| ----------- | ---------------------------------------------------------------------------- |
+| `csms--001` | Warm pastel maximalism (real); purple + yellow + pink; "live life colourfully" energy |
+| `csms--002` | Bold graphic poster art (real studio); primary colours; assertive, art-world  |
+| `csms--003` | Flat ink line art; flooded-room surrealism; limited pastel palette; plant density |
+| `csms--004` | Surreal domestic cartoon; bubblegum pink; bold outlines; weird-cute          |
+| `csms--005` | Dark teal maximalism; tropical mural; saturated, Matisse-adjacent            |
+| `csms--006` | Cobalt + sunflower maximalism; pop art murals; zebra print; graphic boldness  |
+| `csms--007` | Isometric cozy; underwater-above-interior; warm wood tones; @jarsarts        |
+| `csms--008` | Kawaii isometric; pastel ceiling; Sailor Moon; cream/mint/pink/yellow        |
+| `csms--009` | Painterly anime overhead; purple + peach + sage; glass ceiling; @qu.draws    |
+| `csms--010` | Mexican hacienda (real); earthy plaster; sage + terracotta + ochre mural     |
 
 ---
 
@@ -114,3 +121,4 @@ Spaces should feel lived-in to the point of overflow. Empty corners are an oppor
 - Flat vector illustration without craft or imperfection
 - Empty, airy layouts — density is intentional
 - Irony or detachment — the emotional register is sincere
+- Cold blue-grays, slate, or anything that reads "SaaS dashboard"

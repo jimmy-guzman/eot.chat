@@ -10,15 +10,14 @@ Draw a low fidelity wireframe in a hand-drawn sketch style. Monochrome only — 
 
 **Screen 1 — "Create a Room"**
 
-Full-width navigation bar at the top. Inside the nav bar, "Logo" is on the left in bold. On the right side of the nav bar are two buttons: "Create a Room" and "Join a Room".
+Full-width navigation bar at the top. Inside the nav bar, "Logo" is on the left in bold. No nav links or tabs.
 
 Below the nav bar is the main body. Centered at the top of the body is the heading "Create a Room" in bold.
 
-Below the heading, stacked vertically with equal spacing, are three wide input field rectangles:
+Below the heading, stacked vertically with equal spacing, are two wide input field rectangles:
 
-- "Specify Room Name"
-- "Specify Password"
-- "Specify Your Display Name"
+- "Room Name"
+- "Your Display Name"
 
 Below the input fields, centered, is a smaller button rectangle labeled "Create".
 
@@ -26,36 +25,38 @@ At the very bottom of the screen is a full-width footer bar labeled "Footer".
 
 ---
 
-**Screen 2 — "Join a Room"**
+**Screen 2 — "Display Name Prompt" (room page, joiner)**
 
-Identical layout to Screen 1 with these differences:
+Full-width navigation bar at the top. "Logo" bold on the left.
 
-- The heading reads "Join a Room"
-- The button at the bottom reads "Join"
+Below the nav bar, centered, is the heading "You Are Now in Room: <Room Name>" in bold.
 
-The three input fields are the same: "Specify Room Name", "Specify Password", "Specify Your Display Name".
+Below the heading is a single wide input field rectangle labeled "Your Display Name".
+
+Below the input field, centered, is a smaller button rectangle labeled "Enter Room".
+
+A small note below the button reads: "You received this link from someone in the room."
+
+At the very bottom of the screen is a full-width footer bar labeled "Footer".
 
 ---
 
 **Screen 3 — "Chat Room"**
 
-Full-width navigation bar at the top. Same as the other screens: "Logo" bold on the left, "Create a Room" and "Join a Room" buttons on the right.
+Full-width navigation bar at the top. "Logo" bold on the left.
 
 Below the nav bar, centered, is the heading "You Are Now in Room: <Room Name>" in bold.
 
 Directly below the heading is a wide rectangular bar labeled "<https://salita.chat/r/><room-id> 📋 Copy Link" — this is the shareable room link.
 
-Below the link bar is a large scrollable message area rectangle taking up most of the vertical space. Inside it, top to bottom:
+Below the link bar is a large scrollable message area rectangle taking up most of the vertical space. Inside it, top to bottom, are alternating left- and right-aligned message component boxes:
 
-- Left-aligned text: "Blastoise59 (You): Short all of the energy stocks in our portfolio ASAP."
-- A thin full-width horizontal rule
-- Right-aligned text: "Karmaggedon2: Why? We've been making a killing on these stocks because of the total destruction of every regulation on the industry."
-- A thin full-width horizontal rule
-- Left-aligned text: "Blastoise59 (You): I am telling you. Short all energy stocks immediately!!"
-- A thin full-width horizontal rule
-- Right-aligned text: "Karmaggedon2: Um. You are going to have to give me more information..."
+- Left-aligned card box (own message): "TextMessage — Blastoise59 (You): Short all the energy stocks."
+- Right-aligned card box (other): "RepoCard — Karmaggedon2: github.com/vercel/next.js"
+- Left-aligned card box (own message): "Poll — Blastoise59 (You): When should we ship? [This week] [Next week] [Later]"
+- Right-aligned card box (other): "CodeBlock — Karmaggedon2: const x = 42;"
 
-Below the message area is a wide text input rectangle with placeholder text: "Message or /reshape the room..."
+Below the message area is a wide text input rectangle with placeholder text: "Send anything..."
 
 Below the input field is a row of three equal-width buttons side by side: "Exit Room", "Copy Link", "Send".
 
