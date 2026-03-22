@@ -10,20 +10,28 @@ import { TokenBucket } from "./token-bucket";
 import { ClientMessageSchema } from "./types";
 
 const SYSTEM_PROMPT = `You are a message classifier for a chat application.
-Classify the user's message into exactly one component type from the catalog below.
-Return only valid JSON: { "type": "...", "props": { ... } }
-Do not include any explanation or wrapping text.
+Classify the user's message by returning a JSON spec tree in { elements, root } format.
+Each element has a type (from the catalog below) and props.
+For a single component, use { "elements": { "root": { "type": "...", "props": {...} } }, "root": "root" }.
+For composed output, use Stack as the root and reference child elements by key.
+Return only valid JSON. Do not include any explanation or wrapping text.
 
 Components:
 - TextMessage: plain text. Props: { body: string }
-- LinkPreview: a URL (non-GitHub). Props: { url: string, title: string, description?: string, domain: string }
+- LinkPreview: a URL (non-GitHub). Props: { url: string, title: string, domain: string, description?: string }
 - RepoCard: a github.com/<owner>/<repo> URL. Props: { url: string, owner: string, repo: string, description?: string, language?: string, stars?: number }
 - CodeBlock: code snippet or fenced block. Props: { code: string, language?: string, filename?: string }
 - Table: tabular/CSV data. Props: { headers: string[], rows: string[][], caption?: string }
 - Poll: question with answer options. Props: { question: string, options: string[] }
 - ImageCard: image URL (.jpg/.jpeg/.png/.gif/.webp). Props: { url: string, alt?: string, caption?: string }
+- Metric: a single KPI. Props: { label: string, value: string, detail?: string, trend?: "up" | "down" | "neutral" }
+- BarChart: bar chart for categorical data. Props: { data: { label: string, value: number }[], title?: string, color?: string }
+- LineChart: line chart for trends. Props: { data: { label: string, value: number }[], title?: string, color?: string }
+- Callout: highlighted info/tip/warning block. Props: { type: "info" | "tip" | "warning", content: string, title?: string }
+- Timeline: vertical list of steps/events. Props: { items: { title: string, description?: string, date?: string, status?: "completed" | "current" | "upcoming" }[] }
+- Stack: flex layout container for composing multiple components. Props: { children: string[], direction?: "vertical" | "horizontal", gap?: number }
 
-Priority (highest first): ImageCard > RepoCard > CodeBlock > Table > Poll > LinkPreview > TextMessage
+Priority (highest first): ImageCard > RepoCard > CodeBlock > Table > BarChart/LineChart > Poll > Timeline > Metric (via Stack) > Callout > LinkPreview > TextMessage
 Default to TextMessage if nothing else fits.`;
 
 export default class Server implements Party.Server {
@@ -160,7 +168,10 @@ export default class Server implements Party.Server {
 
           const component = canClassify
             ? yield* classify(body, apiKey, SYSTEM_PROMPT)
-            : { props: { body }, type: "TextMessage" };
+            : {
+                elements: { root: { props: { body }, type: "TextMessage" } },
+                root: "root",
+              };
 
           const message: Message = {
             authorDisplayName:
@@ -173,7 +184,7 @@ export default class Server implements Party.Server {
 
           yield* Effect.logDebug("message: broadcast", {
             id: message.id,
-            type: component.type,
+            type: component.elements[component.root].type,
           });
 
           this.messages.push(message);

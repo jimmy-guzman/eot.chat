@@ -4,18 +4,23 @@ import { Effect, Schema } from "effect";
 import { componentNames } from "../src/catalog/schema";
 
 export interface Classification {
-  props: Record<string, unknown>;
-  type: string;
+  elements: Record<string, { props: Record<string, unknown>; type: string }>;
+  root: string;
 }
 
 const ComponentTypeSchema = Schema.Literal(...componentNames);
 
-const ClassificationSchema = Schema.Struct({
+const ElementSchema = Schema.Struct({
   props: Schema.Record({ key: Schema.String, value: Schema.Unknown }),
   type: ComponentTypeSchema,
 });
 
-const ClassificationFromJson = Schema.parseJson(ClassificationSchema);
+const SpecTreeSchema = Schema.Struct({
+  elements: Schema.Record({ key: Schema.String, value: ElementSchema }),
+  root: Schema.String,
+});
+
+const SpecTreeFromJson = Schema.parseJson(SpecTreeSchema);
 
 const stripFences = (raw: string): string => {
   const trimmed = raw.trim();
@@ -32,7 +37,10 @@ const stripFences = (raw: string): string => {
 };
 
 const textMessageFallback = (body: string): Classification => {
-  return { props: { body }, type: "TextMessage" };
+  return {
+    elements: { root: { props: { body }, type: "TextMessage" } },
+    root: "root",
+  };
 };
 
 export const classify = (
@@ -53,8 +61,7 @@ export const classify = (
           model: "google/gemini-2.0-flash-001",
         })
         .getText();
-    },
-    );
+    });
 
     yield* Effect.logDebug("classify: raw response", {
       raw: raw.slice(0, 300),
@@ -62,11 +69,12 @@ export const classify = (
 
     const cleaned = stripFences(raw);
 
-    const classification = yield* Schema.decodeUnknown(ClassificationFromJson)(
-      cleaned,
-    );
+    const classification =
+      yield* Schema.decodeUnknown(SpecTreeFromJson)(cleaned);
 
-    yield* Effect.logInfo("classify: success", { type: classification.type });
+    yield* Effect.logInfo("classify: success", {
+      type: classification.elements[classification.root].type,
+    });
 
     return classification;
   });
@@ -76,8 +84,7 @@ export const classify = (
       return Effect.logWarning("classify: fallback to TextMessage", {
         reason: String(e),
       });
-    },
-    ),
+    }),
     Effect.catchAll(() => Effect.succeed(textMessageFallback(body))),
   );
 };
