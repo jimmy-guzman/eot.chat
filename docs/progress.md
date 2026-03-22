@@ -53,37 +53,37 @@ Tracks completion of each phase in `docs/plan.md`. Check off tasks as they are d
 
 ## Phase 2 — Component catalog
 
-- [ ] **Phase complete**
+- [x] **Phase complete**
 
 ### Files
 
-- [ ] `src/catalog/schema.ts` — create (Zod prop schemas + AI system prompt string, workerd-safe)
-- [ ] `src/catalog/index.ts` — create (`defineCatalog` with 7 components)
-- [ ] `src/catalog/registry.tsx` — create (`defineRegistry` wiring catalog to React implementations)
-- [ ] `src/components/text-message.tsx`
-- [ ] `src/components/link-preview.tsx`
-- [ ] `src/components/repo-card.tsx`
-- [ ] `src/components/code-block.tsx`
-- [ ] `src/components/table.tsx`
-- [ ] `src/components/poll.tsx`
-- [ ] `src/components/image-card.tsx`
-- [ ] `src/components/index.ts` — barrel export
+- [x] `src/catalog/schema.ts` — create (Zod prop schemas + AI system prompt string, workerd-safe)
+- [x] `src/catalog/index.ts` — create (`defineCatalog` with 7 components)
+- [x] `src/catalog/registry.tsx` — create (`defineRegistry` wiring catalog to React implementations)
+- [x] `src/components/text-message.tsx`
+- [x] `src/components/link-preview.tsx`
+- [x] `src/components/repo-card.tsx`
+- [x] `src/components/code-block.tsx`
+- [x] `src/components/table.tsx`
+- [x] `src/components/poll.tsx`
+- [x] `src/components/image-card.tsx`
+- [x] `src/components/index.ts` — barrel export
 
 ### Tests
 
-- [ ] `src/catalog/schema.spec.ts`
-- [ ] `src/components/text-message.spec.tsx`
-- [ ] `src/components/link-preview.spec.tsx`
-- [ ] `src/components/repo-card.spec.tsx`
-- [ ] `src/components/code-block.spec.tsx`
-- [ ] `src/components/table.spec.tsx`
-- [ ] `src/components/poll.spec.tsx`
-- [ ] `src/components/image-card.spec.tsx`
+- [x] `src/catalog/schema.spec.ts`
+- [x] `src/components/text-message.spec.tsx`
+- [x] `src/components/link-preview.spec.tsx`
+- [x] `src/components/repo-card.spec.tsx`
+- [x] `src/components/code-block.spec.tsx`
+- [x] `src/components/table.spec.tsx`
+- [x] `src/components/poll.spec.tsx`
+- [x] `src/components/image-card.spec.tsx`
 
 ### Verification
 
-- [ ] All component unit tests pass
-- [ ] `pnpm build` succeeds
+- [x] All component unit tests pass
+- [x] `pnpm build` succeeds
 
 ---
 
