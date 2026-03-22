@@ -1,13 +1,6 @@
 import { defineConfig } from "@pandacss/dev";
 
 export default defineConfig({
-  // Dark mode via system preference
-  conditions: {
-    extend: {
-      dark: "@media (prefers-color-scheme: dark)",
-    },
-  },
-
   // Files to exclude
   exclude: [],
 
@@ -72,7 +65,7 @@ export default defineConfig({
             fontWeight: "bold",
             justifyContent: "center",
             letterSpacing: "display",
-            transition: "box-shadow 0.15s ease",
+            transition: "box-shadow 80ms ease-out",
           },
           className: "button",
           defaultVariants: {
@@ -139,8 +132,8 @@ export default defineConfig({
         },
         input: {
           base: {
-            _focus: { borderColor: "accent", outline: "none" },
-            backgroundColor: "base-100",
+            _focus: { boxShadow: "glow.md", outline: "none" },
+            backgroundColor: "base-200",
             border: "2px solid token(colors.base-300)",
             borderRadius: "sm",
             color: "base-content",
@@ -155,31 +148,33 @@ export default defineConfig({
       semanticTokens: {
         colors: {
           // Accent — highlight and focus
-          "accent": { value: { _dark: "#E8850A", base: "#E8850A" } },
-          "accent-content": { value: { _dark: "#28211E", base: "#28211E" } },
+          "accent": { value: "#7AAF6E" },
+          "accent-content": { value: "#0C0B09" },
           // Base surface layers
-          "base-100": { value: { _dark: "#1A1614", base: "#E2EBE5" } },
-          "base-200": { value: { _dark: "#241C19", base: "#F0EDE4" } },
-          "base-300": { value: { _dark: "#3A302A", base: "#D4CEBC" } },
-          "base-content": { value: { _dark: "#EDE8DF", base: "#1A1A1A" } },
-          // Error — destructive actions
-          "error": { value: { _dark: "#D4541A", base: "#D4541A" } },
-          "error-content": { value: { _dark: "#F0EDE4", base: "#F0EDE4" } },
-          // Primary — main interactive color
-          "primary": { value: { _dark: "#E8850A", base: "#28211E" } },
-          "primary-content": { value: { _dark: "#28211E", base: "#F0EDE4" } },
-          // Secondary — supporting interactive color
-          "secondary": { value: { _dark: "#2D7A6A", base: "#2D7A6A" } },
-          "secondary-content": { value: { _dark: "#F0EDE4", base: "#F0EDE4" } },
+          "base-100": { value: "#0C0B09" },
+          "base-200": { value: "#1A1310" },
+          "base-300": { value: "#2E2219" },
+          "base-content": { value: "#E8E0D0" },
           // Palette tokens — non-semantic, reference only
-          "terminal-green": { value: { _dark: "#4A8A5E", base: "#3D6B4A" } },
-          "walnut": { value: { _dark: "#6B4E2E", base: "#8C6E4A" } },
+          "battleship": { value: "#6B7270" },
+          // Error — destructive actions
+          "error": { value: "#CC4E18" },
+          "error-content": { value: "#E8E0D0" },
+          "lcd-yellow": { value: "#C8C44A" },
+          "phosphor-green": { value: "#8AB87A" },
+          // Primary — main interactive color
+          "primary": { value: "#F5A800" },
+          "primary-content": { value: "#0C0B09" },
+          // Secondary — supporting interactive color
+          "secondary": { value: "#CC4E18" },
+          "secondary-content": { value: "#E8E0D0" },
+          "walnut": { value: "#5E3D22" },
         },
         radii: {
           full: { value: "9999px" },
-          lg: { value: "12px" },
-          md: { value: "8px" },
-          sm: { value: "4px" },
+          lg: { value: "8px" },
+          md: { value: "4px" },
+          sm: { value: "2px" },
         },
       },
       tokens: {
@@ -200,7 +195,7 @@ export default defineConfig({
           regular: { value: "400" },
         },
         letterSpacings: {
-          display: { value: "0.02em" },
+          display: { value: "0.04em" },
           tight: { value: "-0.01em" },
         },
         lineHeights: {
@@ -209,9 +204,11 @@ export default defineConfig({
           tight: { value: "1.2" },
         },
         shadows: {
-          lg: { value: "0 8px 32px rgba(26,26,26,0.16)" },
-          md: { value: "0 4px 16px rgba(26,26,26,0.12)" },
-          sm: { value: "0 1px 4px rgba(26,26,26,0.08)" },
+          "glow.md": { value: "0 0 20px rgba(245,168,0,0.25)" },
+          "glow.sm": { value: "0 0 8px rgba(245,168,0,0.15)" },
+          "lg": { value: "0 8px 32px rgba(20,10,4,0.80)" },
+          "md": { value: "0 4px 16px rgba(20,10,4,0.60)" },
+          "sm": { value: "0 1px 4px rgba(20,10,4,0.40)" },
         },
         sizes: {
           bubble: { value: "480px" },

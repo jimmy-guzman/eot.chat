@@ -23,7 +23,7 @@ export default function RootLayout({
   return (
     <html className={ibmPlexMono.variable} lang="en">
       <head>
-        <meta content="dark light" name="color-scheme" />
+        <meta content="dark" name="color-scheme" />
       </head>
       <body>{children}</body>
     </html>
