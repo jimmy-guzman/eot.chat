@@ -1,9 +1,6 @@
 import type * as Party from "partykit/server";
 
-import { http, HttpResponse } from "msw";
-import { beforeEach, describe, expect, it, vi } from "vitest";
-
-import { server } from "@/testing/mocks/server";
+import { describe, expect, it, vi } from "vitest";
 
 import Server from "./index";
 
@@ -258,31 +255,7 @@ describe("Server.onMessage — join", () => {
 });
 
 describe("Server.onMessage — message", () => {
-  beforeEach(() => {
-    const content = JSON.stringify({
-      props: { body: "hello" },
-      type: "TextMessage",
-    });
-    const response = {
-      id: "resp-1",
-      output: [],
-      outputText: content,
-      status: "completed",
-      usage: { inputTokens: 1, outputTokens: 1 },
-    };
-    const sseBody = `data: ${JSON.stringify({ response, type: "response.completed" })}\n\n`;
-
-    server.use(
-      http.post("https://openrouter.ai/api/v1/responses", () => {
-        return new HttpResponse(sseBody, {
-          headers: { "Content-Type": "text/event-stream" },
-          status: 200,
-        });
-      }),
-    );
-  });
-
-  it("should broadcast a message with TextMessage fallback when no API key", async () => {
+  it("should broadcast a message with the raw input", async () => {
     const storage = makeStorage({ name: "My Room" });
     const room = makeRoom({ storage });
     const s = new Server(room);
@@ -307,10 +280,6 @@ describe("Server.onMessage — message", () => {
 
     expect(broadcasted).toMatchObject({
       message: {
-        component: {
-          elements: { root: { props: { body: "hello" }, type: "TextMessage" } },
-          root: "root",
-        },
         rawInput: "hello",
       },
       type: "message",

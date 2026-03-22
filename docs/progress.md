@@ -205,42 +205,37 @@ Tracks completion of each phase in `docs/plan.md`. Check off tasks as they are d
 
 ---
 
-## Phase 8 — Generative UI expansion
-
-- [x] **Phase complete**
-
-### Dependencies
-
-- [x] `pnpm add recharts`
-
-### Files
-
-- [x] `party/types.ts` — migrate `ComponentSchema` to spec tree format `{ elements, root }`
-- [x] `party/classify.ts` — update `ClassificationSchema` and system prompt for spec tree output + 6 new components
-- [x] `src/catalog/schema.ts` — add Zod schemas for `Stack`, `Metric`, `BarChart`, `LineChart`, `Callout`, `Timeline`
-- [x] `src/catalog/index.ts` — register 6 new components
-- [x] `src/catalog/registry.tsx` — wire 6 new components to React implementations
-- [x] `src/components/bar-chart.tsx` — create (recharts `BarChart` with Panda tokens)
-- [x] `src/components/line-chart.tsx` — create (recharts `LineChart` with Panda tokens)
-- [x] `src/components/metric.tsx` — create (KPI metric with trend indicator)
-- [x] `src/components/callout.tsx` — create (info/tip/warning callout block)
-- [x] `src/components/timeline.tsx` — create (vertical timeline with status dots)
-- [x] `src/components/stack.tsx` — create (flex layout container for composed specs)
-- [x] `src/components/index.ts` — update barrel export (add 6 new components)
-- [x] `src/app/r/[id]/_components/room-client.tsx` — remove `makeSpec()` wrapper; pass `msg.component` spec tree directly to `<Renderer>`
-
-### Tests
-
-- [x] `src/components/bar-chart.spec.tsx`
-- [x] `src/components/line-chart.spec.tsx`
-- [x] `src/components/metric.spec.tsx`
-- [x] `src/components/callout.spec.tsx`
-- [x] `src/components/timeline.spec.tsx`
-- [x] `src/components/stack.spec.tsx`
-
 ### Verification
 
 - [x] `pnpm typecheck` clean
 - [x] `pnpm lint` clean
 - [x] `pnpm test --run` green
 - [x] `pnpm build` succeeds
+
+---
+
+## Refactor — Strip AI classification and rich component catalog
+
+- [x] **Complete**
+
+### Removed
+
+- [x] `party/classify.ts` + `party/classify.spec.ts`
+- [x] `party/token-bucket.ts` + `party/token-bucket.spec.ts`
+- [x] `src/catalog/` (entire directory: `schema.ts`, `schema.spec.ts`, `index.ts`, `registry.tsx`)
+- [x] `src/components/` — all rich message components and specs (bar-chart, callout, code-block, image-card, line-chart, link-preview, metric, poll, repo-card, stack, table, text-message, timeline) + their spec files
+- [x] `src/components/index.ts` — barrel export
+
+### Updated
+
+- [x] `party/types.ts` — removed `ComponentSchema` and `component` field from `MessageSchema`
+- [x] `party/index.ts` — removed AI classification, rate limiting, and token bucket logic
+- [x] `party/index.spec.ts` — removed MSW mock, simplified message broadcast assertion
+- [x] `party/types.spec.ts` — simplified `MessageSchema` test (no `component` field)
+- [x] `src/app/r/[id]/_components/room-client.tsx` — removed `JSONUIProvider`/`Renderer`/registry; inline plain text `<p>` render
+- [x] `e2e/chat.spec.ts` — removed Step 5 AI/RepoCard assertion
+- [x] `package.json` — removed `@json-render/core`, `@json-render/react`, `@openrouter/sdk`, `@base-ui/react`, `zod`
+- [x] `docs/architecture.md` — removed AI classification, rate limiting, OpenRouter sections; updated data model and data flow
+- [x] `docs/product/functions.md` — updated overview and message area description; removed AI-specific constraints
+- [x] `docs/product/catalog.md` — archived (preserved for history, no longer active)
+- [x] `docs/plan.md` — added note that Phases 3 and 8 are superseded

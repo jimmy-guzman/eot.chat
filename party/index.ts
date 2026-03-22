@@ -5,42 +5,9 @@ import { nanoid } from "nanoid";
 
 import type { Message, Participant } from "./types";
 
-import { classify } from "./classify";
-import { TokenBucket } from "./token-bucket";
 import { ClientMessageSchema } from "./types";
 
-const SYSTEM_PROMPT = `You are a message classifier for a chat application.
-Classify the user's message by returning a JSON spec tree in { elements, root } format.
-Each element has a "type", "props", and optionally "children" (array of element keys).
-For a single component, use { "elements": { "root": { "type": "...", "props": {...} } }, "root": "root" }.
-For composed output use Stack as root. Children are listed as a top-level "children" array on the element (NOT inside props).
-
-Example of a composed spec with Stack:
-{ "root": "layout", "elements": { "layout": { "type": "Stack", "props": { "gap": 4 }, "children": ["m1", "m2"] }, "m1": { "type": "Metric", "props": { "label": "Revenue", "value": "$42k", "trend": "up" } }, "m2": { "type": "Metric", "props": { "label": "Signups", "value": "1,200" } } } }
-
-Return only valid JSON. Do not include any explanation or wrapping text.
-
-Components:
-- TextMessage: plain text. Props: { body: string }
-- LinkPreview: a URL (non-GitHub). Props: { url: string, title: string, domain: string, description?: string }
-- RepoCard: a github.com/<owner>/<repo> URL. Props: { url: string, owner: string, repo: string, description?: string, language?: string, stars?: number }
-- CodeBlock: code snippet or fenced block. Props: { code: string, language?: string, filename?: string }
-- Table: tabular/CSV data. Props: { headers: string[], rows: string[][], caption?: string }
-- Poll: question with answer options. Props: { question: string, options: string[] }
-- ImageCard: image URL (.jpg/.jpeg/.png/.gif/.webp). Props: { url: string, alt?: string, caption?: string }
-- Metric: a single KPI. Props: { label: string, value: string, detail?: string, trend?: "up" | "down" | "neutral" }
-- BarChart: bar chart for categorical data. Props: { data: { label: string, value: number }[], title?: string, color?: string }
-- LineChart: line chart for trends. Props: { data: { label: string, value: number }[], title?: string, color?: string }
-- Callout: highlighted info/tip/warning block. Props: { type: "info" | "tip" | "warning", content: string, title?: string }
-- Timeline: vertical list of steps/events. Props: { items: { title: string, description?: string, date?: string, status?: "completed" | "current" | "upcoming" }[] }
-- Stack: flex layout container. Props: { direction?: "vertical" | "horizontal", gap?: number }. Children: list of element keys in top-level "children" array, not inside props.
-
-Priority (highest first): ImageCard > RepoCard > CodeBlock > Table > BarChart/LineChart > Poll > Timeline > Metric (via Stack) > Callout > LinkPreview > TextMessage
-Default to TextMessage if nothing else fits.
-For Stack: always put child keys in "children" on the element, never inside "props".`;
-
 export default class Server implements Party.Server {
-  private readonly buckets = new Map<string, TokenBucket>();
   private readonly messages: Message[] = [];
   private readonly participants = new Map<string, Participant>();
 
@@ -146,51 +113,15 @@ export default class Server implements Party.Server {
             return;
           }
 
-          const apiKey = this.room.env.OPENROUTER_API_KEY as string | undefined;
-
-          if (!apiKey) {
-            yield* Effect.logWarning(
-              "message: OPENROUTER_API_KEY not set — skipping classification",
-            );
-          }
-
-          let bucket = this.buckets.get(sender.id);
-
-          if (!bucket) {
-            bucket = new TokenBucket(3, 3000);
-            this.buckets.set(sender.id, bucket);
-          }
-
-          const tokenConsumed = bucket.consume();
-
-          if (!tokenConsumed) {
-            yield* Effect.logWarning("message: rate limited", {
-              senderId: sender.id,
-            });
-          }
-
-          const canClassify = tokenConsumed && apiKey;
-
-          const component = canClassify
-            ? yield* classify(body, apiKey, SYSTEM_PROMPT)
-            : {
-                elements: { root: { props: { body }, type: "TextMessage" } },
-                root: "root",
-              };
-
           const message: Message = {
             authorDisplayName:
               this.participants.get(sender.id)?.displayName ?? "Unknown",
-            component,
             id: nanoid(),
             rawInput: body,
             sentAt: new Date().toISOString(),
           };
 
-          yield* Effect.logDebug("message: broadcast", {
-            id: message.id,
-            type: component.elements[component.root].type,
-          });
+          yield* Effect.logDebug("message: broadcast", { id: message.id });
 
           this.messages.push(message);
           this.room.broadcast(JSON.stringify({ message, type: "message" }));
@@ -285,7 +216,6 @@ export default class Server implements Party.Server {
     }
 
     this.participants.delete(connId);
-    this.buckets.delete(connId);
 
     await Effect.runPromise(
       Effect.logInfo("leave: participant left", {

@@ -1,6 +1,5 @@
 "use client";
 
-import { JSONUIProvider, Renderer } from "@json-render/react";
 import { useRouter } from "next/navigation";
 import PartySocketClient from "partysocket";
 import {
@@ -15,7 +14,6 @@ import {
 import { css, cx } from "styled-system/css";
 import { badge, button, input } from "styled-system/recipes";
 
-import { registry } from "@/catalog/registry";
 import { PlantMotif } from "@/components/illustrations";
 
 import type {
@@ -167,18 +165,13 @@ export const RoomClient = ({ id, name }: Props) => {
     [id],
   );
 
-  const handleSend = (e: React.SyntheticEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const sendMessage = () => {
     const body = inputValue.trim();
 
     if (!body || !socketRef.current || !resolvedDisplayName) return;
 
     const optimistic: Message = {
       authorDisplayName: resolvedDisplayName,
-      component: {
-        elements: { root: { props: { body }, type: "TextMessage" } },
-        root: "root",
-      },
       id: `optimistic-${Date.now().toString()}`,
       rawInput: body,
       sentAt: new Date().toISOString(),
@@ -189,6 +182,18 @@ export const RoomClient = ({ id, name }: Props) => {
     });
     socketRef.current.send(JSON.stringify({ body, type: "message" }));
     setInputValue("");
+  };
+
+  const handleSend = (e: React.SyntheticEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    sendMessage();
+  };
+
+  const handleInputKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
   };
 
   const handleExit = () => {
@@ -383,9 +388,16 @@ export const RoomClient = ({ id, name }: Props) => {
                     width: "fit-content",
                   })}
                 >
-                  <JSONUIProvider registry={registry}>
-                    <Renderer registry={registry} spec={msg.component} />
-                  </JSONUIProvider>
+                  <p
+                    className={css({
+                      color: "ink",
+                      fontSize: "base",
+                      lineHeight: "body",
+                      margin: "0",
+                    })}
+                  >
+                    {msg.rawInput}
+                  </p>
                 </div>
               </div>
             );
@@ -405,13 +417,17 @@ export const RoomClient = ({ id, name }: Props) => {
         })}
         onSubmit={handleSend}
       >
-        <input
-          className={cx(input(), css({ flex: "1", width: "auto" }))}
+        <textarea
+          className={cx(
+            input(),
+            css({ flex: "1", resize: "none", width: "auto" }),
+          )}
           onChange={(e) => {
             setInputValue(e.target.value);
           }}
+          onKeyDown={handleInputKeyDown}
           placeholder="Send anything..."
-          type="text"
+          rows={1}
           value={inputValue}
         />
         <button
