@@ -9,6 +9,7 @@ import {
   useOptimistic,
   useRef,
   useState,
+  useSyncExternalStore,
   useTransition,
 } from "react";
 import { css } from "styled-system/css";
@@ -64,12 +65,23 @@ const copyRoomLink = () => {
   void navigator.clipboard.writeText(globalThis.location.href);
 };
 
+const unsubscribe = () => undefined;
+const noop = () => unsubscribe;
+const serverSnapshot = () => null;
+const makeClientSnapshot = (id: string) => () => getStoredDisplayName(id);
+
 export const RoomClient = ({ id, name }: Props) => {
   const router = useRouter();
   const [, startTransition] = useTransition();
-  const [displayName, setDisplayName] = useState<null | string>(() => {
-    return getStoredDisplayName(id);
-  });
+  const displayName = useSyncExternalStore(
+    noop,
+    makeClientSnapshot(id),
+    serverSnapshot,
+  );
+  const [overrideDisplayName, setOverrideDisplayName] = useState<null | string>(
+    null,
+  );
+  const resolvedDisplayName = overrideDisplayName ?? displayName;
   const [messages, setMessages] = useState<Message[]>([]);
   const [optimisticMessages, addOptimisticMessage] = useOptimistic(
     messages,
@@ -81,7 +93,7 @@ export const RoomClient = ({ id, name }: Props) => {
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    if (!displayName) {
+    if (!resolvedDisplayName) {
       return undefined;
     }
 
@@ -94,7 +106,9 @@ export const RoomClient = ({ id, name }: Props) => {
     socketRef.current = socket;
 
     const onOpen = () => {
-      socket.send(JSON.stringify({ displayName, type: "join" }));
+      socket.send(
+        JSON.stringify({ displayName: resolvedDisplayName, type: "join" }),
+      );
     };
 
     const onMessage = (event: MessageEvent<string>) => {
@@ -148,7 +162,7 @@ export const RoomClient = ({ id, name }: Props) => {
       socket.close();
       socketRef.current = null;
     };
-  }, [displayName, id, router]);
+  }, [resolvedDisplayName, id, router]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -157,7 +171,7 @@ export const RoomClient = ({ id, name }: Props) => {
   const handleJoin = useCallback(
     (joinName: string) => {
       setStoredDisplayName(id, joinName);
-      setDisplayName(joinName);
+      setOverrideDisplayName(joinName);
     },
     [id],
   );
@@ -166,10 +180,10 @@ export const RoomClient = ({ id, name }: Props) => {
     e.preventDefault();
     const body = input.trim();
 
-    if (!body || !socketRef.current || !displayName) return;
+    if (!body || !socketRef.current || !resolvedDisplayName) return;
 
     const optimistic: Message = {
-      authorDisplayName: displayName,
+      authorDisplayName: resolvedDisplayName,
       component: { props: { body }, type: "TextMessage" },
       id: `optimistic-${Date.now().toString()}`,
       rawInput: body,
@@ -189,7 +203,7 @@ export const RoomClient = ({ id, name }: Props) => {
     router.push("/");
   };
 
-  if (!displayName) {
+  if (!resolvedDisplayName) {
     return <DisplayNameForm onJoin={handleJoin} />;
   }
 
@@ -286,9 +300,12 @@ export const RoomClient = ({ id, name }: Props) => {
               <li
                 className={css({
                   backgroundColor:
-                    p.displayName === displayName ? "cobalt" : "lavender",
+                    p.displayName === resolvedDisplayName
+                      ? "cobalt"
+                      : "lavender",
                   borderRadius: "full",
-                  color: p.displayName === displayName ? "white" : "ink",
+                  color:
+                    p.displayName === resolvedDisplayName ? "white" : "ink",
                   fontSize: "0.75rem",
                   fontWeight: "700",
                   padding: "1 3",
@@ -330,7 +347,7 @@ export const RoomClient = ({ id, name }: Props) => {
           })}
         >
           {optimisticMessages.map((msg) => {
-            const isOwn = msg.authorDisplayName === displayName;
+            const isOwn = msg.authorDisplayName === resolvedDisplayName;
 
             return (
               <div
