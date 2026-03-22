@@ -6,8 +6,14 @@ export const ParticipantSchema = Schema.Struct({
 });
 
 export const ComponentSchema = Schema.Struct({
-  props: Schema.Record({ key: Schema.String, value: Schema.Unknown }),
-  type: Schema.String,
+  elements: Schema.Record({
+    key: Schema.String,
+    value: Schema.Struct({
+      props: Schema.Record({ key: Schema.String, value: Schema.Unknown }),
+      type: Schema.String,
+    }),
+  }),
+  root: Schema.String,
 });
 
 export const MessageSchema = Schema.Struct({

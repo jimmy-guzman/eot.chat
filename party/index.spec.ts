@@ -307,7 +307,10 @@ describe("Server.onMessage — message", () => {
 
     expect(broadcasted).toMatchObject({
       message: {
-        component: { props: { body: "hello" }, type: "TextMessage" },
+        component: {
+          elements: { root: { props: { body: "hello" }, type: "TextMessage" } },
+          root: "root",
+        },
         rawInput: "hello",
       },
       type: "message",

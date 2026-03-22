@@ -108,10 +108,15 @@ describe("ParticipantSchema", () => {
 });
 
 describe("MessageSchema", () => {
-  it("should decode a valid message", () => {
+  it("should decode a valid message with a spec tree component", () => {
+    const component = {
+      elements: { root: { props: { body: "hi" }, type: "TextMessage" } },
+      root: "root",
+    };
+
     const result = Schema.decodeUnknownSync(MessageSchema)({
       authorDisplayName: "Alice",
-      component: { props: { body: "hi" }, type: "TextMessage" },
+      component,
       id: "abc123",
       rawInput: "hi",
       sentAt: "2024-01-01T00:00:00.000Z",
@@ -119,7 +124,7 @@ describe("MessageSchema", () => {
 
     expect(result).toStrictEqual({
       authorDisplayName: "Alice",
-      component: { props: { body: "hi" }, type: "TextMessage" },
+      component,
       id: "abc123",
       rawInput: "hi",
       sentAt: "2024-01-01T00:00:00.000Z",

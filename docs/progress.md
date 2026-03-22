@@ -207,40 +207,40 @@ Tracks completion of each phase in `docs/plan.md`. Check off tasks as they are d
 
 ## Phase 8 — Generative UI expansion
 
-- [ ] **Phase complete**
+- [x] **Phase complete**
 
 ### Dependencies
 
-- [ ] `pnpm add recharts`
+- [x] `pnpm add recharts`
 
 ### Files
 
-- [ ] `party/types.ts` — migrate `ComponentSchema` to spec tree format `{ elements, root }`
-- [ ] `party/classify.ts` — update `ClassificationSchema` and system prompt for spec tree output + 6 new components
-- [ ] `src/catalog/schema.ts` — add Zod schemas for `Stack`, `Metric`, `BarChart`, `LineChart`, `Callout`, `Timeline`
-- [ ] `src/catalog/index.ts` — register 6 new components
-- [ ] `src/catalog/registry.tsx` — wire 6 new components to React implementations
-- [ ] `src/components/bar-chart.tsx` — create (recharts `BarChart` with Panda tokens)
-- [ ] `src/components/line-chart.tsx` — create (recharts `LineChart` with Panda tokens)
-- [ ] `src/components/metric.tsx` — create (KPI metric with trend indicator)
-- [ ] `src/components/callout.tsx` — create (info/tip/warning callout block)
-- [ ] `src/components/timeline.tsx` — create (vertical timeline with status dots)
-- [ ] `src/components/stack.tsx` — create (flex layout container for composed specs)
-- [ ] `src/components/index.ts` — update barrel export (add 6 new components)
-- [ ] `src/app/r/[id]/_components/room-client.tsx` — remove `makeSpec()` wrapper; pass `msg.component` spec tree directly to `<Renderer>`
+- [x] `party/types.ts` — migrate `ComponentSchema` to spec tree format `{ elements, root }`
+- [x] `party/classify.ts` — update `ClassificationSchema` and system prompt for spec tree output + 6 new components
+- [x] `src/catalog/schema.ts` — add Zod schemas for `Stack`, `Metric`, `BarChart`, `LineChart`, `Callout`, `Timeline`
+- [x] `src/catalog/index.ts` — register 6 new components
+- [x] `src/catalog/registry.tsx` — wire 6 new components to React implementations
+- [x] `src/components/bar-chart.tsx` — create (recharts `BarChart` with Panda tokens)
+- [x] `src/components/line-chart.tsx` — create (recharts `LineChart` with Panda tokens)
+- [x] `src/components/metric.tsx` — create (KPI metric with trend indicator)
+- [x] `src/components/callout.tsx` — create (info/tip/warning callout block)
+- [x] `src/components/timeline.tsx` — create (vertical timeline with status dots)
+- [x] `src/components/stack.tsx` — create (flex layout container for composed specs)
+- [x] `src/components/index.ts` — update barrel export (add 6 new components)
+- [x] `src/app/r/[id]/_components/room-client.tsx` — remove `makeSpec()` wrapper; pass `msg.component` spec tree directly to `<Renderer>`
 
 ### Tests
 
-- [ ] `src/components/bar-chart.spec.tsx`
-- [ ] `src/components/line-chart.spec.tsx`
-- [ ] `src/components/metric.spec.tsx`
-- [ ] `src/components/callout.spec.tsx`
-- [ ] `src/components/timeline.spec.tsx`
-- [ ] `src/components/stack.spec.tsx`
+- [x] `src/components/bar-chart.spec.tsx`
+- [x] `src/components/line-chart.spec.tsx`
+- [x] `src/components/metric.spec.tsx`
+- [x] `src/components/callout.spec.tsx`
+- [x] `src/components/timeline.spec.tsx`
+- [x] `src/components/stack.spec.tsx`
 
 ### Verification
 
-- [ ] `pnpm typecheck` clean
-- [ ] `pnpm lint` clean
-- [ ] `pnpm test --run` green
-- [ ] `pnpm build` succeeds
+- [x] `pnpm typecheck` clean
+- [x] `pnpm lint` clean
+- [x] `pnpm test --run` green
+- [x] `pnpm build` succeeds

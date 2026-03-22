@@ -47,10 +47,6 @@ const setStoredDisplayName = (id: string, displayName: string) => {
   }
 };
 
-const makeSpec = (type: string, props: Record<string, unknown>) => {
-  return { elements: { root: { props, type } }, root: "root" };
-};
-
 const copyRoomLink = () => {
   void navigator.clipboard.writeText(globalThis.location.href);
 };
@@ -179,7 +175,10 @@ export const RoomClient = ({ id, name }: Props) => {
 
     const optimistic: Message = {
       authorDisplayName: resolvedDisplayName,
-      component: { props: { body }, type: "TextMessage" },
+      component: {
+        elements: { root: { props: { body }, type: "TextMessage" } },
+        root: "root",
+      },
       id: `optimistic-${Date.now().toString()}`,
       rawInput: body,
       sentAt: new Date().toISOString(),
@@ -385,13 +384,7 @@ export const RoomClient = ({ id, name }: Props) => {
                   })}
                 >
                   <JSONUIProvider registry={registry}>
-                    <Renderer
-                      registry={registry}
-                      spec={makeSpec(
-                        msg.component.type,
-                        msg.component.props as Record<string, unknown>,
-                      )}
-                    />
+                    <Renderer registry={registry} spec={msg.component} />
                   </JSONUIProvider>
                 </div>
               </div>

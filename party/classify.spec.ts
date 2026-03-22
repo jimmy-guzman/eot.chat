@@ -50,8 +50,7 @@ const mockOpenRouterResponse = (outputText: string) => {
   server.use(
     http.post("https://openrouter.ai/api/v1/responses", () => {
       return mockJsonResponse(outputText);
-    },
-    ),
+    }),
   );
 };
 
@@ -82,26 +81,26 @@ const withCapturedLogs = <A>(
   });
 };
 
+const specTree = (type: string, props: Record<string, unknown>) => {
+  return JSON.stringify({ elements: { root: { props, type } }, root: "root" });
+};
+
 describe("classify", () => {
   it("should return a valid Classification from a well-formed OpenRouter response", async () => {
-    mockOpenRouterResponse(
-      JSON.stringify({ props: { body: "hello" }, type: "TextMessage" }),
-    );
+    mockOpenRouterResponse(specTree("TextMessage", { body: "hello" }));
 
     const result = await Effect.runPromise(
       classify("hello", MOCK_API_KEY, MOCK_SYSTEM_PROMPT),
     );
 
     expect(result).toStrictEqual({
-      props: { body: "hello" },
-      type: "TextMessage",
+      elements: { root: { props: { body: "hello" }, type: "TextMessage" } },
+      root: "root",
     });
   });
 
   it("should log classify:success at INFO level on a successful classification", async () => {
-    mockOpenRouterResponse(
-      JSON.stringify({ props: { body: "hello" }, type: "TextMessage" }),
-    );
+    mockOpenRouterResponse(specTree("TextMessage", { body: "hello" }));
 
     const { logs } = await Effect.runPromise(
       withCapturedLogs(classify("hello", MOCK_API_KEY, MOCK_SYSTEM_PROMPT)),
@@ -122,8 +121,8 @@ describe("classify", () => {
     );
 
     expect(result).toStrictEqual({
-      props: { body: "hello" },
-      type: "TextMessage",
+      elements: { root: { props: { body: "hello" }, type: "TextMessage" } },
+      root: "root",
     });
   });
 
@@ -143,7 +142,10 @@ describe("classify", () => {
 
   it("should fall back to TextMessage when the response has an unknown component type", async () => {
     mockOpenRouterResponse(
-      JSON.stringify({ props: {}, type: "UnknownComponent" }),
+      JSON.stringify({
+        elements: { root: { props: {}, type: "UnknownComponent" } },
+        root: "root",
+      }),
     );
 
     const result = await Effect.runPromise(
@@ -151,8 +153,8 @@ describe("classify", () => {
     );
 
     expect(result).toStrictEqual({
-      props: { body: "hello" },
-      type: "TextMessage",
+      elements: { root: { props: { body: "hello" }, type: "TextMessage" } },
+      root: "root",
     });
   });
 
@@ -160,8 +162,7 @@ describe("classify", () => {
     server.use(
       http.post("https://openrouter.ai/api/v1/responses", () => {
         return HttpResponse.error();
-      },
-      ),
+      }),
     );
 
     const result = await Effect.runPromise(
@@ -169,8 +170,8 @@ describe("classify", () => {
     );
 
     expect(result).toStrictEqual({
-      props: { body: "hello" },
-      type: "TextMessage",
+      elements: { root: { props: { body: "hello" }, type: "TextMessage" } },
+      root: "root",
     });
   });
 });

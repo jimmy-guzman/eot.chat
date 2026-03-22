@@ -182,6 +182,181 @@ describe("schemas.ImageCard", () => {
   });
 });
 
+describe("schemas.BarChart", () => {
+  it("should accept valid props with data", () => {
+    expect(
+      schemas.BarChart.parse({
+        data: [{ label: "Jan", value: 10 }],
+      }),
+    ).toStrictEqual({ data: [{ label: "Jan", value: 10 }] });
+  });
+
+  it("should accept optional title and color", () => {
+    const result = schemas.BarChart.parse({
+      color: "cobalt",
+      data: [],
+      title: "Monthly",
+    });
+
+    expect(result.title).toBe("Monthly");
+    expect(result.color).toBe("cobalt");
+  });
+
+  it("should reject missing data", () => {
+    expect(() => schemas.BarChart.parse({})).toThrow("Invalid input");
+  });
+});
+
+describe("schemas.Callout", () => {
+  it("should accept valid props", () => {
+    expect(
+      schemas.Callout.parse({ content: "Read this.", type: "info" }),
+    ).toStrictEqual({ content: "Read this.", type: "info" });
+  });
+
+  it("should accept optional title", () => {
+    const result = schemas.Callout.parse({
+      content: "Tip text.",
+      title: "Tip",
+      type: "tip",
+    });
+
+    expect(result.title).toBe("Tip");
+  });
+
+  it("should reject missing content", () => {
+    expect(() => schemas.Callout.parse({ type: "info" })).toThrow(
+      "Invalid input",
+    );
+  });
+
+  it("should reject invalid type", () => {
+    expect(() =>
+      schemas.Callout.parse({ content: "x", type: "error" }),
+    ).toThrow("Invalid option");
+  });
+});
+
+describe("schemas.LineChart", () => {
+  it("should accept valid props with data", () => {
+    expect(
+      schemas.LineChart.parse({
+        data: [{ label: "Mon", value: 5 }],
+      }),
+    ).toStrictEqual({ data: [{ label: "Mon", value: 5 }] });
+  });
+
+  it("should accept optional title and color", () => {
+    const result = schemas.LineChart.parse({
+      color: "mint",
+      data: [],
+      title: "Trend",
+    });
+
+    expect(result.title).toBe("Trend");
+    expect(result.color).toBe("mint");
+  });
+
+  it("should reject missing data", () => {
+    expect(() => schemas.LineChart.parse({})).toThrow("Invalid input");
+  });
+});
+
+describe("schemas.Metric", () => {
+  it("should accept valid required props", () => {
+    expect(
+      schemas.Metric.parse({ label: "Revenue", value: "$1,000" }),
+    ).toStrictEqual({ label: "Revenue", value: "$1,000" });
+  });
+
+  it("should accept optional detail and trend", () => {
+    const result = schemas.Metric.parse({
+      detail: "vs last month",
+      label: "Sales",
+      trend: "up",
+      value: "200",
+    });
+
+    expect(result.detail).toBe("vs last month");
+    expect(result.trend).toBe("up");
+  });
+
+  it("should reject missing label", () => {
+    expect(() => schemas.Metric.parse({ value: "42" })).toThrow(
+      "Invalid input",
+    );
+  });
+
+  it("should reject invalid trend", () => {
+    expect(() => {
+      return schemas.Metric.parse({
+        label: "x",
+        trend: "sideways",
+        value: "1",
+      });
+    }).toThrow("Invalid option");
+  });
+});
+
+describe("schemas.Stack", () => {
+  it("should accept valid props with children", () => {
+    expect(schemas.Stack.parse({ children: ["a", "b"] })).toStrictEqual({
+      children: ["a", "b"],
+    });
+  });
+
+  it("should accept optional direction and gap", () => {
+    const result = schemas.Stack.parse({
+      children: [],
+      direction: "horizontal",
+      gap: 2,
+    });
+
+    expect(result.direction).toBe("horizontal");
+    expect(result.gap).toBe(2);
+  });
+
+  it("should reject missing children", () => {
+    expect(() => schemas.Stack.parse({})).toThrow("Invalid input");
+  });
+});
+
+describe("schemas.Timeline", () => {
+  it("should accept valid props with items", () => {
+    expect(
+      schemas.Timeline.parse({ items: [{ title: "Step 1" }] }),
+    ).toStrictEqual({ items: [{ title: "Step 1" }] });
+  });
+
+  it("should accept optional item fields", () => {
+    const result = schemas.Timeline.parse({
+      items: [
+        {
+          date: "2025-01-01",
+          description: "desc",
+          status: "completed",
+          title: "Phase 1",
+        },
+      ],
+    });
+
+    expect(result.items[0]?.status).toBe("completed");
+    expect(result.items[0]?.date).toBe("2025-01-01");
+  });
+
+  it("should reject missing items", () => {
+    expect(() => schemas.Timeline.parse({})).toThrow("Invalid input");
+  });
+
+  it("should reject invalid status", () => {
+    expect(() => {
+      return schemas.Timeline.parse({
+        items: [{ status: "done", title: "x" }],
+      });
+    }).toThrow("Invalid option");
+  });
+});
+
 describe("systemPrompt", () => {
   it("should be a non-empty string", () => {
     expectTypeOf(systemPrompt).toBeString();
@@ -197,5 +372,11 @@ describe("systemPrompt", () => {
     expect(systemPrompt).toContain("Table");
     expect(systemPrompt).toContain("Poll");
     expect(systemPrompt).toContain("ImageCard");
+    expect(systemPrompt).toContain("BarChart");
+    expect(systemPrompt).toContain("Callout");
+    expect(systemPrompt).toContain("LineChart");
+    expect(systemPrompt).toContain("Metric");
+    expect(systemPrompt).toContain("Stack");
+    expect(systemPrompt).toContain("Timeline");
   });
 });

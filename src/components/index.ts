@@ -1,7 +1,13 @@
+export { BarChart } from "./bar-chart";
+export { Callout } from "./callout";
 export { CodeBlock } from "./code-block";
 export { ImageCard } from "./image-card";
+export { LineChart } from "./line-chart";
 export { LinkPreview } from "./link-preview";
+export { Metric } from "./metric";
 export { Poll } from "./poll";
 export { RepoCard } from "./repo-card";
+export { Stack } from "./stack";
 export { Table } from "./table";
 export { TextMessage } from "./text-message";
+export { Timeline } from "./timeline";
