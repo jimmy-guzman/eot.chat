@@ -49,3 +49,6 @@ styled-system-studio
 /test-results/
 /playwright-report/
 /blob-report/
+
+# partykit
+.partykit/
