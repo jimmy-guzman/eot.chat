@@ -75,6 +75,7 @@ There are no user accounts — identity is a display name chosen at entry.
 
 - `Send` — submits the input, triggers AI classification, broadcasts the rendered component to all participants
 - `Copy Link` — copies the shareable room URL to clipboard
+- `Clear Chat` — clears all messages for every participant in the room immediately; also triggered automatically when any participant leaves
 - `Exit Room` — removes the user from the room and returns them to the landing page
 
 ---
@@ -133,3 +134,4 @@ Messages live in PartyKit's in-memory room state. They are sent to new participa
 - Every message is classified by AI — plain text is a valid fallback (`TextMessage`)
 - AI is constrained to the component catalog — no hallucinated component types
 - Rooms and messages are ephemeral — no database, no persistence after dissolution
+- Messages are cleared immediately when any participant leaves, or when any participant manually triggers a clear

@@ -152,3 +152,30 @@ Tracks completion of each phase in `docs/plan.md`. Check off tasks as they are d
 ### Verification
 
 - [x] `pnpm e2e` green (full happy path passes)
+
+---
+
+## Phase 6 — Clear chat
+
+- [x] **Phase complete**
+
+### Files
+
+- [x] `docs/product/functions.md` — add `Clear Chat` action, update Key Constraints
+- [x] `docs/architecture.md` — add `clear`/`cleared` to protocol; update data flow for leave and clear; update Room Dissolution
+- [x] `docs/plan.md` — update Phase 2 and Phase 5 descriptions
+- [x] `docs/prompts/excalidraw.md` — add participant strip; add `Clear Chat` button to Screen 3 actions
+- [x] `party/types.ts` — add `clear` to `ClientMessageSchema`, `cleared` to `ServerMessageSchema`
+- [x] `party/index.ts` — handle `clear` message; clear + broadcast `cleared` on any leave
+- [x] `src/app/r/[id]/_components/room-client.tsx` — handle `cleared`; add `Clear Chat` ghost button
+
+### Tests
+
+- [x] `party/index.spec.ts` — add tests for `clear` message and mid-session leave clearing
+
+### Verification
+
+- [x] `pnpm typecheck` clean
+- [x] `pnpm lint` clean
+- [x] `pnpm test --run` green
+- [x] `pnpm build` succeeds

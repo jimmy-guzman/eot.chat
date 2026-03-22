@@ -49,7 +49,9 @@ Below the nav bar, centered, is the heading "You Are Now in Room: <Room Name>" i
 
 Directly below the heading is a wide rectangular bar labeled "<https://salita.chat/r/><room-id> 📋 Copy Link" — this is the shareable room link.
 
-Below the link bar is a large scrollable message area rectangle taking up most of the vertical space. Inside it, top to bottom, are alternating left- and right-aligned message component boxes:
+Below the link bar is a narrow full-width strip containing small pill-shaped badges for each participant currently in the room, e.g. "Blastoise59 (You)" and "Karmaggedon2". The current user's pill is visually distinct (darker fill).
+
+Below the participant strip is a large scrollable message area rectangle taking up most of the vertical space. Inside it, top to bottom, are alternating left- and right-aligned message component boxes:
 
 - Left-aligned card box (own message): "TextMessage — Blastoise59 (You): Short all the energy stocks."
 - Right-aligned card box (other): "RepoCard — Karmaggedon2: github.com/vercel/next.js"
@@ -58,7 +60,7 @@ Below the link bar is a large scrollable message area rectangle taking up most o
 
 Below the message area is a wide text input rectangle with placeholder text: "Send anything..."
 
-Below the input field is a row of three equal-width buttons side by side: "Exit Room", "Copy Link", "Send".
+Below the input field is a row of four equal-width buttons side by side: "Exit Room", "Copy Link", "Clear Chat", "Send".
 
 At the very bottom of the screen is a full-width footer bar labeled "Footer".
 

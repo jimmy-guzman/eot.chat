@@ -110,8 +110,9 @@ _Replace the boilerplate with the real typed message protocol. Delivers room cre
 - `onMessage` — parse with `Schema.decodeUnknownEither`, route with `Match.tag`, `Effect.runPromise` at boundary:
   - `join` → validate displayName unique, add to map, broadcast `joined`
   - `message` → validate non-empty, check rate limit bucket (fallback to `TextMessage` if empty), call AI classification, build `Message`, push to `messages[]`, broadcast `message`
-  - `leave` → remove from map, broadcast `left`
-- `onClose` — same as `leave`; if map reaches 0, delete `name` from `room.storage`, clear `messages[]`
+  - `clear` → clear `messages[]`, broadcast `cleared`
+  - `leave` → remove from map, clear `messages[]`, broadcast `cleared`, broadcast `left`
+- `onClose` — same as `leave`; additionally if map reaches 0, delete `name` from `room.storage`
 
 **`party/classify.ts`** — new
 
@@ -204,13 +205,15 @@ _The live chat surface. Delivers the full working product._
 - Receives `{ type: "init", messages[], participants[] }` → populates local state
 - Incoming `message` → append to local messages list
 - Incoming `joined` / `left` → update participant list display
+- Incoming `cleared` → reset local messages list to `[]`
 - Incoming `error` with reason `"room not found"` → `router.push('/')`
 - For each message, renders the `component` field via `registry.render({ type, props })`
 - Own messages left-aligned, others right-aligned
 - Message input → sends `{ type: "message", body }`
 - `Copy Link` → `navigator.clipboard.writeText(window.location.href)`
+- `Clear Chat` → sends `{ type: "clear" }` → optimistically resets local messages to `[]`
 - `Exit Room` → sends `{ type: "leave" }` → `router.push('/')`
-- Uses `button` (secondary for Copy Link, danger for Exit Room), `input`, `badge` (default/active for participant pills) recipes
+- Uses `button` (secondary for Copy Link, ghost for Clear Chat, danger for Exit Room), `input`, `badge` (default/active for participant pills) recipes
 
 Header:
 

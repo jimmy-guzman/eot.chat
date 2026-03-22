@@ -135,6 +135,7 @@ All WebSocket messages are JSON strings. Each has a `type` discriminant.
 type ClientMessage =
   | { type: "join"; displayName: string }
   | { type: "message"; body: string }
+  | { type: "clear" }
   | { type: "leave" };
 ```
 
@@ -146,6 +147,7 @@ type ServerMessage =
   | { type: "joined"; participant: Participant; participants: Participant[] }
   | { type: "message"; message: Message }
   | { type: "left"; displayName: string; participants: Participant[] }
+  | { type: "cleared" }
   | { type: "error"; reason: string };
 
 type Participant = {
@@ -220,16 +222,26 @@ All clients ← { type: "message", message }
 
 If AI classification fails (timeout, invalid type, malformed JSON) or is rate-limited, PartyKit falls back to `{ type: "TextMessage", props: { body } }`. The message is always delivered — the fallback is silent.
 
+### Clear Chat
+
+```
+Browser → PartyKit WS: { type: "clear" }
+PartyKit → in-memory messages[] = []
+         → room.broadcast({ type: "cleared" })
+All clients ← { type: "cleared" }
+```
+
 ### Exit Room / Disconnect
 
 ```
 Browser → PartyKit WS: { type: "leave" }  (or connection closes)
 PartyKit → remove from in-memory participants map
+         → in-memory messages[] = []
+         → room.broadcast({ type: "cleared" })
          → room.broadcast({ type: "left", displayName, participants[] })
 
 if participants.length === 0:
   PartyKit → room.storage.delete("name")
-           → in-memory messages[] = []
 ```
 
 ---
@@ -239,8 +251,9 @@ if participants.length === 0:
 A room is dissolved when the last participant disconnects. PartyKit handles this in `onClose`:
 
 1. Remove participant from in-memory map
-2. If map reaches zero: delete `name` from `room.storage`, clear in-memory `messages[]`
-3. The room ID can then be reused (storage is empty, so `create` will succeed)
+2. Clear `messages[]` and broadcast `{ type: "cleared" }` to any remaining connections (same as any other leave)
+3. If map reaches zero: delete `name` from `room.storage`
+4. The room ID can then be reused (storage is empty, so `create` will succeed)
 
 ---
 
