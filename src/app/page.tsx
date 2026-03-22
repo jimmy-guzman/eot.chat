@@ -1,4 +1,5 @@
-import { css } from "styled-system/css";
+import { css, cx } from "styled-system/css";
+import { card } from "styled-system/recipes";
 
 import { CreateRoomForm } from "./_components/create-room-form";
 
@@ -15,14 +16,10 @@ export default function HomePage() {
       })}
     >
       <div
-        className={css({
-          backgroundColor: "base-200",
-          borderRadius: "lg",
-          boxShadow: "lg",
-          maxWidth: "card",
-          padding: "8",
-          width: "100%",
-        })}
+        className={cx(
+          card(),
+          css({ maxWidth: "card", padding: "8", width: "100%" }),
+        )}
       >
         <h1
           className={css({

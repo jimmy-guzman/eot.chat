@@ -8,7 +8,6 @@ import {
   useOptimistic,
   useRef,
   useState,
-  useSyncExternalStore,
   useTransition,
 } from "react";
 import { css, cx } from "styled-system/css";
@@ -23,47 +22,26 @@ import type {
 import { DisplayNameForm } from "./display-name-form";
 
 interface Props {
+  displayName: null | string;
   id: string;
   name: string;
 }
-
-const getStoredDisplayName = (id: string) => {
-  try {
-    return sessionStorage.getItem(`room:${id}:displayName`);
-  } catch {
-    return null;
-  }
-};
-
-const setStoredDisplayName = (id: string, displayName: string) => {
-  try {
-    sessionStorage.setItem(`room:${id}:displayName`, displayName);
-  } catch {
-    // intentionally ignored — sessionStorage may be unavailable
-  }
-};
 
 const copyRoomLink = () => {
   void navigator.clipboard.writeText(globalThis.location.href);
 };
 
-const unsubscribe = () => undefined;
-const noop = () => unsubscribe;
-const serverSnapshot = () => null;
-const makeClientSnapshot = (id: string) => () => getStoredDisplayName(id);
-
-export const RoomClient = ({ id, name }: Props) => {
+export const RoomClient = ({
+  displayName: initialDisplayName,
+  id,
+  name,
+}: Props) => {
   const router = useRouter();
   const [, startTransition] = useTransition();
-  const displayName = useSyncExternalStore(
-    noop,
-    makeClientSnapshot(id),
-    serverSnapshot,
-  );
   const [overrideDisplayName, setOverrideDisplayName] = useState<null | string>(
     null,
   );
-  const resolvedDisplayName = overrideDisplayName ?? displayName;
+  const resolvedDisplayName = overrideDisplayName ?? initialDisplayName;
   const [messages, setMessages] = useState<Message[]>([]);
   const [optimisticMessages, addOptimisticMessage] = useOptimistic(
     messages,
@@ -155,13 +133,9 @@ export const RoomClient = ({ id, name }: Props) => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [optimisticMessages]);
 
-  const handleJoin = useCallback(
-    (joinName: string) => {
-      setStoredDisplayName(id, joinName);
-      setOverrideDisplayName(joinName);
-    },
-    [id],
-  );
+  const handleJoin = useCallback((joinName: string) => {
+    setOverrideDisplayName(joinName);
+  }, []);
 
   const sendMessage = () => {
     const body = inputValue.trim();
@@ -206,7 +180,7 @@ export const RoomClient = ({ id, name }: Props) => {
   };
 
   if (!resolvedDisplayName) {
-    return <DisplayNameForm onJoin={handleJoin} />;
+    return <DisplayNameForm onJoin={handleJoin} roomId={id} />;
   }
 
   return (

@@ -263,3 +263,60 @@ Tracks completion of each phase in `docs/plan.md`. Check off tasks as they are d
 - [x] `docs/product/functions.md` — updated overview and message area description; removed AI-specific constraints
 - [x] `docs/product/catalog.md` — archived (preserved for history, no longer active)
 - [x] `docs/plan.md` — added note that Phases 3 and 8 are superseded
+
+---
+
+## Refactor — Panda CSS recipes (label + card)
+
+- [x] **Complete**
+
+### Updated
+
+- [x] `panda.config.ts` — added `label` recipe (base-only, no variants; `marginBottom` kept at callsite)
+- [x] `panda.config.ts` — updated `card` recipe: `borderRadius: "lg"` (was `"md"`), `boxShadow: "lg"` on default variant (was `"sm"`)
+- [x] `src/app/_components/create-room-form.tsx` — applied `label()` recipe; fixed invalid `"ink"` token → `"base-content"` on label color
+- [x] `src/app/r/[id]/_components/display-name-form.tsx` — applied `label()` recipe
+- [x] `src/app/page.tsx` — replaced inline card div with `card()` recipe
+- [x] `src/app/r/[id]/_components/display-name-form.tsx` — replaced inline card div with `card()` recipe
+
+### Verification
+
+- [x] `pnpm typecheck` clean
+- [x] `pnpm lint` clean
+- [x] `pnpm test --run` green
+- [x] `pnpm build` succeeds
+
+---
+
+## Refactor — TanStack Form + next-safe-action + cookie-based displayName
+
+- [x] **Complete**
+
+### Dependencies added
+
+- [x] `next-safe-action`
+- [x] `@tanstack/react-form`
+- [x] `valibot`
+
+### New files
+
+- [x] `src/lib/safe-action.ts` — next-safe-action client instance
+- [x] `src/lib/form.ts` — TanStack Form hook factory + `useFormContext` re-export
+- [x] `src/components/text-field.tsx` — labeled text input (TanStack form-connected)
+- [x] `src/components/submit-button.tsx` — submit button (reads `isSubmitting` from form store)
+- [x] `src/app/_actions/create-room.ts` — Server Action: generate nanoid, POST to PartyKit, set `display-name-{id}` HttpOnly cookie, redirect
+- [x] `src/app/_actions/join-room.ts` — Server Action: set `display-name-{id}` HttpOnly cookie
+
+### Updated files
+
+- [x] `src/app/_components/create-room-form.tsx` — migrated to TanStack Form + `createRoom` Server Action
+- [x] `src/app/r/[id]/_components/display-name-form.tsx` — migrated to TanStack Form + `joinRoom` Server Action
+- [x] `src/app/r/[id]/_components/room-client.tsx` — removed sessionStorage; accepts `displayName: string | null` prop; added `overrideDisplayName` state for within-session joins
+- [x] `src/app/r/[id]/page.tsx` — reads `display-name-{id}` cookie server-side; passes `displayName` prop to `<RoomClient>`
+
+### Verification
+
+- [x] `pnpm typecheck` clean
+- [x] `pnpm lint` clean
+- [x] `pnpm test --run` green (32/32)
+- [x] `pnpm build` succeeds

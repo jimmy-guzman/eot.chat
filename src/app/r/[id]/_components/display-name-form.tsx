@@ -1,28 +1,24 @@
 "use client";
 
-import { useTransition } from "react";
 import { css, cx } from "styled-system/css";
-import { button, input, label } from "styled-system/recipes";
+import { card } from "styled-system/recipes";
+
+import { joinRoom } from "@/app/_actions/join-room";
+import { useAppForm } from "@/lib/form";
 
 interface Props {
   onJoin: (displayName: string) => void;
+  roomId: string;
 }
 
-export const DisplayNameForm = ({ onJoin }: Props) => {
-  const [isPending, startTransition] = useTransition();
-
-  const handleSubmit = (e: React.SyntheticEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const displayName = (
-      e.currentTarget.elements.namedItem("displayName") as HTMLInputElement
-    ).value.trim();
-
-    if (!displayName) return;
-
-    startTransition(() => {
-      onJoin(displayName);
-    });
-  };
+export const DisplayNameForm = ({ onJoin, roomId }: Props) => {
+  const form = useAppForm({
+    defaultValues: { displayName: "" },
+    onSubmit: async ({ value }) => {
+      await joinRoom({ displayName: value.displayName, roomId });
+      onJoin(value.displayName);
+    },
+  });
 
   return (
     <main
@@ -36,14 +32,10 @@ export const DisplayNameForm = ({ onJoin }: Props) => {
       })}
     >
       <div
-        className={css({
-          backgroundColor: "base-200",
-          borderRadius: "lg",
-          boxShadow: "lg",
-          maxWidth: "card",
-          padding: "8",
-          width: "100%",
-        })}
+        className={cx(
+          card(),
+          css({ maxWidth: "card", padding: "8", width: "100%" }),
+        )}
       >
         <h1
           className={css({
@@ -68,34 +60,25 @@ export const DisplayNameForm = ({ onJoin }: Props) => {
           What should we call you?
         </p>
 
-        <form onSubmit={handleSubmit}>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            void form.handleSubmit();
+          }}
+        >
           <div className={css({ marginBottom: "4" })}>
-            <label
-              className={cx(label(), css({ marginBottom: "2" }))}
-              htmlFor="displayName"
-            >
-              Your name
-            </label>
-            <input
-              className={input()}
-              id="displayName"
-              name="displayName"
-              placeholder="e.g. Ada"
-              required
-              type="text"
-            />
+            <form.AppField name="displayName">
+              {(field) => {
+                return (
+                  <field.TextField label="Your name" placeholder="e.g. Ada" />
+                );
+              }}
+            </form.AppField>
           </div>
 
-          <button
-            className={cx(
-              button({ variant: "primary" }),
-              css({ width: "100%" }),
-            )}
-            disabled={isPending}
-            type="submit"
-          >
-            Enter Room
-          </button>
+          <form.AppForm>
+            <form.SubmitButton label="Enter Room" />
+          </form.AppForm>
         </form>
       </div>
     </main>

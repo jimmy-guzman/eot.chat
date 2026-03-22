@@ -1,110 +1,67 @@
 "use client";
 
-import { nanoid } from "nanoid";
-import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
-import { css, cx } from "styled-system/css";
-import { button, input, label } from "styled-system/recipes";
+import { css } from "styled-system/css";
+
+import { createRoom } from "@/app/_actions/create-room";
+import { useAppForm } from "@/lib/form";
 
 export const CreateRoomForm = () => {
-  const router = useRouter();
-  const [isPending, startTransition] = useTransition();
-  const [error, setError] = useState<null | string>(null);
-
-  const handleSubmit = (e: React.SyntheticEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setError(null);
-
-    const form = e.currentTarget;
-    const roomName = (form.elements.namedItem("roomName") as HTMLInputElement)
-      .value;
-    const displayName = (
-      form.elements.namedItem("displayName") as HTMLInputElement
-    ).value;
-
-    startTransition(async () => {
-      const id = nanoid();
-      const host = process.env.NEXT_PUBLIC_PARTYKIT_HOST;
-
-      try {
-        const res = await fetch(`http://${host}/parties/main/${id}`, {
-          body: JSON.stringify({ name: roomName }),
-          headers: {
-            "Content-Type": "application/json",
-            "X-Action": "create",
-          },
-          method: "POST",
-        });
-
-        if (!res.ok) {
-          throw new Error(`Failed to create room (${res.status})`);
-        }
-
-        sessionStorage.setItem(`room:${id}:displayName`, displayName);
-        router.push(`/r/${id}`);
-      } catch (error_) {
-        setError(
-          error_ instanceof Error ? error_.message : "Something went wrong",
-        );
-      }
-    });
-  };
+  const form = useAppForm({
+    defaultValues: { displayName: "", roomName: "" },
+    onSubmit: async ({ value }) => {
+      await createRoom(value);
+    },
+  });
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        void form.handleSubmit();
+      }}
+    >
       <div className={css({ marginBottom: "4" })}>
-        <label
-          className={cx(label(), css({ marginBottom: "2" }))}
-          htmlFor="roomName"
-        >
-          Room name
-        </label>
-        <input
-          className={input()}
-          id="roomName"
-          name="roomName"
-          placeholder="e.g. Friday Standup"
-          required
-          type="text"
-        />
+        <form.AppField name="roomName">
+          {(field) => {
+            return (
+              <field.TextField
+                label="Room name"
+                placeholder="e.g. Friday Standup"
+              />
+            );
+          }}
+        </form.AppField>
       </div>
 
       <div className={css({ marginBottom: "6" })}>
-        <label
-          className={cx(label(), css({ marginBottom: "2" }))}
-          htmlFor="displayName"
-        >
-          Your name
-        </label>
-        <input
-          className={input()}
-          id="displayName"
-          name="displayName"
-          placeholder="e.g. Ada"
-          required
-          type="text"
-        />
+        <form.AppField name="displayName">
+          {(field) => {
+            return <field.TextField label="Your name" placeholder="e.g. Ada" />;
+          }}
+        </form.AppField>
       </div>
 
-      {error ? (
-        <p
-          className={css({
-            color: "red",
-            fontSize: "sm",
-            marginBottom: "4",
-          })}
-        >
-          {error}
-        </p>
-      ) : null}
+      <form.Subscribe selector={(state) => state.errors}>
+        {(errors) => {
+          const msg = errors.join(", ");
 
-      <button
-        className={cx(button({ variant: "primary" }), css({ width: "100%" }))}
-        disabled={isPending}
-        type="submit"
-      >
-        {isPending ? "Creating…" : "Create a Room"}
-      </button>
+          return msg ? (
+            <p
+              className={css({
+                color: "error",
+                fontSize: "sm",
+                marginBottom: "4",
+              })}
+            >
+              {msg}
+            </p>
+          ) : null;
+        }}
+      </form.Subscribe>
+
+      <form.AppForm>
+        <form.SubmitButton label="Create a Room" />
+      </form.AppForm>
     </form>
   );
 };

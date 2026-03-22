@@ -47,7 +47,7 @@ Effect computations run inside standard `Promise` boundaries (`Effect.runPromise
                                         └──────────────────────────────────────┘
 ```
 
-**Next.js on Vercel** — UI shell only. No API routes for room management. No database client. Serves the landing page and room page. All room logic is delegated to PartyKit.
+**Next.js on Vercel** — UI shell only. No API routes for room management. No database client. Serves the landing page and room page. Server Actions (next-safe-action) handle room creation and joining. All room logic is delegated to PartyKit.
 
 **PartyKit hosted** — `workerd` runtime (Cloudflare-based). Owns all room logic: creation, participant tracking, message history, and room dissolution. Uses `onRequest` for HTTP room creation and `onConnect` / `onMessage` for WebSocket real-time messaging.
 
@@ -112,7 +112,7 @@ Creates a new room.
 2. `room.storage.put("name", name)`
 3. Return `200 { id, name }`
 
-The room ID is determined by `:id` in the URL — generated client-side (nanoid) before the request.
+The room ID is determined by `:id` in the URL — generated server-side (nanoid) inside the `createRoom` Server Action.
 
 ---
 
@@ -161,17 +161,20 @@ type Message = {
 ### Create a Room
 
 ```
-Browser → generate nanoid room ID client-side
-Browser → POST /parties/main/<id> (X-Action: create) { name }
+Browser → submit createRoom Server Action (next-safe-action + valibot)
+Server  → generate nanoid room ID
+        → POST /parties/main/<id> (X-Action: create) { name }
         ← { id, name }
-Browser → sessionStorage.set(`room:${id}:displayName`, displayName)
-Browser → router.push(`/r/${id}`)
+Server  → set HttpOnly cookie display-name-{id}
+            (path: /r/{id}, maxAge: 86400, sameSite: lax)
+        → redirect(/r/{id})
 ```
 
 ### Enter the Room Page (creator)
 
 ```
-Browser → check sessionStorage for `room:${id}:displayName` → found
+Server Component → reads display-name-{id} cookie
+                 → passes displayName prop to <RoomClient>
 Browser → PartyKit WebSocket connect to room <id>
         → { type: "join", displayName }
         ← { type: "init", messages[], participants[] }   (full history)
@@ -181,11 +184,14 @@ Browser → PartyKit WebSocket connect to room <id>
 ### Enter the Room Page (joiner via link)
 
 ```
-Browser → check sessionStorage for `room:${id}:displayName` → not found
-Browser → show inline displayName prompt
-User    → enters displayName, submits
-Browser → sessionStorage.set(`room:${id}:displayName`, displayName)
-Browser → PartyKit WebSocket connect to room <id>
+Server Component → reads display-name-{id} cookie → not found
+                 → passes displayName: null to <RoomClient>
+Browser → show inline DisplayNameForm
+User    → enters displayName, submits joinRoom Server Action
+Server  → sets display-name-{id} cookie
+        → returns (no redirect)
+Browser → onJoin callback → sets overrideDisplayName state
+        → PartyKit WebSocket connect to room <id>
         → { type: "join", displayName }
         ← { type: "init", messages[], participants[] }
         ← { type: "joined", participant, participants[] } (broadcast to others)

@@ -1,3 +1,4 @@
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { RoomClient } from "./_components/room-client";
@@ -32,5 +33,8 @@ export default async function RoomPage({ params }: Props) {
     redirect("/");
   }
 
-  return <RoomClient id={id} name={name} />;
+  const cookieStore = await cookies();
+  const displayName = cookieStore.get(`display-name-${id}`)?.value ?? null;
+
+  return <RoomClient displayName={displayName} id={id} name={name} />;
 }

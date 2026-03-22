@@ -113,7 +113,7 @@ export default defineConfig({
         card: {
           base: {
             backgroundColor: "base-200",
-            borderRadius: "md",
+            borderRadius: "lg",
           },
           className: "card",
           defaultVariants: {
@@ -122,7 +122,7 @@ export default defineConfig({
           variants: {
             variant: {
               default: {
-                boxShadow: "sm",
+                boxShadow: "lg",
               },
               flat: {
                 border: "1px solid token(colors.base-300)",

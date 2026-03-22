@@ -176,10 +176,10 @@ _The Create entry point at `/`._
 - Single "Create a Room" form — no tabs, no Join tab
 - Fields: `roomName`, `displayName`
 - On submit:
-  - Generate nanoid room ID client-side
-  - `POST /parties/main/<id>` with `X-Action: create` `{ name }`
-  - Store `displayName` in `sessionStorage` keyed by room ID
-  - `router.push('/r/<id>')`
+  - Calls `createRoom` Server Action (next-safe-action + valibot)
+  - Server generates nanoid room ID, POSTs to PartyKit with `X-Action: create`
+  - Server sets `display-name-{id}` HttpOnly cookie (path: `/r/{id}`, maxAge: 86400, sameSite: lax)
+  - Server redirects to `/r/<id>`
 - Visual identity: warm cream background, M PLUS Rounded 1c, dense layout per `docs/product/visual.md`
 - Uses `button` (primary) and `input` recipes
 
@@ -195,13 +195,14 @@ _The live chat surface. Delivers the full working product._
 
 - Fetches room name from PartyKit via `GET /parties/main/<id>`
 - If room not found (empty storage / 404) → `redirect('/')`
-- Passes `{ id, name }` as props to `<RoomClient>` (rendered from `room-client.tsx`)
+- Reads `display-name-{id}` HttpOnly cookie server-side
+- Passes `{ id, name, displayName }` as props to `<RoomClient>`
 
 **`src/app/r/[id]/room-client.tsx`** — new (`'use client'`)
 
-- On mount: checks `sessionStorage` for `room:${id}:displayName` via `useSyncExternalStore` (server snapshot returns `null`, client snapshot reads storage — prevents hydration mismatch)
-- If not found: renders the inline display name prompt form
-  - On submit: stores `displayName` in sessionStorage, triggers connection
+- Receives `displayName: string | null` prop from the Server Component
+- If `displayName` is null: renders `<DisplayNameForm>`
+  - On submit: calls `joinRoom` Server Action → sets `display-name-{id}` cookie → `onJoin` callback sets `overrideDisplayName` state → triggers WS connect
 - Connects to PartyKit via `partysocket` once `displayName` is known
 - On connect: sends `{ type: "join", displayName }`
 - Receives `{ type: "init", messages[], participants[] }` → populates local state
@@ -392,26 +393,30 @@ Poll vote state (and any future selection-based interactive component) is **loca
 
 ```
 panda.config.ts                       Tokens (colors, spacing, radius, shadow, typography, sizes)
-                                      + recipes (button, input, card, badge)
+                                      + recipes (button, input, card, badge, label)
 
 src/
   app/
     r/
-      [id]/page.tsx                   Room page server component (fetches room name, redirects if not found)
+      [id]/page.tsx                   Room page server component (fetches room name, reads cookie, redirects if not found)
       [id]/_components/
-        room-client.tsx               Room page client component (WS, displayName prompt, message rendering)
-        display-name-form.tsx         Inline display name prompt (uses button + input recipes)
+        room-client.tsx               Room page client component (WS, displayName prop, message rendering)
+        display-name-form.tsx         Inline display name prompt (calls joinRoom Server Action)
+    _actions/
+      create-room.ts                  Server Action: generate ID, POST to PartyKit, set cookie, redirect
+      join-room.ts                    Server Action: set display-name-{id} cookie
     layout.tsx                        Font + metadata
-    page.tsx                          Landing (Create only) + PlantMotif
+    page.tsx                          Landing (Create only)
     _components/
-      create-room-form.tsx            Create room form (uses button + input recipes)
+      create-room-form.tsx            Create room form (calls createRoom Server Action)
     globals.css                       PandaCSS layers (unchanged)
-  catalog/
-    schema.ts                         Zod prop schemas + AI system prompt string (workerd-safe, no React)
-    index.ts                          defineCatalog (13 components)
-    registry.tsx                      defineRegistry (React implementations)
+  lib/
+    safe-action.ts                    next-safe-action client instance
+    form.ts                           TanStack Form hook factory + useFormContext re-export
   components/
     illustrations.tsx                 Inline SVG motifs: PlantMotif, CatMotif
+    text-field.tsx                    Labeled text input (TanStack form-connected)
+    submit-button.tsx                 Submit button (reads isSubmitting from form store)
     text-message.tsx
     link-preview.tsx                  uses card recipe
     repo-card.tsx                     uses card recipe

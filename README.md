@@ -22,6 +22,8 @@ An ephemeral real-time chat room. No accounts, no history. When everyone leaves,
 - **PartyKit** — room state and real-time broadcast
 - **Effect-TS** — typed pipelines for room operations
 - **PandaCSS** — design tokens and recipes
+- **next-safe-action + valibot** — type-safe Server Actions
+- **TanStack Form** — form state management
 - **Next.js + Vercel** — shell and hosting
 
 ## Running locally
