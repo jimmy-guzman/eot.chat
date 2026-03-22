@@ -12,7 +12,7 @@ The AI returns a single JSON object — no spec tree, no children:
 
 ```typescript
 interface Classification {
-  type: string;  // must be a key in this catalog
+  type: string; // must be a key in this catalog
   props: Record<string, unknown>; // must match the component's props schema
 }
 ```
@@ -29,9 +29,9 @@ Plain chat message. The default fallback for any input that does not match a mor
 
 **Props:**
 
-| Prop     | Type     | Required | Description                    |
-| -------- | -------- | -------- | ------------------------------ |
-| `body`   | `string` | Yes      | The message text               |
+| Prop   | Type     | Required | Description      |
+| ------ | -------- | -------- | ---------------- |
+| `body` | `string` | Yes      | The message text |
 
 **Example:**
 
@@ -81,14 +81,14 @@ A GitHub repository card. Used when the message contains a `github.com/<owner>/<
 
 **Props:**
 
-| Prop          | Type     | Required | Description                             |
-| ------------- | -------- | -------- | --------------------------------------- |
-| `url`         | `string` | Yes      | Full GitHub repo URL                    |
-| `owner`       | `string` | Yes      | GitHub username or org                  |
-| `repo`        | `string` | Yes      | Repository name                         |
-| `description` | `string` | No       | Repo description                        |
-| `language`    | `string` | No       | Primary language, e.g. `"TypeScript"`   |
-| `stars`       | `number` | No       | Star count (may be omitted if unknown)  |
+| Prop          | Type     | Required | Description                            |
+| ------------- | -------- | -------- | -------------------------------------- |
+| `url`         | `string` | Yes      | Full GitHub repo URL                   |
+| `owner`       | `string` | Yes      | GitHub username or org                 |
+| `repo`        | `string` | Yes      | Repository name                        |
+| `description` | `string` | No       | Repo description                       |
+| `language`    | `string` | No       | Primary language, e.g. `"TypeScript"`  |
+| `stars`       | `number` | No       | Star count (may be omitted if unknown) |
 
 **Example:**
 
@@ -114,11 +114,11 @@ Syntax-highlighted code. Used when the message body is or contains a fenced code
 
 **Props:**
 
-| Prop       | Type     | Required | Description                                       |
-| ---------- | -------- | -------- | ------------------------------------------------- |
-| `code`     | `string` | Yes      | The raw code content                              |
+| Prop       | Type     | Required | Description                                        |
+| ---------- | -------- | -------- | -------------------------------------------------- |
+| `code`     | `string` | Yes      | The raw code content                               |
 | `language` | `string` | No       | Language hint for syntax highlighting, e.g. `"ts"` |
-| `filename` | `string` | No       | Optional filename label displayed above the block |
+| `filename` | `string` | No       | Optional filename label displayed above the block  |
 
 **Example:**
 
@@ -141,11 +141,11 @@ A data table. Used when the message body contains CSV-like or tabular data.
 
 **Props:**
 
-| Prop      | Type       | Required | Description                                              |
-| --------- | ---------- | -------- | -------------------------------------------------------- |
-| `headers` | `string[]` | Yes      | Column header labels                                     |
-| `rows`    | `string[][]` | Yes    | Row data — each row is an array of cell strings          |
-| `caption` | `string`   | No       | Optional caption displayed below the table               |
+| Prop      | Type         | Required | Description                                     |
+| --------- | ------------ | -------- | ----------------------------------------------- |
+| `headers` | `string[]`   | Yes      | Column header labels                            |
+| `rows`    | `string[][]` | Yes      | Row data — each row is an array of cell strings |
+| `caption` | `string`     | No       | Optional caption displayed below the table      |
 
 **Example:**
 
@@ -171,10 +171,10 @@ An interactive poll. Used when the message body is a question with clear answer 
 
 **Props:**
 
-| Prop       | Type       | Required | Description                                     |
-| ---------- | ---------- | -------- | ----------------------------------------------- |
-| `question` | `string`   | Yes      | The poll question                               |
-| `options`  | `string[]` | Yes      | Answer choices (2–6 items)                      |
+| Prop       | Type       | Required | Description                |
+| ---------- | ---------- | -------- | -------------------------- |
+| `question` | `string`   | Yes      | The poll question          |
+| `options`  | `string[]` | Yes      | Answer choices (2–6 items) |
 
 **Example:**
 
@@ -196,11 +196,11 @@ An image with an optional caption. Used when the message body is an image URL (`
 
 **Props:**
 
-| Prop      | Type     | Required | Description                    |
-| --------- | -------- | -------- | ------------------------------ |
-| `url`     | `string` | Yes      | The image URL                  |
-| `alt`     | `string` | No       | Alt text                       |
-| `caption` | `string` | No       | Caption displayed below image  |
+| Prop      | Type     | Required | Description                   |
+| --------- | -------- | -------- | ----------------------------- |
+| `url`     | `string` | Yes      | The image URL                 |
+| `alt`     | `string` | No       | Alt text                      |
+| `caption` | `string` | No       | Caption displayed below image |
 
 **Example:**
 

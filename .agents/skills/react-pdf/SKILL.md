@@ -56,7 +56,11 @@ const buffer = await renderToBuffer(spec);
 ## Render APIs
 
 ```typescript
-import { renderToBuffer, renderToStream, renderToFile } from "@json-render/react-pdf";
+import {
+  renderToBuffer,
+  renderToStream,
+  renderToFile,
+} from "@json-render/react-pdf";
 
 // In-memory buffer
 const buffer = await renderToBuffer(spec);
@@ -73,21 +77,21 @@ All render functions accept an optional second argument: `{ registry?, state?, h
 
 ## Standard Components
 
-| Component | Description |
-|-----------|-------------|
-| `Document` | Top-level PDF wrapper (must be root) |
-| `Page` | Page with size (A4, LETTER), orientation, margins |
-| `View` | Generic container (padding, margin, background, border) |
-| `Row`, `Column` | Flex layout with gap, align, justify |
-| `Heading` | h1-h4 heading text |
-| `Text` | Body text (fontSize, color, weight, alignment) |
-| `Image` | Image from URL or base64 |
-| `Link` | Hyperlink with text and href |
-| `Table` | Data table with typed columns and rows |
-| `List` | Ordered or unordered list |
-| `Divider` | Horizontal line separator |
-| `Spacer` | Empty vertical space |
-| `PageNumber` | Current page number and total pages |
+| Component       | Description                                             |
+| --------------- | ------------------------------------------------------- |
+| `Document`      | Top-level PDF wrapper (must be root)                    |
+| `Page`          | Page with size (A4, LETTER), orientation, margins       |
+| `View`          | Generic container (padding, margin, background, border) |
+| `Row`, `Column` | Flex layout with gap, align, justify                    |
+| `Heading`       | h1-h4 heading text                                      |
+| `Text`          | Body text (fontSize, color, weight, alignment)          |
+| `Image`         | Image from URL or base64                                |
+| `Link`          | Hyperlink with text and href                            |
+| `Table`         | Data table with typed columns and rows                  |
+| `List`          | Ordered or unordered list                               |
+| `Divider`       | Horizontal line separator                               |
+| `Spacer`        | Empty vertical space                                    |
+| `PageNumber`    | Current page number and total pages                     |
 
 ## Custom Catalog
 
@@ -138,5 +142,8 @@ store.set("/invoice/total", 200);
 Import schema and catalog without pulling in React:
 
 ```typescript
-import { schema, standardComponentDefinitions } from "@json-render/react-pdf/server";
+import {
+  schema,
+  standardComponentDefinitions,
+} from "@json-render/react-pdf/server";
 ```

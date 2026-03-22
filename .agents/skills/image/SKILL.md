@@ -64,33 +64,33 @@ const catalog = defineCatalog(schema, {
 
 ## Standard Components
 
-| Component | Category | Description |
-|-----------|----------|-------------|
-| `Frame` | Root | Root container. Defines width, height, background. Must be root. |
-| `Box` | Layout | Container with padding, margin, border, absolute positioning |
-| `Row` | Layout | Horizontal flex layout |
-| `Column` | Layout | Vertical flex layout |
-| `Heading` | Content | h1-h4 heading text |
-| `Text` | Content | Body text with full styling |
-| `Image` | Content | Image from URL |
-| `Divider` | Decorative | Horizontal line separator |
-| `Spacer` | Decorative | Empty vertical space |
+| Component | Category   | Description                                                      |
+| --------- | ---------- | ---------------------------------------------------------------- |
+| `Frame`   | Root       | Root container. Defines width, height, background. Must be root. |
+| `Box`     | Layout     | Container with padding, margin, border, absolute positioning     |
+| `Row`     | Layout     | Horizontal flex layout                                           |
+| `Column`  | Layout     | Vertical flex layout                                             |
+| `Heading` | Content    | h1-h4 heading text                                               |
+| `Text`    | Content    | Body text with full styling                                      |
+| `Image`   | Content    | Image from URL                                                   |
+| `Divider` | Decorative | Horizontal line separator                                        |
+| `Spacer`  | Decorative | Empty vertical space                                             |
 
 ## Key Exports
 
-| Export | Purpose |
-|--------|---------|
-| `renderToSvg` | Render spec to SVG string |
-| `renderToPng` | Render spec to PNG buffer (requires `@resvg/resvg-js`) |
-| `schema` | Image element schema |
-| `standardComponents` | Pre-built component registry |
-| `standardComponentDefinitions` | Catalog definitions for AI prompts |
+| Export                         | Purpose                                                |
+| ------------------------------ | ------------------------------------------------------ |
+| `renderToSvg`                  | Render spec to SVG string                              |
+| `renderToPng`                  | Render spec to PNG buffer (requires `@resvg/resvg-js`) |
+| `schema`                       | Image element schema                                   |
+| `standardComponents`           | Pre-built component registry                           |
+| `standardComponentDefinitions` | Catalog definitions for AI prompts                     |
 
 ## Sub-path Exports
 
-| Export | Description |
-|--------|-------------|
-| `@json-render/image` | Full package: schema, components, render functions |
-| `@json-render/image/server` | Schema and catalog definitions only (no React/Satori) |
-| `@json-render/image/catalog` | Standard component definitions and types |
-| `@json-render/image/render` | Render functions only |
+| Export                       | Description                                           |
+| ---------------------------- | ----------------------------------------------------- |
+| `@json-render/image`         | Full package: schema, components, render functions    |
+| `@json-render/image/server`  | Schema and catalog definitions only (no React/Satori) |
+| `@json-render/image/catalog` | Standard component definitions and types              |
+| `@json-render/image/render`  | Render functions only                                 |

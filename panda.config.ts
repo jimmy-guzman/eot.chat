@@ -1,8 +1,8 @@
 import { defineConfig } from "@pandacss/dev";
 
 export default defineConfig({
-  // Whether to use css reset
-  preflight: true,
+  // Files to exclude
+  exclude: [],
 
   // Where to look for your css declarations
   include: [
@@ -10,14 +10,14 @@ export default defineConfig({
     "./src/app/**/*.{ts,tsx,js,jsx}",
   ],
 
-  // Files to exclude
-  exclude: [],
+  // The output directory for your css system
+  outdir: "styled-system",
+
+  // Whether to use css reset
+  preflight: true,
 
   // Useful for theme customization
   theme: {
     extend: {},
   },
-
-  // The output directory for your css system
-  outdir: "styled-system",
 });

@@ -28,27 +28,27 @@ Two registers, used deliberately:
 
 Drawn from csms--003, csms--004, csms--008, csms--009: soft pink, mint, warm cream, lavender, chartreuse, powder blue. Intimate, kawaii-adjacent, nostalgic. Use for UI backgrounds, empty states, ambient surfaces.
 
-| Token           | Value     | Source feel                       |
-| --------------- | --------- | --------------------------------- |
-| `bg`            | `#FEFAE8` | Warm cream — csms--008 plaster    |
-| `soft-pink`     | `#F7C5D0` | Anthurium pink — csms--003, 004   |
-| `mint`          | `#B6EDE6` | Teal flood water — csms--003      |
-| `chartreuse`    | `#C9EB8A` | Lime accent — csms--009 borders   |
-| `powder-blue`   | `#A9D9EC` | Sky / kawaii ceiling — csms--008  |
-| `lavender`      | `#D3B8E2` | Purple sofa glow — csms--001      |
+| Token         | Value     | Source feel                      |
+| ------------- | --------- | -------------------------------- |
+| `bg`          | `#FEFAE8` | Warm cream — csms--008 plaster   |
+| `soft-pink`   | `#F7C5D0` | Anthurium pink — csms--003, 004  |
+| `mint`        | `#B6EDE6` | Teal flood water — csms--003     |
+| `chartreuse`  | `#C9EB8A` | Lime accent — csms--009 borders  |
+| `powder-blue` | `#A9D9EC` | Sky / kawaii ceiling — csms--008 |
+| `lavender`    | `#D3B8E2` | Purple sofa glow — csms--001     |
 
 ### Saturated / Bold register
 
 Drawn from csms--001, csms--002, csms--005, csms--006, csms--010: fire red, cobalt blue, sunflower yellow, orange, ink black. Use for emphasis, interactive states, illustration accents, and graphic moments — never as a background fill.
 
-| Token        | Value     | Source feel                             |
-| ------------ | --------- | --------------------------------------- |
-| `red`        | `#E8291C` | Red chairs / gallery frames — csms--005 |
-| `cobalt`     | `#1A3ABF` | Cobalt wall / poster blue — csms--006   |
-| `yellow`     | `#F5E135` | Sunflower chairs, acid poster — csms--006, csms--002 |
-| `orange`     | `#F47B1F` | Orange chairs / warm lamp — csms--005, csms--001 |
-| `sage`       | `#5A8A6A` | Mural sage — csms--010                  |
-| `ink`        | `#1A1A1A` | Line art ink — csms--003, csms--004     |
+| Token    | Value     | Source feel                                          |
+| -------- | --------- | ---------------------------------------------------- |
+| `red`    | `#E8291C` | Red chairs / gallery frames — csms--005              |
+| `cobalt` | `#1A3ABF` | Cobalt wall / poster blue — csms--006                |
+| `yellow` | `#F5E135` | Sunflower chairs, acid poster — csms--006, csms--002 |
+| `orange` | `#F47B1F` | Orange chairs / warm lamp — csms--005, csms--001     |
+| `sage`   | `#5A8A6A` | Mural sage — csms--010                               |
+| `ink`    | `#1A1A1A` | Line art ink — csms--003, csms--004                  |
 
 **Rule:** No desaturated neutrals as a primary choice. Even "neutral" surfaces carry a subtle warm tint. Pure `#FFFFFF` and `#000000` are reserved for line work only.
 
@@ -75,12 +75,12 @@ Drawn from csms--001, csms--002, csms--005, csms--006, csms--010: fire red, coba
 
 Very rounded throughout. Soft edges reinforce the kawaii-adjacent warmth — nothing should feel sharp or corporate.
 
-| Token         | Value    | Usage                                          |
-| ------------- | -------- | ---------------------------------------------- |
-| `radius.sm`   | `8px`    | Subtle rounding — inputs, tags, small chips    |
-| `radius.md`   | `16px`   | Cards, message components, form surfaces       |
-| `radius.lg`   | `24px`   | Panels, modal-like surfaces, large containers  |
-| `radius.full` | `9999px` | Pills, avatar bubbles, round buttons           |
+| Token         | Value    | Usage                                         |
+| ------------- | -------- | --------------------------------------------- |
+| `radius.sm`   | `8px`    | Subtle rounding — inputs, tags, small chips   |
+| `radius.md`   | `16px`   | Cards, message components, form surfaces      |
+| `radius.lg`   | `24px`   | Panels, modal-like surfaces, large containers |
+| `radius.full` | `9999px` | Pills, avatar bubbles, round buttons          |
 
 ---
 
@@ -88,11 +88,11 @@ Very rounded throughout. Soft edges reinforce the kawaii-adjacent warmth — not
 
 Warm-tinted shadows only. No cold gray — even depth should feel like it belongs in the same sunlit room.
 
-| Token       | Value                              | Usage                              |
-| ----------- | ---------------------------------- | ---------------------------------- |
-| `shadow.sm` | `0 1px 4px rgba(26,26,26,0.08)`   | Subtle card lift, resting state    |
-| `shadow.md` | `0 4px 16px rgba(26,26,26,0.12)`  | Floating components, hover state   |
-| `shadow.lg` | `0 8px 32px rgba(26,26,26,0.16)`  | Prominent cards, modal surfaces    |
+| Token       | Value                            | Usage                            |
+| ----------- | -------------------------------- | -------------------------------- |
+| `shadow.sm` | `0 1px 4px rgba(26,26,26,0.08)`  | Subtle card lift, resting state  |
+| `shadow.md` | `0 4px 16px rgba(26,26,26,0.12)` | Floating components, hover state |
+| `shadow.lg` | `0 8px 32px rgba(26,26,26,0.16)` | Prominent cards, modal surfaces  |
 
 ---
 
@@ -102,11 +102,11 @@ Warm-tinted shadows only. No cold gray — even depth should feel like it belong
 
 Avoid geometric sans-serifs that read as tech-neutral (Inter, DM Sans, etc.).
 
-| Role              | Weight  | Usage                                      |
-| ----------------- | ------- | ------------------------------------------ |
-| Display / heading | 800     | Room names, large labels, splash text      |
-| UI / emphasis     | 700     | Buttons, nav, participant names            |
-| Body / ambient    | 400     | Message text, descriptions, form labels    |
+| Role              | Weight | Usage                                   |
+| ----------------- | ------ | --------------------------------------- |
+| Display / heading | 800    | Room names, large labels, splash text   |
+| UI / emphasis     | 700    | Buttons, nav, participant names         |
+| Body / ambient    | 400    | Message text, descriptions, form labels |
 
 Loose tracking on display weights. Comfortable line height (1.6–1.7) on body. Never compressed.
 
@@ -140,18 +140,18 @@ Spaces should feel lived-in to the point of overflow. Empty corners are an oppor
 
 ## Tonal Influences (by reference)
 
-| Asset       | What it contributes                                                          |
-| ----------- | ---------------------------------------------------------------------------- |
+| Asset       | What it contributes                                                                   |
+| ----------- | ------------------------------------------------------------------------------------- |
 | `csms--001` | Warm pastel maximalism (real); purple + yellow + pink; "live life colourfully" energy |
-| `csms--002` | Bold graphic poster art (real studio); primary colours; assertive, art-world  |
-| `csms--003` | Flat ink line art; flooded-room surrealism; limited pastel palette; plant density |
-| `csms--004` | Surreal domestic cartoon; bubblegum pink; bold outlines; weird-cute          |
-| `csms--005` | Dark teal maximalism; tropical mural; saturated, Matisse-adjacent            |
-| `csms--006` | Cobalt + sunflower maximalism; pop art murals; zebra print; graphic boldness  |
-| `csms--007` | Isometric cozy; underwater-above-interior; warm wood tones; @jarsarts        |
-| `csms--008` | Kawaii isometric; pastel ceiling; Sailor Moon; cream/mint/pink/yellow        |
-| `csms--009` | Painterly anime overhead; purple + peach + sage; glass ceiling; @qu.draws    |
-| `csms--010` | Mexican hacienda (real); earthy plaster; sage + terracotta + ochre mural     |
+| `csms--002` | Bold graphic poster art (real studio); primary colours; assertive, art-world          |
+| `csms--003` | Flat ink line art; flooded-room surrealism; limited pastel palette; plant density     |
+| `csms--004` | Surreal domestic cartoon; bubblegum pink; bold outlines; weird-cute                   |
+| `csms--005` | Dark teal maximalism; tropical mural; saturated, Matisse-adjacent                     |
+| `csms--006` | Cobalt + sunflower maximalism; pop art murals; zebra print; graphic boldness          |
+| `csms--007` | Isometric cozy; underwater-above-interior; warm wood tones; @jarsarts                 |
+| `csms--008` | Kawaii isometric; pastel ceiling; Sailor Moon; cream/mint/pink/yellow                 |
+| `csms--009` | Painterly anime overhead; purple + peach + sage; glass ceiling; @qu.draws             |
+| `csms--010` | Mexican hacienda (real); earthy plaster; sage + terracotta + ochre mural              |
 
 ---
 

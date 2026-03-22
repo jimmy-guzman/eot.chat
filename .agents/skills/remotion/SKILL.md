@@ -77,10 +77,25 @@ const catalog = defineCatalog(schema, {
 
 ```json
 {
-  "composition": { "id": "video", "fps": 30, "width": 1920, "height": 1080, "durationInFrames": 300 },
-  "tracks": [{ "id": "main", "name": "Main", "type": "video", "enabled": true }],
+  "composition": {
+    "id": "video",
+    "fps": 30,
+    "width": 1920,
+    "height": 1080,
+    "durationInFrames": 300
+  },
+  "tracks": [
+    { "id": "main", "name": "Main", "type": "video", "enabled": true }
+  ],
   "clips": [
-    { "id": "clip-1", "trackId": "main", "component": "TitleCard", "props": { "title": "Hello" }, "from": 0, "durationInFrames": 90 }
+    {
+      "id": "clip-1",
+      "trackId": "main",
+      "component": "TitleCard",
+      "props": { "title": "Hello" },
+      "from": 0,
+      "durationInFrames": 90
+    }
   ],
   "audio": { "tracks": [] }
 }
@@ -88,24 +103,24 @@ const catalog = defineCatalog(schema, {
 
 ## Standard Components
 
-| Component | Type | Description |
-|-----------|------|-------------|
-| `TitleCard` | scene | Full-screen title with subtitle |
-| `TypingText` | scene | Terminal-style typing animation |
-| `ImageSlide` | image | Full-screen image display |
-| `SplitScreen` | scene | Two-panel comparison |
-| `QuoteCard` | scene | Quote with attribution |
-| `StatCard` | scene | Animated statistic display |
-| `TextOverlay` | overlay | Text overlay |
-| `LowerThird` | overlay | Name/title overlay |
+| Component     | Type    | Description                     |
+| ------------- | ------- | ------------------------------- |
+| `TitleCard`   | scene   | Full-screen title with subtitle |
+| `TypingText`  | scene   | Terminal-style typing animation |
+| `ImageSlide`  | image   | Full-screen image display       |
+| `SplitScreen` | scene   | Two-panel comparison            |
+| `QuoteCard`   | scene   | Quote with attribution          |
+| `StatCard`    | scene   | Animated statistic display      |
+| `TextOverlay` | overlay | Text overlay                    |
+| `LowerThird`  | overlay | Name/title overlay              |
 
 ## Key Exports
 
-| Export | Purpose |
-|--------|---------|
-| `Renderer` | Render spec to Remotion composition |
-| `schema` | Timeline schema |
-| `standardComponents` | Pre-built component registry |
-| `standardComponentDefinitions` | Catalog definitions |
-| `useTransition` | Transition animation hook |
-| `ClipWrapper` | Wrap clips with transitions |
+| Export                         | Purpose                             |
+| ------------------------------ | ----------------------------------- |
+| `Renderer`                     | Render spec to Remotion composition |
+| `schema`                       | Timeline schema                     |
+| `standardComponents`           | Pre-built component registry        |
+| `standardComponentDefinitions` | Catalog definitions                 |
+| `useTransition`                | Transition animation hook           |
+| `ClipWrapper`                  | Wrap clips with transitions         |

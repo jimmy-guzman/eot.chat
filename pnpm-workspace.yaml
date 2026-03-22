@@ -3,7 +3,7 @@ ignoredBuiltDependencies:
   - sharp
   - unrs-resolver
 onlyBuiltDependencies:
-  - '@openrouter/sdk'
+  - "@openrouter/sdk"
   - esbuild
   - workerd
 saveExact: true

@@ -175,8 +175,8 @@ party/
 
 ## Milestone summary
 
-| Milestone      | Phases | Deliverable                                                          |
-| -------------- | ------ | -------------------------------------------------------------------- |
-| Working chat   | 0 → 1  | Create room, share link, real-time messaging, room dissolution       |
-| Component UI   | 2      | 7 message-type components styled and registered                      |
-| Full product   | 3 → 4  | Landing page, room page with AI-classified message rendering         |
+| Milestone    | Phases | Deliverable                                                    |
+| ------------ | ------ | -------------------------------------------------------------- |
+| Working chat | 0 → 1  | Create room, share link, real-time messaging, room dissolution |
+| Component UI | 2      | 7 message-type components styled and registered                |
+| Full product | 3 → 4  | Landing page, room page with AI-classified message rendering   |

@@ -44,11 +44,11 @@ There is no database and no password/token auth. The room ID is the only access 
 
 ### Room (in PartyKit)
 
-| Field       | Where            | Notes                                                                 |
-| ----------- | ---------------- | --------------------------------------------------------------------- |
-| `id`        | PartyKit room ID | URL-safe nanoid — unguessable, serves as the only access control      |
-| `name`      | `room.storage`   | Human-readable name                                                   |
-| `createdAt` | in-memory only   | ISO timestamp                                                         |
+| Field       | Where            | Notes                                                            |
+| ----------- | ---------------- | ---------------------------------------------------------------- |
+| `id`        | PartyKit room ID | URL-safe nanoid — unguessable, serves as the only access control |
+| `name`      | `room.storage`   | Human-readable name                                              |
+| `createdAt` | in-memory only   | ISO timestamp                                                    |
 
 ### Participant (in-memory)
 
