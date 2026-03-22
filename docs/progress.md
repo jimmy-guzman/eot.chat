@@ -27,26 +27,26 @@ Tracks completion of each phase in `docs/plan.md`. Check off tasks as they are d
 
 ## Phase 1 — Design system
 
-- [ ] **Phase complete**
+- [x] **Phase complete**
 
 ### Files
 
-- [ ] `panda.config.ts` — add `surface` color token
-- [ ] `panda.config.ts` — add `tokens.fontSizes` (xs, sm, base, lg, xl, 2xl)
-- [ ] `panda.config.ts` — add `tokens.fontWeights` (regular, bold, extrabold)
-- [ ] `panda.config.ts` — add `tokens.lineHeights` (body, code, tight)
-- [ ] `panda.config.ts` — add `tokens.letterSpacings` (display, tight)
-- [ ] `panda.config.ts` — add `tokens.sizes` (card, bubble)
-- [ ] `panda.config.ts` — add `theme.recipes.button` (primary/secondary/ghost/danger, sm/md)
-- [ ] `panda.config.ts` — add `theme.recipes.input`
-- [ ] `panda.config.ts` — add `theme.recipes.card` (default/flat)
-- [ ] `panda.config.ts` — add `theme.recipes.badge` (default/active)
+- [x] `panda.config.ts` — add `surface` color token
+- [x] `panda.config.ts` — add `tokens.fontSizes` (xs, sm, base, lg, xl, 2xl)
+- [x] `panda.config.ts` — add `tokens.fontWeights` (regular, bold, extrabold)
+- [x] `panda.config.ts` — add `tokens.lineHeights` (body, code, tight)
+- [x] `panda.config.ts` — add `tokens.letterSpacings` (display, tight)
+- [x] `panda.config.ts` — add `tokens.sizes` (card, bubble)
+- [x] `panda.config.ts` — add `theme.recipes.button` (primary/secondary/ghost/danger, sm/md)
+- [x] `panda.config.ts` — add `theme.recipes.input`
+- [x] `panda.config.ts` — add `theme.recipes.card` (default/flat)
+- [x] `panda.config.ts` — add `theme.recipes.badge` (default/active)
 
 ### Verification
 
-- [ ] `pnpm build` succeeds
-- [ ] `pnpm typecheck` clean
-- [ ] Panda `styled-system/` output contains recipe classes
+- [x] `pnpm build` succeeds
+- [x] `pnpm typecheck` clean
+- [x] Panda `styled-system/` output contains recipe classes
 
 ---
 
