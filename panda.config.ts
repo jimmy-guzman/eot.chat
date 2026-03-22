@@ -144,6 +144,15 @@ export default defineConfig({
           },
           className: "input",
         },
+        label: {
+          base: {
+            color: "base-content",
+            display: "block",
+            fontSize: "sm",
+            fontWeight: "bold",
+          },
+          className: "label",
+        },
       },
       semanticTokens: {
         colors: {

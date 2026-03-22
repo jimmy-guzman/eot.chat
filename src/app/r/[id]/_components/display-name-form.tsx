@@ -2,7 +2,7 @@
 
 import { useTransition } from "react";
 import { css, cx } from "styled-system/css";
-import { button, input } from "styled-system/recipes";
+import { button, input, label } from "styled-system/recipes";
 
 interface Props {
   onJoin: (displayName: string) => void;
@@ -71,13 +71,7 @@ export const DisplayNameForm = ({ onJoin }: Props) => {
         <form onSubmit={handleSubmit}>
           <div className={css({ marginBottom: "4" })}>
             <label
-              className={css({
-                color: "base-content",
-                display: "block",
-                fontSize: "sm",
-                fontWeight: "bold",
-                marginBottom: "2",
-              })}
+              className={cx(label(), css({ marginBottom: "2" }))}
               htmlFor="displayName"
             >
               Your name

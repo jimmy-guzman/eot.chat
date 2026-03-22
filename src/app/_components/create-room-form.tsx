@@ -4,7 +4,7 @@ import { nanoid } from "nanoid";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { css, cx } from "styled-system/css";
-import { button, input } from "styled-system/recipes";
+import { button, input, label } from "styled-system/recipes";
 
 export const CreateRoomForm = () => {
   const router = useRouter();
@@ -54,13 +54,7 @@ export const CreateRoomForm = () => {
     <form onSubmit={handleSubmit}>
       <div className={css({ marginBottom: "4" })}>
         <label
-          className={css({
-            color: "ink",
-            display: "block",
-            fontSize: "sm",
-            fontWeight: "bold",
-            marginBottom: "2",
-          })}
+          className={cx(label(), css({ marginBottom: "2" }))}
           htmlFor="roomName"
         >
           Room name
@@ -77,13 +71,7 @@ export const CreateRoomForm = () => {
 
       <div className={css({ marginBottom: "6" })}>
         <label
-          className={css({
-            color: "ink",
-            display: "block",
-            fontSize: "sm",
-            fontWeight: "bold",
-            marginBottom: "2",
-          })}
+          className={cx(label(), css({ marginBottom: "2" }))}
           htmlFor="displayName"
         >
           Your name
