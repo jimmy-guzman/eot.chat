@@ -99,6 +99,16 @@ There is no database and no password/token auth. The room ID is the only access 
 
 PartyKit's `onRequest` handler intercepts HTTP requests to the room URL before the WebSocket upgrade.
 
+All responses include CORS headers (`Access-Control-Allow-Origin: *`) so the Next.js frontend (different port in dev, different domain in production) can call the PartyKit API from the browser. `OPTIONS` preflight requests are handled and return `204`.
+
+### `GET /parties/main/:id`
+
+Returns the room name if the room exists.
+
+**Response:** `200 { id, name }` if the room exists; `404` if not.
+
+Used by the Next.js room page (`/r/[id]/page.tsx`) at render time to fetch the room name for display, and to redirect to `/` if the room does not exist.
+
 ### `POST /parties/main/:id` with header `X-Action: create`
 
 Creates a new room.
