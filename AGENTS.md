@@ -31,6 +31,28 @@ As you work through a phase, check off each item in `docs/progress.md` as it is 
 
 ---
 
+## Pausing
+
+### Between phases
+
+After completing a phase — committing and verifying all checks pass — stop. Post a short summary of what was built, then ask the user explicitly before starting the next phase. Do not begin Phase N+1 without a clear go-ahead.
+
+### On uncertainty
+
+If a decision is not covered by a spec or these rules, do not invent — stop and ask. This includes ambiguous requirements, missing design detail, or any structural choice not addressed in `docs/`.
+
+### On a debug loop
+
+If the same error persists after 3 consecutive fix attempts, stop. Report:
+
+- What the error is
+- What was tried
+- What you think the likely cause is
+
+Do not attempt a fourth fix without user input.
+
+---
+
 ## Commands
 
 ```txt
