@@ -121,26 +121,37 @@ expect(Either.isLeft(result)).toBe(true);
 
 MSW intercepts `fetch` transparently — `Effect.tryPromise(() => fetch(...))` sees the mock with no special setup. Add per-test handlers with `server.use(...)` and they are torn down automatically after each test.
 
-The global setup in `src/testing/vitest.setup.ts` passes `onUnhandledRequest: "error"` to `server.listen()` — any `fetch` without a matching handler throws immediately. This means mocks **must** target the exact endpoint the SDK actually calls. The `@openrouter/sdk` `callModel().getText()` uses the [OpenRouter Responses API](https://openrouter.ai/docs/responses-api) at `POST /v1/responses` with a streaming SSE response, not the legacy `/v1/chat/completions` endpoint.
+The global setup in `src/testing/vitest.setup.ts` passes `onUnhandledRequest: "error"` to `server.listen()` — any `fetch` without a matching handler throws immediately. This means mocks **must** target the exact endpoint the SDK actually calls. The `@openrouter/sdk` `callModel().getText()` uses the [OpenRouter Responses API](https://openrouter.ai/docs/responses-api) at `POST /v1/responses`.
+
+Return a **non-streaming JSON response** (Content-Type: `application/json`). The SDK detects non-streaming responses via the presence of an `output` field and the absence of `toReadableStream`. Required fields include `usage.input_tokens_details` and `usage.output_tokens_details` — omitting them causes `ResponseValidationError`.
 
 ```ts
 import { http, HttpResponse } from "msw";
 import { server } from "@/testing/mocks/server";
 
 const content = '{"type":"TextMessage","props":{"body":"hi"}}';
-const sseBody = `data: ${JSON.stringify({
-  response: { id: "r1", output: [], outputText: content, status: "completed" },
-  type: "response.completed",
-})}\n\n`;
 
 server.use(
-  http.post(
-    "https://openrouter.ai/api/v1/responses",
-    () =>
-      new HttpResponse(sseBody, {
-        headers: { "Content-Type": "text/event-stream" },
-        status: 200,
-      }),
+  http.post("https://openrouter.ai/api/v1/responses", () =>
+    HttpResponse.json({
+      id: "resp_1",
+      object: "response",
+      output: [
+        {
+          id: "msg_1",
+          type: "message",
+          role: "assistant",
+          content: [{ type: "output_text", text: content }],
+        },
+      ],
+      usage: {
+        input_tokens: 10,
+        output_tokens: 5,
+        total_tokens: 15,
+        input_tokens_details: { cached_tokens: 0 },
+        output_tokens_details: { reasoning_tokens: 0 },
+      },
+    }),
   ),
 );
 ```
@@ -175,7 +186,8 @@ What "done" looks like at the end of each phase:
 | Phase                 | Gate                                                                                                                                        |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
 | 0 — Foundation        | `pnpm build` succeeds; `pnpm typecheck` clean; M PLUS Rounded 1c renders in the browser                                                     |
-| 1 — PartyKit server   | `pnpm test --run` green; room creation `POST` returns `200 { id, name }`; WebSocket `join` → `init` round-trip works via `npx partykit dev` |
-| 2 — Component catalog | All component unit tests pass; `pnpm build` succeeds                                                                                        |
-| 3 — Landing page      | Form creates a room and redirects; `pnpm typecheck` clean                                                                                   |
-| 4 — Room page         | `pnpm e2e` green (full happy path passes)                                                                                                   |
+| 1 — Design system     | `pnpm build` succeeds; `pnpm typecheck` clean; Panda `styled-system/` output contains recipe classes                                        |
+| 2 — PartyKit server   | `pnpm test --run` green; room creation `POST` returns `200 { id, name }`; WebSocket `join` → `init` round-trip works via `npx partykit dev` |
+| 3 — Component catalog | All component unit tests pass; `pnpm build` succeeds                                                                                        |
+| 4 — Landing page      | Form creates a room and redirects; `pnpm typecheck` clean                                                                                   |
+| 5 — Room page         | `pnpm e2e` green (full happy path passes)                                                                                                   |

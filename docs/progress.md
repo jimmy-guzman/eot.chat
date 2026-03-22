@@ -25,7 +25,32 @@ Tracks completion of each phase in `docs/plan.md`. Check off tasks as they are d
 
 ---
 
-## Phase 1 — PartyKit server
+## Phase 1 — Design system
+
+- [ ] **Phase complete**
+
+### Files
+
+- [ ] `panda.config.ts` — add `surface` color token
+- [ ] `panda.config.ts` — add `tokens.fontSizes` (xs, sm, base, lg, xl, 2xl)
+- [ ] `panda.config.ts` — add `tokens.fontWeights` (regular, bold, extrabold)
+- [ ] `panda.config.ts` — add `tokens.lineHeights` (body, code, tight)
+- [ ] `panda.config.ts` — add `tokens.letterSpacings` (display, tight)
+- [ ] `panda.config.ts` — add `tokens.sizes` (card, bubble)
+- [ ] `panda.config.ts` — add `theme.recipes.button` (primary/secondary/ghost/danger, sm/md)
+- [ ] `panda.config.ts` — add `theme.recipes.input`
+- [ ] `panda.config.ts` — add `theme.recipes.card` (default/flat)
+- [ ] `panda.config.ts` — add `theme.recipes.badge` (default/active)
+
+### Verification
+
+- [ ] `pnpm build` succeeds
+- [ ] `pnpm typecheck` clean
+- [ ] Panda `styled-system/` output contains recipe classes
+
+---
+
+## Phase 2 — PartyKit server
 
 - [x] **Phase complete**
 
@@ -51,7 +76,7 @@ Tracks completion of each phase in `docs/plan.md`. Check off tasks as they are d
 
 ---
 
-## Phase 2 — Component catalog
+## Phase 3 — Component catalog
 
 - [x] **Phase complete**
 
@@ -68,6 +93,9 @@ Tracks completion of each phase in `docs/plan.md`. Check off tasks as they are d
 - [x] `src/components/poll.tsx`
 - [x] `src/components/image-card.tsx`
 - [x] `src/components/index.ts` — barrel export
+- [ ] Components restyled with recipe primitives and named typography tokens
+- [ ] Accent colors applied: `chartreuse` (CodeBlock), `orange` (Poll), `sage` (Table), `yellow` (ImageCard)
+- [ ] All `"white"` surfaces replaced with `surface` token
 
 ### Tests
 
@@ -87,13 +115,14 @@ Tracks completion of each phase in `docs/plan.md`. Check off tasks as they are d
 
 ---
 
-## Phase 3 — Landing page
+## Phase 4 — Landing page
 
 - [x] **Phase complete**
 
 ### Files
 
 - [x] `src/app/page.tsx` — rewrite (Create a Room form, nanoid ID, POST to PartyKit, sessionStorage, redirect)
+- [ ] `src/app/_components/create-room-form.tsx` — restyled with `button` and `input` recipes
 
 ### Verification
 
@@ -102,15 +131,17 @@ Tracks completion of each phase in `docs/plan.md`. Check off tasks as they are d
 
 ---
 
-## Phase 4 — Room page
+## Phase 5 — Room page
 
 - [x] **Phase complete**
 
 ### Files
 
 - [x] `src/app/r/[id]/page.tsx` — create (Server Component: fetch room name, redirect if not found)
-- [x] `src/app/r/[id]/_components/room-client.tsx` — create (`'use client'`: sessionStorage check, displayName prompt, PartySocket, message rendering)
+- [x] `src/app/r/[id]/_components/room-client.tsx` — create (`'use client'`: `useSyncExternalStore` for sessionStorage, displayName prompt, PartySocket, message rendering)
 - [x] `src/app/r/[id]/_components/display-name-form.tsx` — create (inline display name prompt)
+- [ ] `room-client.tsx` — restyled with `button`, `input`, `badge` recipes and named tokens
+- [ ] `display-name-form.tsx` — restyled with `button` and `input` recipes
 
 ### Tests
 

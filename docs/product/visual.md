@@ -28,14 +28,17 @@ Two registers, used deliberately:
 
 Drawn from csms--003, csms--004, csms--008, csms--009: soft pink, mint, warm cream, lavender, chartreuse, powder blue. Intimate, kawaii-adjacent, nostalgic. Use for UI backgrounds, empty states, ambient surfaces.
 
-| Token         | Value     | Source feel                      |
-| ------------- | --------- | -------------------------------- |
-| `bg`          | `#FEFAE8` | Warm cream — csms--008 plaster   |
-| `soft-pink`   | `#F7C5D0` | Anthurium pink — csms--003, 004  |
-| `mint`        | `#B6EDE6` | Teal flood water — csms--003     |
-| `chartreuse`  | `#C9EB8A` | Lime accent — csms--009 borders  |
-| `powder-blue` | `#A9D9EC` | Sky / kawaii ceiling — csms--008 |
-| `lavender`    | `#D3B8E2` | Purple sofa glow — csms--001     |
+| Token         | Value     | Source feel                                 |
+| ------------- | --------- | ------------------------------------------- |
+| `bg`          | `#FEFAE8` | Warm cream — csms--008 plaster              |
+| `surface`     | `#FFFEF7` | Warm off-white — card and panel backgrounds |
+| `soft-pink`   | `#F7C5D0` | Anthurium pink — csms--003, 004             |
+| `mint`        | `#B6EDE6` | Teal flood water — csms--003                |
+| `chartreuse`  | `#C9EB8A` | Lime accent — csms--009 borders             |
+| `powder-blue` | `#A9D9EC` | Sky / kawaii ceiling — csms--008            |
+| `lavender`    | `#D3B8E2` | Purple sofa glow — csms--001                |
+
+Use `surface` for all card and panel backgrounds. Reserve pure `#FFFFFF` for borders and line work only.
 
 ### Saturated / Bold register
 
@@ -51,6 +54,17 @@ Drawn from csms--001, csms--002, csms--005, csms--006, csms--010: fire red, coba
 | `ink`    | `#1A1A1A` | Line art ink — csms--003, csms--004                  |
 
 **Rule:** No desaturated neutrals as a primary choice. Even "neutral" surfaces carry a subtle warm tint. Pure `#FFFFFF` and `#000000` are reserved for line work only.
+
+### Accent color assignments
+
+Bold-register accent colors are assigned to specific catalog components for visual identity:
+
+| Color        | Component   | Usage                     |
+| ------------ | ----------- | ------------------------- |
+| `chartreuse` | `CodeBlock` | Language label background |
+| `orange`     | `Poll`      | Vote count / progress bar |
+| `sage`       | `Table`     | Header row background     |
+| `yellow`     | `ImageCard` | Caption label background  |
 
 ---
 
@@ -109,6 +123,38 @@ Avoid geometric sans-serifs that read as tech-neutral (Inter, DM Sans, etc.).
 | Body / ambient    | 400    | Message text, descriptions, form labels |
 
 Loose tracking on display weights. Comfortable line height (1.6–1.7) on body. Never compressed.
+
+### Token scale
+
+| Token                   | Value    | Usage                                     |
+| ----------------------- | -------- | ----------------------------------------- |
+| `fontSize.xs`           | 0.75rem  | Labels, captions, domain names            |
+| `fontSize.sm`           | 0.875rem | Secondary text, descriptions, form labels |
+| `fontSize.base`         | 1rem     | Body text, inputs, default UI             |
+| `fontSize.lg`           | 1.25rem  | Sub-headings, card titles                 |
+| `fontSize.xl`           | 1.5rem   | Section headings                          |
+| `fontSize.2xl`          | 2rem     | Display / splash text                     |
+| `fontWeight.regular`    | 400      | Body / ambient text                       |
+| `fontWeight.bold`       | 700      | UI / emphasis                             |
+| `fontWeight.extrabold`  | 800      | Display / headings                        |
+| `lineHeight.body`       | 1.65     | Message text, descriptions                |
+| `lineHeight.code`       | 1.6      | Code blocks                               |
+| `lineHeight.tight`      | 1.2      | Headings, labels                          |
+| `letterSpacing.display` | 0.01em   | Display weights — open tracking           |
+| `letterSpacing.tight`   | -0.01em  | Compact labels where needed               |
+
+---
+
+## Recipes
+
+Four shared primitives. All catalog components and page UI are built from these — nothing is hand-rolled.
+
+| Recipe   | Variants                                   | Key tokens used                       |
+| -------- | ------------------------------------------ | ------------------------------------- |
+| `button` | primary, secondary, ghost, danger / sm, md | cobalt, mint, soft-pink, red, surface |
+| `input`  | (single)                                   | bg, soft-pink border, cobalt focus    |
+| `card`   | default, flat                              | surface, md radius, sm/none shadow    |
+| `badge`  | default, active                            | lavender / cobalt + surface           |
 
 ---
 
