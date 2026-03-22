@@ -462,3 +462,47 @@ describe("Server.onMessage — invalid input", () => {
     expect(room.broadcast).not.toHaveBeenCalled();
   });
 });
+
+describe("Server.onMessage — typing", () => {
+  it("should broadcast typing to all connections except the sender", async () => {
+    const storage = makeStorage({ name: "My Room" });
+    const room = makeRoom({ storage });
+    const s = new Server(room);
+    const conn = makeConn("conn-1");
+
+    await s.onMessage(
+      JSON.stringify({ displayName: "Alice", type: "join" }),
+      conn,
+    );
+
+    const broadcastMock = room.broadcast as MockFn;
+
+    broadcastMock.mockClear();
+
+    await s.onMessage(JSON.stringify({ type: "typing" }), conn);
+
+    expect(broadcastMock).toHaveBeenCalledOnce();
+
+    const [payload, excluded] = broadcastMock.mock.calls[0] as [
+      string,
+      string[],
+    ];
+    const broadcasted = JSON.parse(payload) as unknown;
+
+    expect(broadcasted).toMatchObject({ displayName: "Alice", type: "typing" });
+    expect(excluded).toStrictEqual(["conn-1"]);
+  });
+
+  it("should not broadcast typing if the sender has not joined", async () => {
+    const storage = makeStorage({ name: "My Room" });
+    const room = makeRoom({ storage });
+    const s = new Server(room);
+    const conn = makeConn("conn-1");
+
+    const broadcastMock = room.broadcast as MockFn;
+
+    await s.onMessage(JSON.stringify({ type: "typing" }), conn);
+
+    expect(broadcastMock).not.toHaveBeenCalled();
+  });
+});

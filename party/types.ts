@@ -17,6 +17,7 @@ export const ClientMessageSchema = Schema.Union(
   Schema.Struct({ displayName: Schema.String, type: Schema.Literal("join") }),
   Schema.Struct({ type: Schema.Literal("leave") }),
   Schema.Struct({ body: Schema.String, type: Schema.Literal("message") }),
+  Schema.Struct({ type: Schema.Literal("typing") }),
 );
 
 export const ServerMessageSchema = Schema.Union(
@@ -43,6 +44,10 @@ export const ServerMessageSchema = Schema.Union(
   Schema.Struct({
     reason: Schema.String,
     type: Schema.Literal("error"),
+  }),
+  Schema.Struct({
+    displayName: Schema.String,
+    type: Schema.Literal("typing"),
   }),
 );
 

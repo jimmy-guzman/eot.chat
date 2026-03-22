@@ -18,7 +18,9 @@
     "typecheck": "tsc"
   },
   "dependencies": {
+    "@tanstack/pacer": "0.20.0",
     "@tanstack/react-form": "1.28.5",
+    "@tanstack/react-pacer": "0.21.0",
     "effect": "3.21.0",
     "nanoid": "5.1.7",
     "next": "16.2.1",

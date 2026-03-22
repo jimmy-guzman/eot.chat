@@ -288,6 +288,32 @@ Tracks completion of each phase in `docs/plan.md`. Check off tasks as they are d
 
 ---
 
+## Feature — Typing indicator
+
+- [x] **Complete**
+
+### Dependencies added
+
+- [x] `@tanstack/pacer`
+- [x] `@tanstack/react-pacer`
+
+### Files
+
+- [x] `party/types.ts` — added `{ type: "typing" }` to `ClientMessageSchema`; added `{ displayName, type: "typing" }` to `ServerMessageSchema`
+- [x] `party/index.ts` — added `typing` handler: looks up sender's `displayName`, broadcasts to all except sender
+- [x] `party/types.spec.ts` — added 2 decode tests for typing messages
+- [x] `party/index.spec.ts` — added 2 tests: broadcasts to others; no-op if sender hasn't joined
+- [x] `src/app/r/[id]/_components/room-client.tsx` — throttled outbound `typing` sends via `useThrottledCallback` (1s); per-name auto-clear timer (3s); clears indicator immediately on incoming `message`; renders `"<name> is typing..."` / `"<a>, <b> and <c> are typing..."` between participant strip and message area
+
+### Verification
+
+- [x] `pnpm typecheck` clean
+- [x] `pnpm lint` clean
+- [x] `pnpm test --run` green (36/36)
+- [x] `pnpm build` succeeds
+
+---
+
 ## Refactor — TanStack Form + next-safe-action + cookie-based displayName
 
 - [x] **Complete**

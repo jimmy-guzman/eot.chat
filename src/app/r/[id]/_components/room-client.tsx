@@ -1,5 +1,6 @@
 "use client";
 
+import { useThrottler } from "@tanstack/react-pacer";
 import { useRouter } from "next/navigation";
 import PartySocketClient from "partysocket";
 import {
@@ -20,6 +21,9 @@ import type {
 } from "../../../../../party/types";
 
 import { DisplayNameForm } from "./display-name-form";
+
+const TYPING_CLEAR_DELAY_MS = 3000;
+const TYPING_THROTTLE_MS = 1000;
 
 interface Props {
   displayName: null | string;
@@ -51,11 +55,14 @@ export const RoomClient = ({
   const [inputValue, setInputValue] = useState("");
   const socketRef = useRef<InstanceType<typeof PartySocketClient> | null>(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
+  const [typingNames, setTypingNames] = useState<string[]>([]);
 
   useEffect(() => {
     if (!resolvedDisplayName) {
       return undefined;
     }
+
+    const typingTimers = new Map<string, ReturnType<typeof setTimeout>>();
 
     const socket = new PartySocketClient({
       host: process.env.NEXT_PUBLIC_PARTYKIT_HOST ?? "localhost:1999",
@@ -108,7 +115,42 @@ export const RoomClient = ({
           break;
         }
         case "message": {
+          const { authorDisplayName } = msg.message;
+          const existing = typingTimers.get(authorDisplayName);
+
+          if (existing !== undefined) {
+            clearTimeout(existing);
+            typingTimers.delete(authorDisplayName);
+          }
+
+          setTypingNames((prev) => prev.filter((n) => n !== authorDisplayName));
           setMessages((prev) => [...prev, msg.message]);
+
+          break;
+        }
+        case "typing": {
+          const { displayName } = msg;
+
+          setTypingNames((prev) => {
+            if (prev.includes(displayName)) {
+              return prev;
+            }
+
+            return [...prev, displayName];
+          });
+
+          const existing = typingTimers.get(displayName);
+
+          if (existing !== undefined) {
+            clearTimeout(existing);
+          }
+
+          const timer = setTimeout(() => {
+            setTypingNames((prev) => prev.filter((n) => n !== displayName));
+            typingTimers.delete(displayName);
+          }, TYPING_CLEAR_DELAY_MS);
+
+          typingTimers.set(displayName, timer);
 
           break;
         }
@@ -126,6 +168,13 @@ export const RoomClient = ({
       socket.removeEventListener("message", onMessage);
       socket.close();
       socketRef.current = null;
+
+      for (const timer of typingTimers.values()) {
+        clearTimeout(timer);
+      }
+
+      typingTimers.clear();
+      setTypingNames([]);
     };
   }, [resolvedDisplayName, id, router]);
 
@@ -136,6 +185,13 @@ export const RoomClient = ({
   const handleJoin = useCallback((joinName: string) => {
     setOverrideDisplayName(joinName);
   }, []);
+
+  const sendTypingThrottler = useThrottler(
+    () => {
+      socketRef.current?.send(JSON.stringify({ type: "typing" }));
+    },
+    { wait: TYPING_THROTTLE_MS },
+  );
 
   const sendMessage = () => {
     const body = inputValue.trim();
@@ -153,6 +209,7 @@ export const RoomClient = ({
       addOptimisticMessage(optimistic);
     });
     socketRef.current.send(JSON.stringify({ body, type: "message" }));
+    sendTypingThrottler.cancel();
     setInputValue("");
   };
 
@@ -286,6 +343,25 @@ export const RoomClient = ({
         </ul>
       ) : null}
 
+      {/* Typing indicator */}
+      {typingNames.length > 0 ? (
+        <p
+          className={css({
+            backgroundColor: "base-200",
+            borderBottom: "1px solid token(colors.base-300)",
+            color: "base-content",
+            fontSize: "xs",
+            opacity: 0.6,
+            paddingX: "5",
+            paddingY: "1",
+          })}
+        >
+          {typingNames.length === 1
+            ? `${typingNames[0]} is typing...`
+            : `${typingNames.slice(0, -1).join(", ")} and ${typingNames.at(-1)} are typing...`}
+        </p>
+      ) : null}
+
       {/* Messages */}
       <div
         className={css({
@@ -395,6 +471,10 @@ export const RoomClient = ({
           )}
           onChange={(e) => {
             setInputValue(e.target.value);
+
+            if (e.target.value.trim()) {
+              sendTypingThrottler.maybeExecute();
+            }
           }}
           onKeyDown={handleInputKeyDown}
           placeholder="Send anything..."

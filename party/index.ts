@@ -140,6 +140,27 @@ export default class Server implements Party.Server {
           });
         });
       }),
+      Match.when({ type: "typing" }, () => {
+        return Effect.gen(this, function* () {
+          const participant = this.participants.get(sender.id);
+
+          if (!participant) {
+            return;
+          }
+
+          yield* Effect.logDebug("typing: broadcast", {
+            displayName: participant.displayName,
+          });
+
+          this.room.broadcast(
+            JSON.stringify({
+              displayName: participant.displayName,
+              type: "typing",
+            }),
+            [sender.id],
+          );
+        });
+      }),
       Match.exhaustive,
     );
 

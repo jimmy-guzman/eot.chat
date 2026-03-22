@@ -58,6 +58,14 @@ describe("ClientMessageSchema", () => {
 
     expect(Either.isLeft(result)).toBe(true);
   });
+
+  it("should decode a valid typing message", () => {
+    const result = Schema.decodeUnknownSync(ClientMessageSchema)({
+      type: "typing",
+    });
+
+    expect(result).toStrictEqual({ type: "typing" });
+  });
 });
 
 describe("ServerMessageSchema", () => {
@@ -90,6 +98,15 @@ describe("ServerMessageSchema", () => {
     });
 
     expect(Either.isLeft(result)).toBe(true);
+  });
+
+  it("should decode a valid typing server message", () => {
+    const result = Schema.decodeUnknownSync(ServerMessageSchema)({
+      displayName: "Alice",
+      type: "typing",
+    });
+
+    expect(result).toStrictEqual({ displayName: "Alice", type: "typing" });
   });
 });
 
