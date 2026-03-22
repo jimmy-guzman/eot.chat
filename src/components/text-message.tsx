@@ -10,8 +10,9 @@ export const TextMessage = ({ body }: Props) => {
       className={css({
         color: "ink",
         fontFamily: "body",
-        fontSize: "1rem",
-        lineHeight: "1.65",
+        fontSize: "base",
+        fontWeight: "regular",
+        lineHeight: "body",
       })}
     >
       {body}

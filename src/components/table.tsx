@@ -17,13 +17,14 @@ export const Table = ({ caption, headers, rows }: Props) => {
     >
       <table className={css({ borderCollapse: "collapse", width: "100%" })}>
         <thead>
-          <tr>
+          <tr className={css({ backgroundColor: "sage" })}>
             {headers.map((header) => {
               return (
                 <th
                   className={css({
-                    fontSize: "0.75rem",
-                    fontWeight: "700",
+                    color: "surface",
+                    fontSize: "xs",
+                    fontWeight: "bold",
                     padding: "3",
                     textAlign: "left",
                   })}
@@ -43,7 +44,7 @@ export const Table = ({ caption, headers, rows }: Props) => {
                   return (
                     <td
                       className={css({
-                        fontSize: "0.875rem",
+                        fontSize: "sm",
                         padding: "3",
                       })}
                       key={cell}
@@ -60,7 +61,7 @@ export const Table = ({ caption, headers, rows }: Props) => {
       {caption ? (
         <p
           className={css({
-            fontSize: "0.75rem",
+            fontSize: "xs",
             opacity: 0.7,
             padding: "2",
             textAlign: "center",

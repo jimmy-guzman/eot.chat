@@ -16,10 +16,10 @@ export default function HomePage() {
     >
       <div
         className={css({
-          backgroundColor: "white",
+          backgroundColor: "surface",
           borderRadius: "lg",
           boxShadow: "lg",
-          maxWidth: "400px",
+          maxWidth: "card",
           padding: "8",
           width: "100%",
         })}
@@ -27,9 +27,9 @@ export default function HomePage() {
         <h1
           className={css({
             color: "ink",
-            fontSize: "2rem",
-            fontWeight: "800",
-            letterSpacing: "-0.02em",
+            fontSize: "2xl",
+            fontWeight: "extrabold",
+            letterSpacing: "display",
             marginBottom: "2",
           })}
         >
@@ -38,7 +38,7 @@ export default function HomePage() {
         <p
           className={css({
             color: "ink",
-            fontSize: "0.9rem",
+            fontSize: "sm",
             marginBottom: "6",
             opacity: 0.6,
           })}

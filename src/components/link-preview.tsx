@@ -1,4 +1,5 @@
-import { css } from "styled-system/css";
+import { css, cx  } from "styled-system/css";
+import { card } from "styled-system/recipes";
 
 interface Props {
   description?: string;
@@ -10,15 +11,16 @@ interface Props {
 export const LinkPreview = ({ description, domain, title, url }: Props) => {
   return (
     <a
-      className={css({
-        _hover: { boxShadow: "md" },
-        borderRadius: "md",
-        boxShadow: "sm",
-        color: "ink",
-        display: "block",
-        padding: "4",
-        textDecoration: "none",
-      })}
+      className={cx(
+        card({ variant: "default" }),
+        css({
+          _hover: { boxShadow: "md" },
+          color: "ink",
+          display: "block",
+          padding: "4",
+          textDecoration: "none",
+        }),
+      )}
       href={url}
       rel="noopener noreferrer"
       target="_blank"
@@ -26,8 +28,8 @@ export const LinkPreview = ({ description, domain, title, url }: Props) => {
       <p
         className={css({
           color: "cobalt",
-          fontSize: "0.75rem",
-          fontWeight: "700",
+          fontSize: "xs",
+          fontWeight: "bold",
           marginBottom: "1",
         })}
       >
@@ -35,17 +37,15 @@ export const LinkPreview = ({ description, domain, title, url }: Props) => {
       </p>
       <p
         className={css({
-          fontSize: "1rem",
-          fontWeight: "700",
+          fontSize: "base",
+          fontWeight: "bold",
           marginBottom: "1",
         })}
       >
         {title}
       </p>
       {description ? (
-        <p
-          className={css({ color: "ink", fontSize: "0.875rem", opacity: 0.8 })}
-        >
+        <p className={css({ color: "ink", fontSize: "sm", opacity: 0.8 })}>
           {description}
         </p>
       ) : null}

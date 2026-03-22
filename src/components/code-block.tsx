@@ -17,9 +17,10 @@ export const CodeBlock = ({ code, filename, language }: Props) => {
       {(filename ?? language) ? (
         <div
           className={css({
+            backgroundColor: "chartreuse",
             display: "flex",
-            fontSize: "0.75rem",
-            fontWeight: "700",
+            fontSize: "xs",
+            fontWeight: "bold",
             gap: "2",
             padding: "2",
           })}
@@ -32,8 +33,8 @@ export const CodeBlock = ({ code, filename, language }: Props) => {
       ) : null}
       <pre
         className={css({
-          fontSize: "0.875rem",
-          lineHeight: "1.6",
+          fontSize: "sm",
+          lineHeight: "code",
           overflowX: "auto",
           padding: "4",
           whiteSpace: "pre",
