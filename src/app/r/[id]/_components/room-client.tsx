@@ -14,8 +14,6 @@ import {
 import { css, cx } from "styled-system/css";
 import { badge, button, input } from "styled-system/recipes";
 
-import { PlantMotif } from "@/components/illustrations";
-
 import type {
   Message,
   Participant,
@@ -214,7 +212,7 @@ export const RoomClient = ({ id, name }: Props) => {
   return (
     <div
       className={css({
-        backgroundColor: "bg",
+        backgroundColor: "base-100",
         display: "flex",
         flexDirection: "column",
         height: "100vh",
@@ -223,8 +221,8 @@ export const RoomClient = ({ id, name }: Props) => {
       {/* Header */}
       <header
         className={css({
-          backgroundColor: "surface",
-          borderBottom: "1px solid token(colors.soft-pink)",
+          backgroundColor: "base-200",
+          borderBottom: "1px solid token(colors.base-300)",
           padding: "4 5",
         })}
       >
@@ -238,7 +236,7 @@ export const RoomClient = ({ id, name }: Props) => {
         >
           <h1
             className={css({
-              color: "cobalt",
+              color: "accent",
               fontSize: "lg",
               fontWeight: "extrabold",
               letterSpacing: "display",
@@ -272,7 +270,7 @@ export const RoomClient = ({ id, name }: Props) => {
         </div>
         <p
           className={css({
-            color: "ink",
+            color: "base-content",
             fontSize: "xs",
             marginTop: "1",
             opacity: 0.5,
@@ -287,8 +285,8 @@ export const RoomClient = ({ id, name }: Props) => {
         <ul
           aria-label="Participants"
           className={css({
-            backgroundColor: "surface",
-            borderBottom: "1px solid token(colors.soft-pink)",
+            backgroundColor: "base-200",
+            borderBottom: "1px solid token(colors.base-300)",
             display: "flex",
             gap: "2",
             listStyle: "none",
@@ -333,10 +331,9 @@ export const RoomClient = ({ id, name }: Props) => {
               paddingY: "10",
             })}
           >
-            <PlantMotif />
             <p
               className={css({
-                color: "ink",
+                color: "base-content",
                 fontSize: "sm",
                 opacity: 0.5,
                 textAlign: "center",
@@ -369,7 +366,7 @@ export const RoomClient = ({ id, name }: Props) => {
               >
                 <span
                   className={css({
-                    color: "ink",
+                    color: "base-content",
                     fontSize: "xs",
                     fontWeight: "bold",
                     opacity: 0.5,
@@ -380,7 +377,7 @@ export const RoomClient = ({ id, name }: Props) => {
                 </span>
                 <div
                   className={css({
-                    backgroundColor: isOwn ? "powder-blue" : "surface",
+                    backgroundColor: isOwn ? "base-300" : "base-200",
                     borderRadius: "md",
                     boxShadow: "sm",
                     maxWidth: "bubble",
@@ -390,7 +387,7 @@ export const RoomClient = ({ id, name }: Props) => {
                 >
                   <p
                     className={css({
-                      color: "ink",
+                      color: "base-content",
                       fontSize: "base",
                       lineHeight: "body",
                       margin: "0",
@@ -409,8 +406,8 @@ export const RoomClient = ({ id, name }: Props) => {
       {/* Input */}
       <form
         className={css({
-          backgroundColor: "surface",
-          borderTop: "1px solid token(colors.soft-pink)",
+          backgroundColor: "base-200",
+          borderTop: "1px solid token(colors.base-300)",
           display: "flex",
           gap: "3",
           padding: "4 5",
