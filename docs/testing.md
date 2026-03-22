@@ -42,20 +42,20 @@ Tests are co-located with the files they cover. The MSW server is started global
 
 ```
 party/
-  classify.test.ts
-  types.test.ts
-  tokenBucket.test.ts
+  classify.spec.ts
+  types.spec.ts
+  token-bucket.spec.ts
 src/
   catalog/
-    schema.test.ts
+    schema.spec.ts
   components/
-    TextMessage.test.tsx
-    LinkPreview.test.tsx
-    RepoCard.test.tsx
-    CodeBlock.test.tsx
-    Table.test.tsx
-    Poll.test.tsx
-    ImageCard.test.tsx
+    text-message.spec.tsx
+    link-preview.spec.tsx
+    repo-card.spec.tsx
+    code-block.spec.tsx
+    table.spec.tsx
+    poll.spec.tsx
+    image-card.spec.tsx
 ```
 
 ### Coverage per file
@@ -64,7 +64,7 @@ src/
 | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `party/classify.ts`     | Valid OpenRouter response → correct `Classification`; 8s timeout → `TextMessage` fallback; malformed JSON response → `TextMessage` fallback; unknown `type` in response → `TextMessage` fallback |
 | `party/types.ts`        | Valid `ClientMessage` shapes decode successfully; invalid shapes (missing fields, wrong `type`) return `Left`; valid `ServerMessage` shapes decode successfully                                  |
-| `party/tokenBucket.ts`  | `consume()` returns `true` within burst capacity; `consume()` returns `false` when empty; tokens refill correctly after elapsed time                                                             |
+| `party/token-bucket.ts` | `consume()` returns `true` within burst capacity; `consume()` returns `false` when empty; tokens refill correctly after elapsed time                                                             |
 | `src/catalog/schema.ts` | Each Zod schema accepts valid props; each schema rejects missing required fields with a `ZodError`                                                                                               |
 | `src/components/*.tsx`  | Each component renders without throwing given valid props                                                                                                                                        |
 

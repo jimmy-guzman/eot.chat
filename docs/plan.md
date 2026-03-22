@@ -16,7 +16,7 @@ Effect is used as a **pipeline assembler on the server only** — never in the b
 | `src/catalog/schema.ts` | Zod only — required by `@json-render/react`'s `defineCatalog` API                                                                              |
 | `src/app/` (React)      | No Effect — plain TypeScript and React hooks                                                                                                   |
 
-Rate limiting uses a plain `TokenBucket` class (`party/tokenBucket.ts`) rather than Effect's `RateLimiter`. Effect's `RateLimiter` depends on fiber scheduling that is unsafe in the workerd runtime.
+Rate limiting uses a plain `TokenBucket` class (`party/token-bucket.ts`) rather than Effect's `RateLimiter`. Effect's `RateLimiter` depends on fiber scheduling that is unsafe in the workerd runtime.
 
 ---
 
@@ -51,7 +51,7 @@ _Replace the boilerplate with the real typed message protocol. Delivers room cre
 - Effect `Schema.Struct` / `Schema.Union` / `Schema.Literal` definitions for `ClientMessage` and `ServerMessage`
 - `Participant` and `Message` types inferred from schemas via `Schema.Type`
 
-**`party/tokenBucket.ts`** — new
+**`party/token-bucket.ts`** — new
 
 - Plain `TokenBucket` class (no Effect); workerd-safe
 - Capacity 3, refill 1 per 3s per connection
@@ -76,7 +76,7 @@ _Replace the boilerplate with the real typed message protocol. Delivers room cre
 - Returns `Effect.Effect<Classification, never>` (error channel fully collapsed by `catchAll`)
 - Falls back to `{ type: "TextMessage", props: { body } }` on any failure (timeout, invalid JSON, unknown type)
 
-**Testing:** Write `party/classify.test.ts`, `party/types.test.ts`, and `party/tokenBucket.test.ts`. See `docs/testing.md` for coverage requirements and Effect test patterns.
+**Testing:** Write `party/classify.spec.ts`, `party/types.spec.ts`, and `party/token-bucket.spec.ts`. See `docs/testing.md` for coverage requirements and Effect test patterns.
 
 **Verification:** `pnpm test --run` green; room creation `POST` returns `200 { id, name }`; WebSocket `join` → `init` round-trip works via `npx partykit dev`.
 
@@ -105,11 +105,11 @@ _The 7 React components. These are what the room page renders for each message._
 
 **`src/components/`** — 7 new files
 
-- `TextMessage.tsx`, `LinkPreview.tsx`, `RepoCard.tsx`, `CodeBlock.tsx`, `Table.tsx`, `Poll.tsx`, `ImageCard.tsx`
+- `src/components/text-message.tsx`, `link-preview.tsx`, `repo-card.tsx`, `code-block.tsx`, `table.tsx`, `poll.tsx`, `image-card.tsx`
 - Styled with PandaCSS tokens from Phase 0
 - `index.ts` barrel export
 
-**Testing:** Write `src/catalog/schema.test.ts` and one `*.test.tsx` per component in `src/components/`. See `docs/testing.md` for coverage requirements.
+**Testing:** Write `src/catalog/schema.spec.ts` and one `*.spec.tsx` per component in `src/components/`. See `docs/testing.md` for coverage requirements.
 
 **Verification:** All component unit tests pass; `pnpm build` succeeds.
 
@@ -142,9 +142,9 @@ _The live chat surface. Delivers the full working product._
 
 - Fetches room name from PartyKit via `GET /parties/main/<id>`
 - If room not found (empty storage / 404) → `redirect('/')`
-- Passes `{ id, name }` as props to `<RoomClient>`
+- Passes `{ id, name }` as props to `<RoomClient>` (rendered from `room-client.tsx`)
 
-**`src/app/r/[id]/RoomClient.tsx`** — new (`'use client'`)
+**`src/app/r/[id]/room-client.tsx`** — new (`'use client'`)
 
 - On mount: checks `sessionStorage` for `room:${id}:displayName`
 - If not found: renders the inline display name prompt form
@@ -179,7 +179,7 @@ src/
   app/
     r/
       [id]/page.tsx             Room page server component (fetches room name, redirects if not found)
-      [id]/RoomClient.tsx       Room page client component (WS, displayName prompt, message rendering)
+      [id]/room-client.tsx      Room page client component (WS, displayName prompt, message rendering)
     layout.tsx                  Font + metadata
     page.tsx                    Landing (Create only)
     globals.css                 PandaCSS layers (unchanged)
@@ -188,20 +188,20 @@ src/
     index.ts                    defineCatalog (7 components)
     registry.tsx                defineRegistry (React implementations)
   components/
-    TextMessage.tsx
-    LinkPreview.tsx
-    RepoCard.tsx
-    CodeBlock.tsx
-    Table.tsx
-    Poll.tsx
-    ImageCard.tsx
+    text-message.tsx
+    link-preview.tsx
+    repo-card.tsx
+    code-block.tsx
+    table.tsx
+    poll.tsx
+    image-card.tsx
     index.ts
 
 party/
   index.ts                      PartyKit server (HTTP + WebSocket handler boundaries)
   classify.ts                   AI classification Effect pipeline via OpenRouter
   types.ts                      Effect Schema definitions — ClientMessage / ServerMessage / Message / Participant
-  tokenBucket.ts                Plain token bucket class for rate limiting (workerd-safe)
+  token-bucket.ts               Plain token bucket class for rate limiting (workerd-safe)
 
 .env.local.example
 ```

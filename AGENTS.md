@@ -25,6 +25,101 @@ The `docs/` folder contains the canonical specifications for this project. Imple
 2. Read `node_modules/next/dist/docs/` for Next.js API guidance (see below)
 3. If a spec is ambiguous or missing detail, stop and ask — do not invent
 
+## Progress tracking
+
+As you work through a phase, check off each item in `docs/progress.md` as it is completed — files, tests, and verification steps. Tick "Phase complete" once the phase commit lands on `main`.
+
+---
+
+## Commands
+
+```txt
+pnpm dev          # Start dev server
+pnpm build        # Production build
+pnpm lint         # Lint (ESLint)
+pnpm lint:fix     # Lint and auto-fix
+pnpm format:fix   # Format (oxfmt)
+pnpm typecheck    # Type check (tsc)
+pnpm test         # Run tests (Vitest)
+pnpm e2e          # Run e2e tests (Playwright)
+pnpm e2e:ui       # Run e2e tests with UI
+```
+
+---
+
+## Verification
+
+After **every** set of changes, run all of these checks before considering the task done. Do not skip any step — the build in particular catches errors (like missing Suspense boundaries) that other checks miss.
+
+```txt
+pnpm typecheck    # 1. Type check
+pnpm lint         # 2. Lint (fix errors before proceeding)
+pnpm test         # 3. Unit tests
+pnpm build        # 4. Production build (MUST pass — catches SSR/prerender errors)
+```
+
+If any step fails, fix the issue and re-run from that step. Do not move on until all four pass.
+
+---
+
+## Conventions
+
+- **Path alias** `@/*` maps to `./src/*`.
+- **Named exports** preferred over default exports (except Next.js pages and layouts).
+- Use `satisfies` for type narrowing on config objects.
+- Test files use the `.spec.ts` / `.spec.tsx` suffix and live next to the code they test.
+- **Bottom-up file structure** — private helpers and sub-components at the top, the main exported item at the bottom. The file's public API is immediately visible when you scroll to the end.
+- Use top-level `import type` declarations, not inline `import { type Foo }`.
+- Sort object keys and import statements alphabetically.
+- No comments in the codebase that are not JSDoc or TODO/FIXME notes.
+- **Kebab-case filenames** — all files and directories use kebab-case (e.g. `room-client.tsx`, `token-bucket.ts`). Next.js reserved filenames (`page.tsx`, `layout.tsx`, `route.ts`, `error.tsx`, etc.) are exempt.
+
+---
+
+## Lint-enforced rules
+
+These are caught by the linter, but following them preemptively avoids round-trips:
+
+- Test titles (`it`/`test`) must start with `"should"` (`vitest/valid-title`).
+- Use `toStrictEqual()` instead of `toEqual()` (`vitest/prefer-strict-equal`).
+- Use top-level `import type` declarations, not inline `import { type Foo }` (`import-x/consistent-type-specifier-style`).
+- Arrow functions: implicit return for single-expression bodies, explicit `return` for multi-line (`arrow-style/arrow-return-style`). Note: even single expressions that span multiple lines require explicit `return`.
+- In tests, avoid direct DOM node access (`.closest()`, `.firstChild`, etc.) — use Testing Library queries instead (`testing-library/no-node-access`).
+- Use `toHaveTextContent` instead of asserting on `.textContent` (`jest-dom/prefer-to-have-text-content`).
+- Use template literals instead of string concatenation (`prefer-template`).
+- Side-effect imports must come before value imports within the same group (`perfectionist/sort-imports`).
+- Use `replaceAll()` instead of `replace()` with a global regex (`unicorn/prefer-string-replace-all`).
+- Use `**` instead of `Math.pow()` (`prefer-exponentiation-operator`).
+- Do not use `??` or `||` fallbacks when the left-hand side type is already non-nullable (`@typescript-eslint/no-unnecessary-condition`).
+- Icons from `lucide-react` must use the `Icon` suffix (`PlusIcon` not `Plus`) — enforced in `eslint.config.ts`.
+- Effect `flatMap`: use `ServiceTag.pipe(Effect.flatMap(svc => svc.method()))` — not `Effect.flatMap(ServiceTag, fn)` (`unicorn/no-array-method-this-argument`).
+
+---
+
+## Branching & Commits
+
+- **Branch naming:** `{type}-{short-description}` in kebab-case. Type prefix matches commit types: `feat-`, `fix-`, `refactor-`, `chore-`, `docs-`, `ci-`. Examples: `feat-room-page`, `fix-rate-limit-refill`.
+- **Commits:** Conventional Commits format with lowercase descriptions. Subject line under 50 characters; wrap body at 72 characters.
+- **Commit cadence:** one commit per phase, after all four verification checks pass (`typecheck` → `lint` → `test` → `build`). Update `docs/progress.md` to reflect completion before committing. Commit message format: `feat: phase <n> — <phase name>` (e.g. `feat: phase 0 — foundation`).
+- Commits go directly to `main` — no feature branch per phase.
+- For non-phase work (fixes, docs, refactors), branch off `main`, push, and open a PR with `gh pr create`. PR titles follow the same conventional commit format.
+- Do not commit directly to `main` for non-phase work — create a branch first.
+
+---
+
+## Do NOT
+
+- Use `as`, `!`, or `any` without first exhausting proper solutions. If a type error appears, understand why before casting.
+- Silence lint errors by adding rule overrides to `eslint.config.ts` — fix the root cause instead.
+- Leave unused exports or files.
+- Leave tests failing after making changes.
+- Leave lint errors unresolved after making changes.
+- Leave the build broken after making changes.
+- Add unnecessary `"use client"` directives — prefer Server Components.
+- Leave comments that are not JSDoc or TODO/FIXME notes.
+- Use redundant return types for internal functions where the return type is inferable — exceptions are exported functions and interface method signatures where the type is part of the public contract.
+- Introduce a new pattern or structural change without updating the relevant spec in `docs/` — ask if `AGENTS.md` also needs updating.
+
 ---
 
 <!-- BEGIN:nextjs-agent-rules -->

@@ -16,7 +16,7 @@ Effect (`effect` v3) is used as a **pipeline assembler on the PartyKit server on
 
 ### What does not use Effect
 
-- **`party/tokenBucket.ts`** — rate limiting is a plain TypeScript class. Effect's `RateLimiter` relies on fiber scheduling that is incompatible with the workerd runtime.
+- **`party/token-bucket.ts`** — rate limiting is a plain TypeScript class. Effect's `RateLimiter` relies on fiber scheduling that is incompatible with the workerd runtime.
 - **`src/catalog/schema.ts`** — Zod is used here, as required by `@json-render/react`'s `defineCatalog` API.
 - **`src/app/`** — React client components use plain TypeScript and React hooks. Effect's fiber model does not compose with React hooks.
 
