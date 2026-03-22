@@ -85,13 +85,13 @@ There is no database and no password/token auth. The room ID is the only access 
 
 ### Message (in-memory)
 
-| Field               | Where     | Notes                                            |
-| ------------------- | --------- | ------------------------------------------------ |
-| `id`                | in-memory | nanoid                                           |
-| `authorDisplayName` | in-memory | Display name of sender                           |
-| `rawInput`          | in-memory | The original text the user sent                  |
-| `component`         | in-memory | AI-classified `{ type, props }` per `catalog.md` |
-| `sentAt`            | in-memory | ISO timestamp                                    |
+| Field               | Where     | Notes                                                         |
+| ------------------- | --------- | ------------------------------------------------------------- |
+| `id`                | in-memory | nanoid                                                        |
+| `authorDisplayName` | in-memory | Display name of sender                                        |
+| `rawInput`          | in-memory | The original text the user sent                               |
+| `component`         | in-memory | AI-classified spec tree `{ elements, root }` per `catalog.md` |
+| `sentAt`            | in-memory | ISO timestamp                                                 |
 
 ---
 
@@ -159,7 +159,10 @@ type Message = {
   id: string;
   authorDisplayName: string;
   rawInput: string;
-  component: { type: string; props: Record<string, unknown> };
+  component: {
+    elements: Record<string, { type: string; props: Record<string, unknown> }>;
+    root: string;
+  };
   sentAt: string; // ISO timestamp
 };
 ```
@@ -212,15 +215,15 @@ PartyKit → rate limit check (token bucket per connection, 1/3s, burst 3):
            - no tokens: skip AI, use TextMessage fallback directly
 PartyKit → AI classification (if not rate-limited):
            1. Call OpenRouter with catalog context
-           2. Get back { type, props }
-           3. Validate type is in catalog
+           2. Get back { elements, root } spec tree
+           3. Validate all element types are in catalog
            4. Build Message object
 PartyKit → push to in-memory messages[]
 PartyKit → room.broadcast({ type: "message", message })
 All clients ← { type: "message", message }
 ```
 
-If AI classification fails (timeout, invalid type, malformed JSON) or is rate-limited, PartyKit falls back to `{ type: "TextMessage", props: { body } }`. The message is always delivered — the fallback is silent.
+If AI classification fails (timeout, invalid JSON, unknown type) or is rate-limited, PartyKit falls back to `{ elements: { root: { type: "TextMessage", props: { body } } }, root: "root" }`. The message is always delivered — the fallback is silent.
 
 ### Clear Chat
 
@@ -276,18 +279,67 @@ Single-shot: one OpenRouter call per message. The system prompt includes the ful
 
 **Model:** `google/gemini-2.0-flash-001` via OpenRouter.
 
+**Output format:** The AI returns a spec tree in `{ elements, root }` format. Single-component results are a trivial tree:
+
+```json
+{
+  "elements": {
+    "root": { "type": "TextMessage", "props": { "body": "hello" } }
+  },
+  "root": "root"
+}
+```
+
+Composed results reference multiple elements:
+
+```json
+{
+  "elements": {
+    "root": {
+      "type": "Stack",
+      "props": { "direction": "vertical", "children": ["a", "b"] }
+    },
+    "a": {
+      "type": "Metric",
+      "props": { "label": "Revenue", "value": "$4.2M", "trend": "up" }
+    },
+    "b": {
+      "type": "Metric",
+      "props": { "label": "Margin", "value": "38%", "trend": "neutral" }
+    }
+  },
+  "root": "root"
+}
+```
+
 **System prompt structure:**
 
 ```
 You are a message classifier for a chat application.
-Classify the user's message into exactly one component type from the catalog below.
-Return only valid JSON: { "type": "...", "props": { ... } }
-Do not include any explanation or wrapping text.
+Classify the user's message by returning a JSON spec tree in { elements, root } format.
+Each element has a type (from the catalog below) and props.
+For a single component, use { "elements": { "root": { "type": "...", "props": {...} } }, "root": "root" }.
+For composed output, use Stack as the root and reference child elements by key.
+Return only valid JSON. Do not include any explanation or wrapping text.
 
 [catalog component descriptions and props schemas]
 ```
 
-**Failure handling:** If the response is not valid JSON, or the `type` is not in the catalog, or required props are missing — fall back to `TextMessage`.
+**Failure handling:** If the response is not valid JSON, or any `type` in the tree is not in the catalog, or required props are missing — fall back to `{ elements: { root: { type: "TextMessage", props: { body } } }, root: "root" }`. The message is always delivered — the fallback is silent.
+
+---
+
+## Interactive Component State
+
+Interactive components (e.g. `Poll`) store their selection state **local per-client** — vote choices are not broadcast to other participants. No server protocol changes are needed.
+
+A future phase may add a `vote` / `interact` client message type with a corresponding `interacted` server broadcast to sync interactive state across participants. That would require:
+
+- New entries in `ClientMessageSchema` and `ServerMessageSchema` in `party/types.ts`
+- A new handler branch in `party/index.ts`
+- Client-side state merging in `room-client.tsx`
+
+Until then, interactive components behave as local UI — different participants may have different selections on the same message.
 
 ---
 
