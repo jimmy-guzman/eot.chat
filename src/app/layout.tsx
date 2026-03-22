@@ -2,22 +2,17 @@ import "./globals.css";
 
 import type { Metadata } from "next";
 
-import { Geist, Geist_Mono } from "next/font/google";
+import { M_PLUS_Rounded_1c } from "next/font/google";
 
-const geistSans = Geist({
+const mplus = M_PLUS_Rounded_1c({
   subsets: ["latin"],
-  variable: "--font-geist-sans",
-});
-
-const geistMono = Geist_Mono({
-  subsets: ["latin"],
-  variable: "--font-geist-mono",
+  variable: "--font-mplus",
+  weight: ["400", "700", "800"],
 });
 
 export const metadata = {
-  description:
-    "Salita is a real-time chat application built with Next.js, PartyKit, and PandaCSS.",
-  title: "salita.chat",
+  description: "Rooms that feel like home",
+  title: "Salita",
 } satisfies Metadata;
 
 export default function RootLayout({
@@ -26,7 +21,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html className={`${geistSans.variable} ${geistMono.variable}`} lang="en">
+    <html className={mplus.variable} lang="en">
       <body>{children}</body>
     </html>
   );

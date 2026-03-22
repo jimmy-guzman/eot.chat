@@ -6,22 +6,22 @@ Tracks completion of each phase in `docs/plan.md`. Check off tasks as they are d
 
 ## Phase 0 — Foundation
 
-- [ ] **Phase complete**
+- [x] **Phase complete**
 
 ### Files
 
-- [ ] `panda.config.ts` — add color, spacing, radius, shadow tokens + M PLUS Rounded 1c font variable
-- [ ] `src/app/layout.tsx` — replace Geist with M PLUS Rounded 1c, update metadata
+- [x] `panda.config.ts` — add color, spacing, radius, shadow tokens + M PLUS Rounded 1c font variable
+- [x] `src/app/layout.tsx` — replace Geist with M PLUS Rounded 1c, update metadata
 
 ### Dependencies
 
-- [ ] `pnpm add nanoid`
+- [x] `pnpm add nanoid`
 
 ### Verification
 
-- [ ] `pnpm build` succeeds
-- [ ] `pnpm typecheck` clean
-- [ ] M PLUS Rounded 1c renders in the browser
+- [x] `pnpm build` succeeds
+- [x] `pnpm typecheck` clean
+- [x] M PLUS Rounded 1c renders in the browser
 
 ---
 

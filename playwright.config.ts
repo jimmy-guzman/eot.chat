@@ -16,13 +16,13 @@ export default defineConfig({
   webServer: [
     {
       command: "pnpm dev",
-      url: "http://localhost:3000",
       reuseExistingServer: !process.env.CI,
+      url: "http://localhost:3000",
     },
     {
       command: "npx partykit dev",
-      url: "http://localhost:1999",
       reuseExistingServer: !process.env.CI,
+      url: "http://localhost:1999",
     },
   ],
 });
