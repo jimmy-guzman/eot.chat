@@ -1,7 +1,5 @@
 import { css } from "styled-system/css";
 
-import { PlantMotif } from "@/components/illustrations";
-
 import { CreateRoomForm } from "./_components/create-room-form";
 
 export default function HomePage() {
@@ -9,7 +7,7 @@ export default function HomePage() {
     <main
       className={css({
         alignItems: "center",
-        backgroundColor: "bg",
+        backgroundColor: "base-100",
         display: "flex",
         justifyContent: "center",
         minHeight: "100vh",
@@ -18,27 +16,17 @@ export default function HomePage() {
     >
       <div
         className={css({
-          backgroundColor: "surface",
+          backgroundColor: "base-200",
           borderRadius: "lg",
           boxShadow: "lg",
           maxWidth: "card",
-          overflow: "visible",
           padding: "8",
-          position: "relative",
           width: "100%",
         })}
       >
-        <PlantMotif
-          className={css({
-            pointerEvents: "none",
-            position: "absolute",
-            right: "-16px",
-            top: "-32px",
-          })}
-        />
         <h1
           className={css({
-            color: "cobalt",
+            color: "accent",
             fontSize: "2xl",
             fontWeight: "extrabold",
             letterSpacing: "display",
@@ -49,7 +37,7 @@ export default function HomePage() {
         </h1>
         <p
           className={css({
-            color: "ink",
+            color: "base-content",
             fontSize: "sm",
             lineHeight: "body",
             marginBottom: "6",

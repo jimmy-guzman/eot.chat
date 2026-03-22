@@ -214,6 +214,30 @@ Tracks completion of each phase in `docs/plan.md`. Check off tasks as they are d
 
 ---
 
+## Refactor — Visual identity redefinition + semantic tokens
+
+- [x] **Complete**
+
+### Updated
+
+- [x] `docs/product/visual.md` — full rewrite: retro-computing identity (vintage computing hardware), light/dark curation, IBM Plex Mono, DaisyUI-style semantic token system with token philosophy section
+- [x] `panda.config.ts` — dark mode media condition; fully semantic token names (`base-100/200/300/content`, `primary/primary-content`, `secondary/secondary-content`, `accent/accent-content`, `error/error-content`); tightened radii; updated recipes to use only semantic names; no per-component `_dark` conditionals
+- [x] `src/app/layout.tsx` — replaced M PLUS Rounded 1c with IBM Plex Mono, added `color-scheme` meta
+- [x] `src/components/illustrations.tsx` — deleted (no motifs in new identity)
+- [x] `src/app/page.tsx` — removed PlantMotif, all token references updated to semantic names
+- [x] `src/app/r/[id]/_components/room-client.tsx` — removed PlantMotif, all token references updated to semantic names
+- [x] `src/app/r/[id]/_components/display-name-form.tsx` — removed CatMotif, all token references updated to semantic names
+- [x] `docs/reference/cosmos/` — added 10 reference images (5 light, 5 dark) driving the retro-computing palette
+
+### Verification
+
+- [x] `pnpm typecheck` clean
+- [x] `pnpm lint` clean
+- [x] `pnpm test --run` green
+- [x] `pnpm build` succeeds
+
+---
+
 ## Refactor — Strip AI classification and rich component catalog
 
 - [x] **Complete**

@@ -1,6 +1,13 @@
 import { defineConfig } from "@pandacss/dev";
 
 export default defineConfig({
+  // Dark mode via system preference
+  conditions: {
+    extend: {
+      dark: "@media (prefers-color-scheme: dark)",
+    },
+  },
+
   // Files to exclude
   exclude: [],
 
@@ -44,12 +51,12 @@ export default defineConfig({
           variants: {
             variant: {
               active: {
-                backgroundColor: "cobalt",
-                color: "surface",
+                backgroundColor: "primary",
+                color: "primary-content",
               },
               default: {
-                backgroundColor: "lavender",
-                color: "ink",
+                backgroundColor: "base-300",
+                color: "base-content",
               },
             },
           },
@@ -75,12 +82,12 @@ export default defineConfig({
           variants: {
             size: {
               md: {
-                borderRadius: "full",
+                borderRadius: "sm",
                 fontSize: "sm",
                 padding: "2 5",
               },
               sm: {
-                borderRadius: "full",
+                borderRadius: "sm",
                 fontSize: "xs",
                 padding: "1 3",
               },
@@ -88,31 +95,31 @@ export default defineConfig({
             variant: {
               danger: {
                 _hover: { boxShadow: "md" },
-                backgroundColor: "red",
-                color: "surface",
+                backgroundColor: "error",
+                color: "error-content",
               },
               ghost: {
                 _hover: { boxShadow: "sm" },
                 backgroundColor: "transparent",
-                border: "2px solid token(colors.soft-pink)",
-                color: "ink",
+                border: "2px solid token(colors.base-300)",
+                color: "base-content",
               },
               primary: {
                 _hover: { boxShadow: "md" },
-                backgroundColor: "cobalt",
-                color: "surface",
+                backgroundColor: "primary",
+                color: "primary-content",
               },
               secondary: {
                 _hover: { boxShadow: "md" },
-                backgroundColor: "mint",
-                color: "ink",
+                backgroundColor: "secondary",
+                color: "secondary-content",
               },
             },
           },
         },
         card: {
           base: {
-            backgroundColor: "surface",
+            backgroundColor: "base-200",
             borderRadius: "md",
           },
           className: "card",
@@ -125,18 +132,18 @@ export default defineConfig({
                 boxShadow: "sm",
               },
               flat: {
-                border: "1px solid token(colors.soft-pink)",
+                border: "1px solid token(colors.base-300)",
               },
             },
           },
         },
         input: {
           base: {
-            _focus: { borderColor: "cobalt", outline: "none" },
-            backgroundColor: "bg",
-            border: "2px solid token(colors.soft-pink)",
+            _focus: { borderColor: "accent", outline: "none" },
+            backgroundColor: "base-100",
+            border: "2px solid token(colors.base-300)",
             borderRadius: "sm",
-            color: "ink",
+            color: "base-content",
             fontFamily: "body",
             fontSize: "base",
             padding: "3",
@@ -147,30 +154,37 @@ export default defineConfig({
       },
       semanticTokens: {
         colors: {
-          "bg": { value: "#FEFAE8" },
-          "chartreuse": { value: "#C9EB8A" },
-          "cobalt": { value: "#1A3ABF" },
-          "ink": { value: "#1A1A1A" },
-          "lavender": { value: "#D3B8E2" },
-          "mint": { value: "#B6EDE6" },
-          "orange": { value: "#F47B1F" },
-          "powder-blue": { value: "#A9D9EC" },
-          "red": { value: "#E8291C" },
-          "sage": { value: "#5A8A6A" },
-          "soft-pink": { value: "#F7C5D0" },
-          "surface": { value: "#FFFEF7" },
-          "yellow": { value: "#F5E135" },
+          // Accent — highlight and focus
+          "accent": { value: { _dark: "#E8850A", base: "#E8850A" } },
+          "accent-content": { value: { _dark: "#28211E", base: "#28211E" } },
+          // Base surface layers
+          "base-100": { value: { _dark: "#1A1614", base: "#E2EBE5" } },
+          "base-200": { value: { _dark: "#241C19", base: "#F0EDE4" } },
+          "base-300": { value: { _dark: "#3A302A", base: "#D4CEBC" } },
+          "base-content": { value: { _dark: "#EDE8DF", base: "#1A1A1A" } },
+          // Error — destructive actions
+          "error": { value: { _dark: "#D4541A", base: "#D4541A" } },
+          "error-content": { value: { _dark: "#F0EDE4", base: "#F0EDE4" } },
+          // Primary — main interactive color
+          "primary": { value: { _dark: "#E8850A", base: "#28211E" } },
+          "primary-content": { value: { _dark: "#28211E", base: "#F0EDE4" } },
+          // Secondary — supporting interactive color
+          "secondary": { value: { _dark: "#2D7A6A", base: "#2D7A6A" } },
+          "secondary-content": { value: { _dark: "#F0EDE4", base: "#F0EDE4" } },
+          // Palette tokens — non-semantic, reference only
+          "terminal-green": { value: { _dark: "#4A8A5E", base: "#3D6B4A" } },
+          "walnut": { value: { _dark: "#6B4E2E", base: "#8C6E4A" } },
         },
         radii: {
           full: { value: "9999px" },
-          lg: { value: "24px" },
-          md: { value: "16px" },
-          sm: { value: "8px" },
+          lg: { value: "12px" },
+          md: { value: "8px" },
+          sm: { value: "4px" },
         },
       },
       tokens: {
         fonts: {
-          body: { value: "var(--font-mplus)" },
+          body: { value: "var(--font-mono)" },
         },
         fontSizes: {
           "2xl": { value: "2rem" },
@@ -181,12 +195,12 @@ export default defineConfig({
           "xs": { value: "0.75rem" },
         },
         fontWeights: {
-          bold: { value: "700" },
-          extrabold: { value: "800" },
+          bold: { value: "600" },
+          extrabold: { value: "700" },
           regular: { value: "400" },
         },
         letterSpacings: {
-          display: { value: "0.01em" },
+          display: { value: "0.02em" },
           tight: { value: "-0.01em" },
         },
         lineHeights: {

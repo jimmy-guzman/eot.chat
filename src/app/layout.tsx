@@ -2,12 +2,12 @@ import "./globals.css";
 
 import type { Metadata } from "next";
 
-import { M_PLUS_Rounded_1c } from "next/font/google";
+import { IBM_Plex_Mono } from "next/font/google";
 
-const mplus = M_PLUS_Rounded_1c({
+const ibmPlexMono = IBM_Plex_Mono({
   subsets: ["latin"],
-  variable: "--font-mplus",
-  weight: ["400", "700", "800"],
+  variable: "--font-mono",
+  weight: ["400", "600", "700"],
 });
 
 export const metadata = {
@@ -21,7 +21,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html className={mplus.variable} lang="en">
+    <html className={ibmPlexMono.variable} lang="en">
+      <head>
+        <meta content="dark light" name="color-scheme" />
+      </head>
       <body>{children}</body>
     </html>
   );
