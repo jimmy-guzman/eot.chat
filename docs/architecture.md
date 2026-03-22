@@ -2,6 +2,32 @@
 
 ---
 
+## Effect-TS Usage Boundaries
+
+Effect (`effect` v3) is used as a **pipeline assembler on the PartyKit server only**. It never enters the browser bundle.
+
+### What uses Effect
+
+| File                | Pattern                              | APIs                                                                                           |
+| ------------------- | ------------------------------------ | ---------------------------------------------------------------------------------------------- |
+| `party/types.ts`    | Schema definitions for wire types    | `Schema.Struct`, `Schema.Union`, `Schema.Literal`, `Schema.Type`                               |
+| `party/classify.ts` | AI classification pipeline           | `Effect.gen`, `Effect.tryPromise`, `Effect.timeout`, `Schema.decodeUnknown`, `Effect.catchAll` |
+| `party/index.ts`    | Message routing + handler boundaries | `Match.value`, `Match.tag`, `Match.exhaustive`, `Effect.runPromise`                            |
+
+### What does not use Effect
+
+- **`party/tokenBucket.ts`** — rate limiting is a plain TypeScript class. Effect's `RateLimiter` relies on fiber scheduling that is incompatible with the workerd runtime.
+- **`src/catalog/schema.ts`** — Zod is used here, as required by `@json-render/react`'s `defineCatalog` API.
+- **`src/app/`** — React client components use plain TypeScript and React hooks. Effect's fiber model does not compose with React hooks.
+
+### workerd compatibility
+
+Effect computations run inside standard `Promise` boundaries (`Effect.runPromise`). Each `onMessage` and `onRequest` call constructs an `Effect.gen(...)` program and executes it at the boundary — Effect as a description language, `runPromise` as the executor. workerd supports `Promise` natively so this pattern is safe.
+
+The `@/` path alias is a TypeScript compiler alias only. `party/classify.ts` imports `src/catalog/schema.ts` via a **relative path** (`../../src/catalog/schema`) to ensure esbuild can resolve it when bundling the party worker.
+
+---
+
 ## System Topology
 
 ```
@@ -79,7 +105,7 @@ Creates a new room.
 
 **Request body:** `{ name: string }`
 
-**Behaviour:**
+**Behavior:**
 
 1. Check `room.storage.get("name")` — if already set, return `409 Conflict`
 2. `room.storage.set("name", name)`

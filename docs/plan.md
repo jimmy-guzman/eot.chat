@@ -4,11 +4,27 @@ Spec-driven, phase-by-phase. Each phase is independently shippable and leaves th
 
 ---
 
+## Effect-TS Strategy
+
+Effect is used as a **pipeline assembler on the server only** — never in the browser bundle.
+
+| Where                   | Usage                                                                                                                                          |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `party/classify.ts`     | Full `Effect.gen` pipeline — `tryPromise` → `timeout("8 seconds")` → `Schema.decodeUnknown` → `catchAll` fallback to `TextMessage`             |
+| `party/index.ts`        | `Match.value(...).pipe(Match.tag(...), Match.exhaustive)` for routing `ClientMessage` types; `Effect.runPromise(...)` at each handler boundary |
+| `party/types.ts`        | `Schema.Struct` / `Schema.Union` / `Schema.Literal` to define wire types — single source of truth for runtime parsing and TypeScript types     |
+| `src/catalog/schema.ts` | Zod only — required by `@json-render/react`'s `defineCatalog` API                                                                              |
+| `src/app/` (React)      | No Effect — plain TypeScript and React hooks                                                                                                   |
+
+Rate limiting uses a plain `TokenBucket` class (`party/tokenBucket.ts`) rather than Effect's `RateLimiter`. Effect's `RateLimiter` depends on fiber scheduling that is unsafe in the workerd runtime.
+
+---
+
 ## Phase 0 — Foundation
 
 _Get the project buildable with the correct design system before touching features._
 
-**Install dependency** — `pnpm add zod` (required by `@json-render/react` for `defineCatalog` prop schemas in Phase 2)
+**Install dependency** — `pnpm add nanoid` (required for nanoid room ID generation in Phase 3 and message IDs in Phase 1; `zod` is already installed)
 
 **`panda.config.ts`**
 
@@ -22,16 +38,7 @@ _Get the project buildable with the correct design system before touching featur
 - Wire font CSS variable onto `<html>`
 - Update metadata: title → "Salita", description → project tagline
 
-**`src/app/page.module.css`**
-
-- Delete — default scaffold file, never used
-
-**`.env.local.example`** — new
-
-```
-NEXT_PUBLIC_PARTYKIT_HOST=
-OPENROUTER_API_KEY=
-```
+**Verification:** `pnpm build` succeeds; `pnpm typecheck` clean; M PLUS Rounded 1c renders in the browser.
 
 ---
 
@@ -41,8 +48,13 @@ _Replace the boilerplate with the real typed message protocol. Delivers room cre
 
 **`party/types.ts`** — new
 
-- `ClientMessage` and `ServerMessage` union types per `docs/architecture.md`
-- `Participant` and `Message` types
+- Effect `Schema.Struct` / `Schema.Union` / `Schema.Literal` definitions for `ClientMessage` and `ServerMessage`
+- `Participant` and `Message` types inferred from schemas via `Schema.Type`
+
+**`party/tokenBucket.ts`** — new
+
+- Plain `TokenBucket` class (no Effect); workerd-safe
+- Capacity 3, refill 1 per 3s per connection
 
 **`party/index.ts`** — rewrite
 
@@ -52,7 +64,7 @@ _Replace the boilerplate with the real typed message protocol. Delivers room cre
   - `X-Action: create` → read `{ name }`, check storage not already set, `room.storage.set("name", name)`, return `{ id, name }`
   - Any other request → `405 Method Not Allowed`
 - `onConnect` — send `{ type: "init", messages[], participants[] }` to the new connection; if `room.storage.get("name")` is unset, send `{ type: "error", reason: "room not found" }` and close
-- `onMessage` — routes by `type`:
+- `onMessage` — parse with `Schema.decodeUnknownEither`, route with `Match.tag`, `Effect.runPromise` at boundary:
   - `join` → validate displayName unique, add to map, broadcast `joined`
   - `message` → validate non-empty, check rate limit bucket (fallback to `TextMessage` if empty), call AI classification, build `Message`, push to `messages[]`, broadcast `message`
   - `leave` → remove from map, broadcast `left`
@@ -60,8 +72,13 @@ _Replace the boilerplate with the real typed message protocol. Delivers room cre
 
 **`party/classify.ts`** — new
 
-- Single `fetch` to OpenRouter with the catalog system prompt
-- Returns `{ type, props }` or falls back to `{ type: "TextMessage", props: { body } }` on any failure
+- Pure `Effect.gen` pipeline: `Effect.tryPromise` → `Effect.timeout("8 seconds")` → `Schema.decodeUnknown` → `Effect.catchAll` fallback
+- Returns `Effect.Effect<Classification, never>` (error channel fully collapsed by `catchAll`)
+- Falls back to `{ type: "TextMessage", props: { body } }` on any failure (timeout, invalid JSON, unknown type)
+
+**Testing:** Write `party/classify.test.ts`, `party/types.test.ts`, and `party/tokenBucket.test.ts`. See `docs/testing.md` for coverage requirements and Effect test patterns.
+
+**Verification:** `pnpm test --run` green; room creation `POST` returns `200 { id, name }`; WebSocket `join` → `init` round-trip works via `npx partykit dev`.
 
 ---
 
@@ -69,11 +86,17 @@ _Replace the boilerplate with the real typed message protocol. Delivers room cre
 
 _The 7 React components. These are what the room page renders for each message._
 
+**`src/catalog/schema.ts`** — new
+
+- Pure TypeScript + Zod only (no React, no JSX) — importable by both Next.js and the PartyKit workerd bundle
+- Zod prop schemas for all 7 components per `docs/product/catalog.md`
+- Exports the component names array, prop schemas, and the AI system prompt string
+- Imported by `party/classify.ts` via relative path (`../../src/catalog/schema`) — no `@/` alias, workerd-safe
+
 **`src/catalog/index.ts`** — new
 
-- `defineCatalog` using `@json-render/react/schema` + Zod
-- All 7 components with prop schemas per `docs/product/catalog.md`
-- Exports `catalog` (used by PartyKit for AI prompt generation)
+- `defineCatalog` using `@json-render/react` + schemas from `schema.ts`
+- Exports `catalog` (used on the room page)
 
 **`src/catalog/registry.tsx`** — new
 
@@ -85,6 +108,10 @@ _The 7 React components. These are what the room page renders for each message._
 - `TextMessage.tsx`, `LinkPreview.tsx`, `RepoCard.tsx`, `CodeBlock.tsx`, `Table.tsx`, `Poll.tsx`, `ImageCard.tsx`
 - Styled with PandaCSS tokens from Phase 0
 - `index.ts` barrel export
+
+**Testing:** Write `src/catalog/schema.test.ts` and one `*.test.tsx` per component in `src/components/`. See `docs/testing.md` for coverage requirements.
+
+**Verification:** All component unit tests pass; `pnpm build` succeeds.
 
 ---
 
@@ -102,6 +129,8 @@ _The Create entry point at `/`._
   - Store `displayName` in `sessionStorage` keyed by room ID
   - `router.push('/r/<id>')`
 - Visual identity: warm cream background, M PLUS Rounded 1c, dense layout per `docs/product/visual.md`
+
+**Verification:** Form creates a room and redirects; `pnpm typecheck` clean.
 
 ---
 
@@ -137,6 +166,10 @@ Header:
 - "You Are Now in Room: `<name>`"
 - Shareable link bar: `https://salita.chat/r/<id>` + copy button
 
+**Testing:** Write `e2e/chat.spec.ts` with the full happy-path flow. Update `playwright.config.ts` to start both Next.js and PartyKit as `webServer` entries. See `docs/testing.md` for the complete flow.
+
+**Verification:** `pnpm e2e` green (full happy path passes).
+
 ---
 
 ## File map at completion
@@ -151,6 +184,7 @@ src/
     page.tsx                    Landing (Create only)
     globals.css                 PandaCSS layers (unchanged)
   catalog/
+    schema.ts                   Zod prop schemas + AI system prompt string (workerd-safe, no React)
     index.ts                    defineCatalog (7 components)
     registry.tsx                defineRegistry (React implementations)
   components/
@@ -164,9 +198,10 @@ src/
     index.ts
 
 party/
-  index.ts                      PartyKit server (HTTP + WebSocket + rate limiting)
-  classify.ts                   AI classification via OpenRouter
-  types.ts                      ClientMessage / ServerMessage / Message / Participant
+  index.ts                      PartyKit server (HTTP + WebSocket handler boundaries)
+  classify.ts                   AI classification Effect pipeline via OpenRouter
+  types.ts                      Effect Schema definitions — ClientMessage / ServerMessage / Message / Participant
+  tokenBucket.ts                Plain token bucket class for rate limiting (workerd-safe)
 
 .env.local.example
 ```
