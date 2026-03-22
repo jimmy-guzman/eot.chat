@@ -48,6 +48,7 @@ export const RepoCard = ({
         <p
           className={css({
             fontSize: "sm",
+            lineHeight: "body",
             marginBottom: "2",
             opacity: 0.8,
           })}

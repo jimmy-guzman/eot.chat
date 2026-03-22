@@ -33,6 +33,7 @@ export const CodeBlock = ({ code, filename, language }: Props) => {
       ) : null}
       <pre
         className={css({
+          backgroundColor: "surface",
           fontSize: "sm",
           lineHeight: "code",
           overflowX: "auto",
