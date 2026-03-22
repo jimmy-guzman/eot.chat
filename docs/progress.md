@@ -89,16 +89,16 @@ Tracks completion of each phase in `docs/plan.md`. Check off tasks as they are d
 
 ## Phase 3 — Landing page
 
-- [ ] **Phase complete**
+- [x] **Phase complete**
 
 ### Files
 
-- [ ] `src/app/page.tsx` — rewrite (Create a Room form, nanoid ID, POST to PartyKit, sessionStorage, redirect)
+- [x] `src/app/page.tsx` — rewrite (Create a Room form, nanoid ID, POST to PartyKit, sessionStorage, redirect)
 
 ### Verification
 
-- [ ] Form creates a room and redirects to `/r/<id>`
-- [ ] `pnpm typecheck` clean
+- [x] Form creates a room and redirects to `/r/<id>`
+- [x] `pnpm typecheck` clean
 
 ---
 
