@@ -4,6 +4,13 @@ export default defineConfig({
   // Files to exclude
   exclude: [],
 
+  // Global base styles
+  globalCss: {
+    "html, body": {
+      fontFamily: "body",
+    },
+  },
+
   // Where to look for your css declarations
   include: [
     "./src/components/**/*.{ts,tsx,js,jsx}",
