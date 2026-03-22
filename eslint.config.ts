@@ -6,7 +6,7 @@ export default defineConfig({
     {
       files: ["**/next-env.d.ts"],
       rules: { "import-x/extensions": "off" },
-    }, 
+    },
     {
       rules: {
         "no-inline-comments": [
