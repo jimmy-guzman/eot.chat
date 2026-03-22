@@ -1,4 +1,4 @@
-# Visual Identity — Salita.chat
+# Visual Identity — eot.chat
 
 ## Reference Collection: Cosmos
 

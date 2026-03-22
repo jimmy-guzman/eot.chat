@@ -276,7 +276,7 @@ export const RoomClient = ({ id, name }: Props) => {
             opacity: 0.5,
           })}
         >
-          {`https://salita.chat/r/${id}`}
+          {`https://eot.chat/r/${id}`}
         </p>
       </header>
 

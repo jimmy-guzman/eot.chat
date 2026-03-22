@@ -1,4 +1,4 @@
-# salita.chat
+# eot.chat
 
 An ephemeral chat room where messages are alive. Not text bubbles — rich, AI-generated components shaped by what you share. Paste a GitHub link, get a repo card. Drop a CSV, get a table. Ask a question, get a poll. The room reads what you share and renders it. When everyone leaves, it dissolves.
 

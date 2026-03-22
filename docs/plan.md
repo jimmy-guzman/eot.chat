@@ -1,4 +1,4 @@
-# Build Plan — Salita.chat
+# Build Plan — eot.chat
 
 Spec-driven, phase-by-phase. Each phase is independently shippable and leaves the project in a working state. Phases 0–5 deliver a working product. Phase 6 adds clear-chat. Phase 7 delivers the visual identity. Phase 8 delivered the generative UI expansion (now removed — see note below).
 
@@ -50,7 +50,7 @@ _Get the project buildable with the correct design system before touching featur
 
 - Replace Geist with M PLUS Rounded 1c via `next/font/google` (weights 400, 700, 800)
 - Wire font CSS variable onto `<html>`
-- Update metadata: title → "Salita", description → project tagline
+- Update metadata: title → "EOT", description → project tagline
 
 **Verification:** `pnpm build` succeeds; `pnpm typecheck` clean; M PLUS Rounded 1c renders in the browser.
 
@@ -220,7 +220,7 @@ _The live chat surface. Delivers the full working product._
 Header:
 
 - "You Are Now in Room: `<name>`"
-- Shareable link bar: `https://salita.chat/r/<id>` + copy button
+- Shareable link bar: `https://eot.chat/r/<id>` + copy button
 
 **Testing:** Write `e2e/chat.spec.ts` with the full happy-path flow. Update `playwright.config.ts` to start both Next.js and PartyKit as `webServer` entries. See `docs/testing.md` for the complete flow.
 
@@ -265,7 +265,7 @@ _Make the UI feel warm, maximalist, and illustration-first per the "Cosmos" refe
 **`src/app/page.tsx`** — update
 
 - Make the card `position: "relative"` so `PlantMotif` can be absolutely positioned in the top-right corner, slightly overflowing
-- Heading "Salita": `fontSize: "2xl"`, `color: "cobalt"`, `letterSpacing: "display"`, `fontWeight: "extrabold"`
+- Heading "EOT": `fontSize: "2xl"`, `color: "cobalt"`, `letterSpacing: "display"`, `fontWeight: "extrabold"`
 - Tagline: add `lineHeight: "body"`
 
 **`src/app/r/[id]/_components/display-name-form.tsx`** — update

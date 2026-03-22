@@ -12,7 +12,7 @@ const ibmPlexMono = IBM_Plex_Mono({
 
 export const metadata = {
   description: "Rooms that feel like home",
-  title: "Salita",
+  title: "EOT",
 } satisfies Metadata;
 
 export default function RootLayout({

@@ -7,7 +7,7 @@
     "pandacss",
     "Partykit",
     "partysocket",
-    "salita",
+    "eot",
     "supabase"
   ],
   "css.lint.unknownAtRules": "ignore",

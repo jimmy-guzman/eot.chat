@@ -1,6 +1,6 @@
 {
   "$schema": "https://www.partykit.io/schema.json",
-  "name": "salita-chat-party",
+  "name": "eot-chat-party",
   "main": "party/index.ts",
   "compatibilityDate": "2026-03-21"
 }

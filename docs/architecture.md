@@ -1,4 +1,4 @@
-# Architecture — Salita.chat
+# Architecture — eot.chat
 
 ---
 
@@ -240,9 +240,9 @@ A room is dissolved when the last participant disconnects. PartyKit handles this
 
 ## Environment Variables
 
-| Variable                    | Used by | Description                                           |
-| --------------------------- | ------- | ----------------------------------------------------- |
-| `NEXT_PUBLIC_PARTYKIT_HOST` | Browser | PartyKit host, e.g. `salita-chat.<user>.partykit.dev` |
+| Variable                    | Used by | Description                                        |
+| --------------------------- | ------- | -------------------------------------------------- |
+| `NEXT_PUBLIC_PARTYKIT_HOST` | Browser | PartyKit host, e.g. `eot-chat.<user>.partykit.dev` |
 
 PartyKit env vars are set via `partykit env add` (stored in PartyKit's hosted secrets, accessible via `this.room.env`).
 

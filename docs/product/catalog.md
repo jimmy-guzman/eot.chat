@@ -1,4 +1,4 @@
-# Component Catalog — Salita.chat
+# Component Catalog — eot.chat
 
 The component catalog is the constraint the AI operates within. When a message arrives at PartyKit, the AI receives this catalog as its system prompt context and must return a spec tree referencing components defined here. Any unknown component type causes the classification to be rejected and the message falls back to `TextMessage`.
 
