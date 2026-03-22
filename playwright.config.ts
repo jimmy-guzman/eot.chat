@@ -21,7 +21,7 @@ export default defineConfig({
       url: "http://localhost:3000",
     },
     {
-      command: "npx partykit dev --port 1999",
+      command: "pnpx partykit dev --port 1999",
       port: 1999,
       reuseExistingServer: !process.env.CI,
       timeout: 120_000,
