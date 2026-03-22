@@ -17,12 +17,14 @@ export default defineConfig({
     {
       command: "pnpm dev",
       reuseExistingServer: !process.env.CI,
+      timeout: 120_000,
       url: "http://localhost:3000",
     },
     {
-      command: "npx partykit dev",
+      command: "npx partykit dev --port 1999",
+      port: 1999,
       reuseExistingServer: !process.env.CI,
-      url: "http://localhost:1999",
+      timeout: 120_000,
     },
   ],
 });

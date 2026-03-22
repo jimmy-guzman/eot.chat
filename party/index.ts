@@ -154,16 +154,42 @@ export default class Server implements Party.Server {
   }
 
   async onRequest(req: Party.Request) {
+    const corsHeaders = {
+      "Access-Control-Allow-Headers": "Content-Type, X-Action",
+      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+      "Access-Control-Allow-Origin": "*",
+    };
+
+    if (req.method === "OPTIONS") {
+      return new Response(null, { headers: corsHeaders, status: 204 });
+    }
+
+    if (req.method === "GET") {
+      const name = await this.room.storage.get<string>("name");
+
+      if (!name) {
+        return new Response("Not Found", { headers: corsHeaders, status: 404 });
+      }
+
+      return Response.json(
+        { id: this.room.id, name },
+        { headers: corsHeaders },
+      );
+    }
+
     const action = req.headers.get("X-Action");
 
     if (req.method !== "POST" || action !== "create") {
-      return new Response("Method Not Allowed", { status: 405 });
+      return new Response("Method Not Allowed", {
+        headers: corsHeaders,
+        status: 405,
+      });
     }
 
     const existing = await this.room.storage.get<string>("name");
 
     if (existing) {
-      return new Response("Conflict", { status: 409 });
+      return new Response("Conflict", { headers: corsHeaders, status: 409 });
     }
 
     const rawBody: unknown = await req.json();
@@ -173,12 +199,15 @@ export default class Server implements Party.Server {
         : undefined;
 
     if (typeof name !== "string" || !name.trim()) {
-      return new Response("Bad Request", { status: 400 });
+      return new Response("Bad Request", {
+        headers: corsHeaders,
+        status: 400,
+      });
     }
 
     await this.room.storage.put("name", name);
 
-    return Response.json({ id: this.room.id, name });
+    return Response.json({ id: this.room.id, name }, { headers: corsHeaders });
   }
 
   private async handleLeave(connId: string) {

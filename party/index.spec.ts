@@ -90,14 +90,39 @@ describe("Server.onRequest", () => {
     expect(storage.put).toHaveBeenCalledWith("name", "My Room");
   });
 
-  it("should return 405 when method is not POST", async () => {
+  it("should return 405 when method is not GET or POST", async () => {
+    const room = makeRoom();
+    const s = new Server(room);
+
+    const req = makeRequest("DELETE", {}, null);
+    const res = await s.onRequest(req);
+
+    expect(res.status).toBe(405);
+  });
+
+  it("should return room name on GET when room exists", async () => {
+    const storage = makeStorage({ name: "My Room" });
+    const room = makeRoom({ id: "abc123", storage });
+    const s = new Server(room);
+
+    const req = makeRequest("GET", {}, null);
+    const res = await s.onRequest(req);
+
+    expect(res.status).toBe(200);
+    await expect(res.json()).resolves.toStrictEqual({
+      id: "abc123",
+      name: "My Room",
+    });
+  });
+
+  it("should return 404 on GET when room does not exist", async () => {
     const room = makeRoom();
     const s = new Server(room);
 
     const req = makeRequest("GET", {}, null);
     const res = await s.onRequest(req);
 
-    expect(res.status).toBe(405);
+    expect(res.status).toBe(404);
   });
 
   it("should return 405 when X-Action header is missing", async () => {

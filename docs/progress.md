@@ -46,8 +46,8 @@ Tracks completion of each phase in `docs/plan.md`. Check off tasks as they are d
 ### Verification
 
 - [x] `pnpm test --run` green
-- [ ] Room creation `POST /parties/main/<id>` with `X-Action: create` returns `200 { id, name }`
-- [ ] WebSocket `join` → `init` round-trip works via `npx partykit dev`
+- [x] Room creation `POST /parties/main/<id>` with `X-Action: create` returns `200 { id, name }`
+- [x] WebSocket `join` → `init` round-trip works via `npx partykit dev`
 
 ---
 
@@ -104,18 +104,20 @@ Tracks completion of each phase in `docs/plan.md`. Check off tasks as they are d
 
 ## Phase 4 — Room page
 
-- [ ] **Phase complete**
+- [x] **Phase complete**
 
 ### Files
 
-- [ ] `src/app/r/[id]/page.tsx` — create (Server Component: fetch room name, redirect if not found)
-- [ ] `src/app/r/[id]/room-client.tsx` — create (`'use client'`: sessionStorage check, displayName prompt, PartySocket, message rendering)
+- [x] `src/app/r/[id]/page.tsx` — create (Server Component: fetch room name, redirect if not found)
+- [x] `src/app/r/[id]/_components/room-client.tsx` — create (`'use client'`: sessionStorage check, displayName prompt, PartySocket, message rendering)
+- [x] `src/app/r/[id]/_components/display-name-form.tsx` — create (inline display name prompt)
 
 ### Tests
 
-- [ ] `e2e/chat.spec.ts` — full happy-path Playwright flow
-- [ ] `playwright.config.ts` — add Next.js + PartyKit `webServer` entries
+- [x] `e2e/chat.spec.ts` — full happy-path Playwright flow
+- [x] `e2e/smoke.spec.ts` — home page title assertion
+- [x] `playwright.config.ts` — Next.js + PartyKit `webServer` entries with `--port 1999`
 
 ### Verification
 
-- [ ] `pnpm e2e` green (full happy path passes)
+- [x] `pnpm e2e` green (full happy path passes)
