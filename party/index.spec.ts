@@ -336,7 +336,7 @@ describe("Server.onMessage — message", () => {
 });
 
 describe("Server.onMessage — leave", () => {
-  it("should remove participant and broadcast left", async () => {
+  it("should remove participant and broadcast cleared then left", async () => {
     const storage = makeStorage({ name: "My Room" });
     const room = makeRoom({ storage });
     const s = new Server(room);
@@ -353,13 +353,17 @@ describe("Server.onMessage — leave", () => {
 
     await s.onMessage(JSON.stringify({ type: "leave" }), conn);
 
-    expect(broadcastMock).toHaveBeenCalledOnce();
+    expect(broadcastMock).toHaveBeenCalledTimes(2);
 
-    const broadcasted = JSON.parse(
+    const first = JSON.parse(
       broadcastMock.mock.calls[0][0] as string,
     ) as unknown;
+    const second = JSON.parse(
+      broadcastMock.mock.calls[1][0] as string,
+    ) as unknown;
 
-    expect(broadcasted).toMatchObject({ type: "left" });
+    expect(first).toMatchObject({ type: "cleared" });
+    expect(second).toMatchObject({ type: "left" });
   });
 });
 
@@ -397,6 +401,71 @@ describe("Server.onClose", () => {
     await s.onClose(conn1);
 
     expect(storage.delete).not.toHaveBeenCalled();
+  });
+});
+
+describe("Server.onMessage — clear", () => {
+  it("should clear messages and broadcast cleared when a participant sends clear", async () => {
+    const storage = makeStorage({ name: "My Room" });
+    const room = makeRoom({ storage });
+    const s = new Server(room);
+    const conn = makeConn("conn-1");
+
+    await s.onMessage(
+      JSON.stringify({ displayName: "Alice", type: "join" }),
+      conn,
+    );
+    await s.onMessage(JSON.stringify({ body: "hello", type: "message" }), conn);
+
+    const broadcastMock = room.broadcast as MockFn;
+
+    broadcastMock.mockClear();
+
+    await s.onMessage(JSON.stringify({ type: "clear" }), conn);
+
+    expect(broadcastMock).toHaveBeenCalledOnce();
+
+    const broadcasted = JSON.parse(
+      broadcastMock.mock.calls[0][0] as string,
+    ) as unknown;
+
+    expect(broadcasted).toMatchObject({ type: "cleared" });
+  });
+
+  it("should clear messages and broadcast cleared when a participant leaves mid-session", async () => {
+    const storage = makeStorage({ name: "My Room" });
+    const room = makeRoom({ storage });
+    const s = new Server(room);
+    const conn1 = makeConn("conn-1");
+    const conn2 = makeConn("conn-2");
+
+    await s.onMessage(
+      JSON.stringify({ displayName: "Alice", type: "join" }),
+      conn1,
+    );
+    await s.onMessage(
+      JSON.stringify({ displayName: "Bob", type: "join" }),
+      conn2,
+    );
+    await s.onMessage(
+      JSON.stringify({ body: "hello", type: "message" }),
+      conn1,
+    );
+
+    const broadcastMock = room.broadcast as MockFn;
+
+    broadcastMock.mockClear();
+
+    await s.onMessage(JSON.stringify({ type: "leave" }), conn1);
+
+    const calls = (broadcastMock.mock.calls as [string][]).map(
+      ([raw]) => JSON.parse(raw) as unknown,
+    );
+    const clearedCall = calls.find(
+      (c) => (c as { type: string }).type === "cleared",
+    );
+
+    expect(clearedCall).toMatchObject({ type: "cleared" });
   });
 });
 

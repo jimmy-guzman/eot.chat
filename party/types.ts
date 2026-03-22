@@ -19,12 +19,14 @@ export const MessageSchema = Schema.Struct({
 });
 
 export const ClientMessageSchema = Schema.Union(
+  Schema.Struct({ type: Schema.Literal("clear") }),
   Schema.Struct({ displayName: Schema.String, type: Schema.Literal("join") }),
-  Schema.Struct({ body: Schema.String, type: Schema.Literal("message") }),
   Schema.Struct({ type: Schema.Literal("leave") }),
+  Schema.Struct({ body: Schema.String, type: Schema.Literal("message") }),
 );
 
 export const ServerMessageSchema = Schema.Union(
+  Schema.Struct({ type: Schema.Literal("cleared") }),
   Schema.Struct({
     messages: Schema.Array(MessageSchema),
     participants: Schema.Array(ParticipantSchema),

@@ -110,6 +110,11 @@ export const RoomClient = ({ id, name }: Props) => {
       }
 
       switch (msg.type) {
+        case "cleared": {
+          setMessages([]);
+
+          break;
+        }
         case "error": {
           router.push("/");
 
@@ -192,6 +197,11 @@ export const RoomClient = ({ id, name }: Props) => {
     router.push("/");
   };
 
+  const handleClear = () => {
+    socketRef.current?.send(JSON.stringify({ type: "clear" }));
+    setMessages([]);
+  };
+
   if (!resolvedDisplayName) {
     return <DisplayNameForm onJoin={handleJoin} />;
   }
@@ -238,6 +248,13 @@ export const RoomClient = ({ id, name }: Props) => {
               type="button"
             >
               Copy Link
+            </button>
+            <button
+              className={button({ size: "sm", variant: "ghost" })}
+              onClick={handleClear}
+              type="button"
+            >
+              Clear Chat
             </button>
             <button
               className={button({ size: "sm", variant: "danger" })}

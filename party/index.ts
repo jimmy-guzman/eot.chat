@@ -183,6 +183,16 @@ export default class Server implements Party.Server {
       Match.when({ type: "leave" }, () => {
         return Effect.promise(() => this.handleLeave(sender.id));
       }),
+      Match.when({ type: "clear" }, () => {
+        return Effect.gen(this, function* () {
+          this.messages.length = 0;
+          this.room.broadcast(JSON.stringify({ type: "cleared" }));
+
+          yield* Effect.logInfo("clear: messages cleared by participant", {
+            senderId: sender.id,
+          });
+        });
+      }),
       Match.exhaustive,
     );
 
@@ -269,6 +279,9 @@ export default class Server implements Party.Server {
       }).pipe(Effect.provide(Logger.json)),
     );
 
+    this.messages.length = 0;
+    this.room.broadcast(JSON.stringify({ type: "cleared" }));
+
     this.room.broadcast(
       JSON.stringify({
         displayName: participant.displayName,
@@ -279,7 +292,6 @@ export default class Server implements Party.Server {
 
     if (this.participants.size === 0) {
       await this.room.storage.delete("name");
-      this.messages.length = 0;
     }
   }
 }
