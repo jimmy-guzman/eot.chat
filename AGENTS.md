@@ -95,6 +95,7 @@ If any step fails, fix the issue and re-run from that step. Do not move on until
 - Sort object keys and import statements alphabetically.
 - No comments in the codebase that are not JSDoc or TODO/FIXME notes.
 - **Kebab-case filenames** — all files and directories use kebab-case (e.g. `room-client.tsx`, `token-bucket.ts`). Next.js reserved filenames (`page.tsx`, `layout.tsx`, `route.ts`, `error.tsx`, etc.) are exempt.
+- **RSC boundaries** — keep `"use client"` as far down the tree as possible. Page files (`page.tsx`, `layout.tsx`) must be Server Components unless they contain no extractable static content. Extract interactive subtrees into a `_components/` folder co-located with the route (e.g. `src/app/_components/` for the root, `src/app/r/[id]/_components/` for the room route). Use `useTransition` for async form submissions — it provides `isPending` without manual `loading` state and keeps the UI responsive during the transition. Reserve `useOptimistic` for mutations that have a meaningful local preview (e.g. appending a sent message before the server broadcasts it back).
 
 ---
 
