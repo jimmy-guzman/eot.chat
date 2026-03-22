@@ -13,7 +13,9 @@
     "lint": "eslint . --cache --cache-location node_modules/.cache/eslint/",
     "lint:fix": "eslint . --fix --cache --cache-location node_modules/.cache/eslint/",
     "e2e": "playwright test",
-    "e2e:ui": "playwright test --ui"
+    "e2e:ui": "playwright test --ui",
+    "test": "vitest",
+    "typecheck": "tsc"
   },
   "dependencies": {
     "@base-ui/react": "1.3.0",
@@ -31,16 +33,24 @@
     "@jimmy.codes/eslint-config": "7.5.2",
     "@pandacss/dev": "1.9.0",
     "@playwright/test": "1.58.2",
+    "@testing-library/dom": "10.4.1",
+    "@testing-library/jest-dom": "6.9.1",
+    "@testing-library/react": "16.3.2",
+    "@testing-library/user-event": "14.6.1",
     "@types/node": "24.12.0",
     "@types/react": " 19.2.14",
     "@types/react-dom": " 19.2.3",
+    "@vitejs/plugin-react": "6.0.1",
     "babel-plugin-react-compiler": "1.0.0",
     "eslint": "^9.39.4",
+    "happy-dom": "20.8.4",
     "jiti": "2.6.1",
+    "msw": "2.12.14",
     "oxfmt": "0.41.0",
     "partykit": "0.0.115",
     "tsx": "4.21.0",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "vitest": "4.1.0"
   },
   "packageManager": "pnpm@10.32.1+sha512.a706938f0e89ac1456b6563eab4edf1d1faf3368d1191fc5c59790e96dc918e4456ab2e67d613de1043d2e8c81f87303e6b40d4ffeca9df15ef1ad567348f2be"
 }

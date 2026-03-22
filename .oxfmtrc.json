@@ -2,9 +2,6 @@
   "$schema": "./node_modules/oxfmt/configuration_schema.json",
   "arrowParens": "always",
   "jsxSingleQuote": false,
-  "experimentalTailwindcss": {
-    "stylesheet": "./src/app/globals.css"
-  },
   "printWidth": 80,
   "quoteProps": "consistent",
   "semi": true,

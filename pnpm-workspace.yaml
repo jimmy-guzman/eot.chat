@@ -5,6 +5,7 @@ ignoredBuiltDependencies:
 onlyBuiltDependencies:
   - "@openrouter/sdk"
   - esbuild
+  - msw
   - workerd
 saveExact: true
 savePrefix: ""

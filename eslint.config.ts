@@ -29,4 +29,7 @@ export default defineConfig({
       },
     },
   ],
+  vitest: {
+    globals: "explicit",
+  },
 });
