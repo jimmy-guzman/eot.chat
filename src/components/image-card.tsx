@@ -25,8 +25,8 @@ export const ImageCard = ({ alt, caption, url }: Props) => {
       {caption ? (
         <figcaption
           className={css({
-            fontSize: "0.75rem",
-            opacity: 0.7,
+            backgroundColor: "yellow",
+            fontSize: "xs",
             padding: "2",
             textAlign: "center",
           })}

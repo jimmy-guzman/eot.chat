@@ -1,4 +1,5 @@
-import { css } from "styled-system/css";
+import { css, cx } from "styled-system/css";
+import { card } from "styled-system/recipes";
 
 interface Props {
   description?: string;
@@ -19,15 +20,16 @@ export const RepoCard = ({
 }: Props) => {
   return (
     <a
-      className={css({
-        _hover: { boxShadow: "md" },
-        borderRadius: "md",
-        boxShadow: "sm",
-        color: "ink",
-        display: "block",
-        padding: "4",
-        textDecoration: "none",
-      })}
+      className={cx(
+        card({ variant: "default" }),
+        css({
+          _hover: { boxShadow: "md" },
+          color: "ink",
+          display: "block",
+          padding: "4",
+          textDecoration: "none",
+        }),
+      )}
       href={url}
       rel="noopener noreferrer"
       target="_blank"
@@ -35,8 +37,8 @@ export const RepoCard = ({
       <p
         className={css({
           color: "cobalt",
-          fontSize: "0.875rem",
-          fontWeight: "700",
+          fontSize: "sm",
+          fontWeight: "bold",
           marginBottom: "1",
         })}
       >
@@ -45,7 +47,7 @@ export const RepoCard = ({
       {description ? (
         <p
           className={css({
-            fontSize: "0.875rem",
+            fontSize: "sm",
             marginBottom: "2",
             opacity: 0.8,
           })}
@@ -55,10 +57,10 @@ export const RepoCard = ({
       ) : null}
       <div className={css({ display: "flex", gap: "3" })}>
         {language ? (
-          <span className={css({ fontSize: "0.75rem" })}>{language}</span>
+          <span className={css({ fontSize: "xs" })}>{language}</span>
         ) : null}
         {stars === undefined ? null : (
-          <span className={css({ fontSize: "0.75rem" })}>★ {stars}</span>
+          <span className={css({ fontSize: "xs" })}>★ {stars}</span>
         )}
       </div>
     </a>

@@ -93,9 +93,9 @@ Tracks completion of each phase in `docs/plan.md`. Check off tasks as they are d
 - [x] `src/components/poll.tsx`
 - [x] `src/components/image-card.tsx`
 - [x] `src/components/index.ts` — barrel export
-- [ ] Components restyled with recipe primitives and named typography tokens
-- [ ] Accent colors applied: `chartreuse` (CodeBlock), `orange` (Poll), `sage` (Table), `yellow` (ImageCard)
-- [ ] All `"white"` surfaces replaced with `surface` token
+- [x] Components restyled with recipe primitives and named typography tokens
+- [x] Accent colors applied: `chartreuse` (CodeBlock), `orange` (Poll), `sage` (Table), `yellow` (ImageCard)
+- [x] All `"white"` surfaces replaced with `surface` token
 
 ### Tests
 
@@ -122,7 +122,7 @@ Tracks completion of each phase in `docs/plan.md`. Check off tasks as they are d
 ### Files
 
 - [x] `src/app/page.tsx` — rewrite (Create a Room form, nanoid ID, POST to PartyKit, sessionStorage, redirect)
-- [ ] `src/app/_components/create-room-form.tsx` — restyled with `button` and `input` recipes
+- [x] `src/app/_components/create-room-form.tsx` — restyled with `button` and `input` recipes
 
 ### Verification
 
@@ -140,8 +140,8 @@ Tracks completion of each phase in `docs/plan.md`. Check off tasks as they are d
 - [x] `src/app/r/[id]/page.tsx` — create (Server Component: fetch room name, redirect if not found)
 - [x] `src/app/r/[id]/_components/room-client.tsx` — create (`'use client'`: `useSyncExternalStore` for sessionStorage, displayName prompt, PartySocket, message rendering)
 - [x] `src/app/r/[id]/_components/display-name-form.tsx` — create (inline display name prompt)
-- [ ] `room-client.tsx` — restyled with `button`, `input`, `badge` recipes and named tokens
-- [ ] `display-name-form.tsx` — restyled with `button` and `input` recipes
+- [x] `room-client.tsx` — restyled with `button`, `input`, `badge` recipes and named tokens
+- [x] `display-name-form.tsx` — restyled with `button` and `input` recipes
 
 ### Tests
 

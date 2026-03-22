@@ -16,8 +16,8 @@ export const Poll = ({ options, question }: Props) => {
     >
       <p
         className={css({
-          fontSize: "1rem",
-          fontWeight: "700",
+          fontSize: "base",
+          fontWeight: "bold",
           marginBottom: "3",
         })}
       >
@@ -37,10 +37,11 @@ export const Poll = ({ options, question }: Props) => {
             <li
               className={css({
                 _hover: { opacity: 0.85 },
+                backgroundColor: "orange",
                 borderRadius: "sm",
                 cursor: "pointer",
-                fontSize: "0.875rem",
-                fontWeight: "700",
+                fontSize: "sm",
+                fontWeight: "bold",
                 padding: "2",
               })}
               key={option}

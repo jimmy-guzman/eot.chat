@@ -3,7 +3,8 @@
 import { nanoid } from "nanoid";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { css } from "styled-system/css";
+import { css, cx } from "styled-system/css";
+import { button, input } from "styled-system/recipes";
 
 export const CreateRoomForm = () => {
   const router = useRouter();
@@ -56,8 +57,8 @@ export const CreateRoomForm = () => {
           className={css({
             color: "ink",
             display: "block",
-            fontSize: "0.875rem",
-            fontWeight: "700",
+            fontSize: "sm",
+            fontWeight: "bold",
             marginBottom: "2",
           })}
           htmlFor="roomName"
@@ -65,17 +66,7 @@ export const CreateRoomForm = () => {
           Room name
         </label>
         <input
-          className={css({
-            _focus: { borderColor: "cobalt" },
-            backgroundColor: "bg",
-            border: "2px solid token(colors.soft-pink)",
-            borderRadius: "sm",
-            color: "ink",
-            fontSize: "1rem",
-            outline: "none",
-            padding: "3",
-            width: "100%",
-          })}
+          className={input()}
           id="roomName"
           name="roomName"
           placeholder="e.g. Friday Standup"
@@ -89,8 +80,8 @@ export const CreateRoomForm = () => {
           className={css({
             color: "ink",
             display: "block",
-            fontSize: "0.875rem",
-            fontWeight: "700",
+            fontSize: "sm",
+            fontWeight: "bold",
             marginBottom: "2",
           })}
           htmlFor="displayName"
@@ -98,17 +89,7 @@ export const CreateRoomForm = () => {
           Your name
         </label>
         <input
-          className={css({
-            _focus: { borderColor: "cobalt" },
-            backgroundColor: "bg",
-            border: "2px solid token(colors.soft-pink)",
-            borderRadius: "sm",
-            color: "ink",
-            fontSize: "1rem",
-            outline: "none",
-            padding: "3",
-            width: "100%",
-          })}
+          className={input()}
           id="displayName"
           name="displayName"
           placeholder="e.g. Ada"
@@ -121,7 +102,7 @@ export const CreateRoomForm = () => {
         <p
           className={css({
             color: "red",
-            fontSize: "0.875rem",
+            fontSize: "sm",
             marginBottom: "4",
           })}
         >
@@ -130,19 +111,7 @@ export const CreateRoomForm = () => {
       ) : null}
 
       <button
-        className={css({
-          _disabled: { cursor: "not-allowed", opacity: 0.5 },
-          _hover: { backgroundColor: "cobalt", boxShadow: "md" },
-          backgroundColor: "cobalt",
-          border: "none",
-          borderRadius: "full",
-          color: "white",
-          cursor: "pointer",
-          fontSize: "1rem",
-          fontWeight: "700",
-          padding: "3 6",
-          width: "100%",
-        })}
+        className={cx(button({ variant: "primary" }), css({ width: "100%" }))}
         disabled={isPending}
         type="submit"
       >

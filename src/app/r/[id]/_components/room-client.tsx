@@ -12,7 +12,8 @@ import {
   useSyncExternalStore,
   useTransition,
 } from "react";
-import { css } from "styled-system/css";
+import { css, cx } from "styled-system/css";
+import { badge, button, input } from "styled-system/recipes";
 
 import { registry } from "@/catalog/registry";
 
@@ -28,18 +29,6 @@ interface Props {
   id: string;
   name: string;
 }
-
-const actionButtonStyle = css({
-  _hover: { boxShadow: "md" },
-  backgroundColor: "mint",
-  border: "none",
-  borderRadius: "sm",
-  color: "ink",
-  cursor: "pointer",
-  fontSize: "0.875rem",
-  fontWeight: "700",
-  padding: "2 3",
-});
 
 const getStoredDisplayName = (id: string) => {
   try {
@@ -88,7 +77,7 @@ export const RoomClient = ({ id, name }: Props) => {
     (state, newMessage: Message) => [...state, newMessage],
   );
   const [participants, setParticipants] = useState<Participant[]>([]);
-  const [input, setInput] = useState("");
+  const [inputValue, setInputValue] = useState("");
   const socketRef = useRef<InstanceType<typeof PartySocketClient> | null>(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
@@ -178,7 +167,7 @@ export const RoomClient = ({ id, name }: Props) => {
 
   const handleSend = (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const body = input.trim();
+    const body = inputValue.trim();
 
     if (!body || !socketRef.current || !resolvedDisplayName) return;
 
@@ -194,7 +183,7 @@ export const RoomClient = ({ id, name }: Props) => {
       addOptimisticMessage(optimistic);
     });
     socketRef.current.send(JSON.stringify({ body, type: "message" }));
-    setInput("");
+    setInputValue("");
   };
 
   const handleExit = () => {
@@ -219,7 +208,7 @@ export const RoomClient = ({ id, name }: Props) => {
       {/* Header */}
       <header
         className={css({
-          backgroundColor: "white",
+          backgroundColor: "surface",
           borderBottom: "1px solid token(colors.soft-pink)",
           padding: "4 5",
         })}
@@ -235,8 +224,8 @@ export const RoomClient = ({ id, name }: Props) => {
           <h1
             className={css({
               color: "ink",
-              fontSize: "1rem",
-              fontWeight: "800",
+              fontSize: "base",
+              fontWeight: "extrabold",
             })}
           >
             You Are Now in Room:{" "}
@@ -244,24 +233,14 @@ export const RoomClient = ({ id, name }: Props) => {
           </h1>
           <div className={css({ display: "flex", gap: "2" })}>
             <button
-              className={actionButtonStyle}
+              className={button({ size: "sm", variant: "secondary" })}
               onClick={copyRoomLink}
               type="button"
             >
               Copy Link
             </button>
             <button
-              className={css({
-                _hover: { boxShadow: "md" },
-                backgroundColor: "soft-pink",
-                border: "none",
-                borderRadius: "sm",
-                color: "ink",
-                cursor: "pointer",
-                fontSize: "0.875rem",
-                fontWeight: "700",
-                padding: "2 3",
-              })}
+              className={button({ size: "sm", variant: "danger" })}
               onClick={handleExit}
               type="button"
             >
@@ -272,7 +251,7 @@ export const RoomClient = ({ id, name }: Props) => {
         <p
           className={css({
             color: "ink",
-            fontSize: "0.75rem",
+            fontSize: "xs",
             marginTop: "1",
             opacity: 0.5,
           })}
@@ -286,7 +265,7 @@ export const RoomClient = ({ id, name }: Props) => {
         <ul
           aria-label="Participants"
           className={css({
-            backgroundColor: "white",
+            backgroundColor: "surface",
             borderBottom: "1px solid token(colors.soft-pink)",
             display: "flex",
             gap: "2",
@@ -298,17 +277,11 @@ export const RoomClient = ({ id, name }: Props) => {
           {participants.map((p) => {
             return (
               <li
-                className={css({
-                  backgroundColor:
+                className={badge({
+                  variant:
                     p.displayName === resolvedDisplayName
-                      ? "cobalt"
-                      : "lavender",
-                  borderRadius: "full",
-                  color:
-                    p.displayName === resolvedDisplayName ? "white" : "ink",
-                  fontSize: "0.75rem",
-                  fontWeight: "700",
-                  padding: "1 3",
+                      ? "active"
+                      : "default",
                 })}
                 key={p.displayName}
               >
@@ -331,7 +304,7 @@ export const RoomClient = ({ id, name }: Props) => {
           <p
             className={css({
               color: "ink",
-              fontSize: "0.875rem",
+              fontSize: "sm",
               opacity: 0.4,
               textAlign: "center",
             })}
@@ -363,8 +336,8 @@ export const RoomClient = ({ id, name }: Props) => {
                 <span
                   className={css({
                     color: "ink",
-                    fontSize: "0.75rem",
-                    fontWeight: "700",
+                    fontSize: "xs",
+                    fontWeight: "bold",
                     opacity: 0.5,
                     paddingX: "1",
                   })}
@@ -373,10 +346,10 @@ export const RoomClient = ({ id, name }: Props) => {
                 </span>
                 <div
                   className={css({
-                    backgroundColor: isOwn ? "powder-blue" : "white",
+                    backgroundColor: isOwn ? "powder-blue" : "surface",
                     borderRadius: "md",
                     boxShadow: "sm",
-                    maxWidth: "480px",
+                    maxWidth: "bubble",
                     padding: "3",
                     width: "fit-content",
                   })}
@@ -401,7 +374,7 @@ export const RoomClient = ({ id, name }: Props) => {
       {/* Input */}
       <form
         className={css({
-          backgroundColor: "white",
+          backgroundColor: "surface",
           borderTop: "1px solid token(colors.soft-pink)",
           display: "flex",
           gap: "3",
@@ -410,38 +383,17 @@ export const RoomClient = ({ id, name }: Props) => {
         onSubmit={handleSend}
       >
         <input
-          className={css({
-            _focus: { borderColor: "cobalt" },
-            backgroundColor: "bg",
-            border: "2px solid token(colors.soft-pink)",
-            borderRadius: "sm",
-            color: "ink",
-            flex: "1",
-            fontSize: "1rem",
-            outline: "none",
-            padding: "3",
-          })}
+          className={cx(input(), css({ flex: "1", width: "auto" }))}
           onChange={(e) => {
-            setInput(e.target.value);
+            setInputValue(e.target.value);
           }}
           placeholder="Send anything..."
           type="text"
-          value={input}
+          value={inputValue}
         />
         <button
-          className={css({
-            _disabled: { cursor: "not-allowed", opacity: 0.5 },
-            _hover: { boxShadow: "md" },
-            backgroundColor: "cobalt",
-            border: "none",
-            borderRadius: "full",
-            color: "white",
-            cursor: "pointer",
-            fontSize: "1rem",
-            fontWeight: "700",
-            padding: "3 5",
-          })}
-          disabled={!input.trim()}
+          className={button({ variant: "primary" })}
+          disabled={!inputValue.trim()}
           type="submit"
         >
           Send
