@@ -11,7 +11,7 @@ const ibmPlexMono = IBM_Plex_Mono({
 });
 
 export const metadata = {
-  description: "Rooms that feel like home",
+  description: "End of transmission.",
   title: "EOT",
 } satisfies Metadata;
 

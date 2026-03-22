@@ -125,9 +125,8 @@ These are caught by the linter, but following them preemptively avoids round-tri
 - **Commits:** Conventional Commits format with an emoji after the colon and lowercase descriptions. Format: `<type>: <emoji> <description>`. Subject line under 64 characters; wrap body at 72 characters.
 - **Commit emojis:** `feat` → `✨`, `fix` → `🐛`, `docs` → `📝`, `chore` → `🤖`, `ci` → `👷`, `test` → `✅`, `refactor` → `🔄`, `style` → `🎨`, `perf` → `⚡️`, `revert` → `⏪`, `release` → `🚀`.
 - **Commit cadence:** one commit per phase, after all four verification checks pass (`typecheck` → `lint` → `test` → `build`). Update `docs/progress.md` to reflect completion before committing. Commit message format: `feat: ✨ phase <n> — <phase name>` (e.g. `feat: ✨ phase 0 — foundation`).
-- Commits go directly to `main` — no feature branch per phase.
-- For non-phase work (fixes, docs, refactors), branch off `main`, push, and open a PR with `gh pr create`. PR titles follow the same conventional commit format.
-- Do not commit directly to `main` for non-phase work — create a branch first.
+- All work goes through a branch and PR — no direct commits to `main`, including phase work.
+- Branch off `main`, push, and open a PR with `gh pr create`. PR titles follow the same conventional commit format.
 
 ---
 
