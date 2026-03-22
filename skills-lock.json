@@ -1,0 +1,70 @@
+{
+  "version": 1,
+  "skills": {
+    "core": {
+      "source": "vercel-labs/json-render",
+      "sourceType": "github",
+      "computedHash": "ee0feec2d99e508c9561455afa6697c8ce3f6ab03b5428fe671b881abb0a022f"
+    },
+    "image": {
+      "source": "vercel-labs/json-render",
+      "sourceType": "github",
+      "computedHash": "f4e8c094db4900ddf1467f8a69596fc9445136b3a62c1312831ff968451f4eb5"
+    },
+    "next-best-practices": {
+      "source": "vercel-labs/next-skills",
+      "sourceType": "github",
+      "computedHash": "515ba75178bd44875812d9a560bdf14651f86709f89cf1d4f209638e879807f3"
+    },
+    "next-cache-components": {
+      "source": "vercel-labs/next-skills",
+      "sourceType": "github",
+      "computedHash": "a94b83ddcd2ff1c30722577f693b1bfe32f2e1a83abdd6c08c2d6cc6753b53c8"
+    },
+    "next-upgrade": {
+      "source": "vercel-labs/next-skills",
+      "sourceType": "github",
+      "computedHash": "be6bbf6ab1dc2cc6f2505cea52d497920c04f5b532c0846ee201f6029b803fb0"
+    },
+    "openrouter-typescript-sdk": {
+      "source": "openrouterteam/agent-skills",
+      "sourceType": "github",
+      "computedHash": "0cb0e2f07f6b42fb8974c2ee89ca3ba3a103dfe565f12bc7ca9f41945fc7227a"
+    },
+    "react": {
+      "source": "vercel-labs/json-render",
+      "sourceType": "github",
+      "computedHash": "22dde85d5a69aaee45eb56aeed8e7f8fb5d2ae2559b38f71621d0654385bed1d"
+    },
+    "react-pdf": {
+      "source": "vercel-labs/json-render",
+      "sourceType": "github",
+      "computedHash": "a02018e64af5fc7e07e09fdd27ed43cc2b34b4ff1fbfcc21c0b391564f6a9528"
+    },
+    "remotion": {
+      "source": "vercel-labs/json-render",
+      "sourceType": "github",
+      "computedHash": "391d340781220430ac6a8cc92fea99c5df026439d2e9be46b9d2c5d20488e3ef"
+    },
+    "remotion-best-practices": {
+      "source": "vercel-labs/json-render",
+      "sourceType": "github",
+      "computedHash": "4756068d1b2f92ef4f6d1301094a9862ef275687d3dbf26fda5e52cae3fca4c1"
+    },
+    "vercel-composition-patterns": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "computedHash": "f98931159fa9c7fed043bcd18a891a46dcf89ababa38df13a4c5b7b30dc0ce07"
+    },
+    "vercel-react-best-practices": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "computedHash": "c858d2d9023e73edb4e5504868cb0e36313e58fd56af12ef888b43c5634a3c17"
+    },
+    "web-design-guidelines": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "computedHash": "a6a44d5498f7e8f68289902f3dedfc6f38ae0cee1e96527c80724cf27f727c2a"
+    }
+  }
+}
