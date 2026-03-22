@@ -11,6 +11,7 @@ export interface Classification {
 const ComponentTypeSchema = Schema.Literal(...componentNames);
 
 const ElementSchema = Schema.Struct({
+  children: Schema.optional(Schema.Array(Schema.String)),
   props: Schema.Record({ key: Schema.String, value: Schema.Unknown }),
   type: ComponentTypeSchema,
 });

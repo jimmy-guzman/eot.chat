@@ -11,9 +11,13 @@ import { ClientMessageSchema } from "./types";
 
 const SYSTEM_PROMPT = `You are a message classifier for a chat application.
 Classify the user's message by returning a JSON spec tree in { elements, root } format.
-Each element has a type (from the catalog below) and props.
+Each element has a "type", "props", and optionally "children" (array of element keys).
 For a single component, use { "elements": { "root": { "type": "...", "props": {...} } }, "root": "root" }.
-For composed output, use Stack as the root and reference child elements by key.
+For composed output use Stack as root. Children are listed as a top-level "children" array on the element (NOT inside props).
+
+Example of a composed spec with Stack:
+{ "root": "layout", "elements": { "layout": { "type": "Stack", "props": { "gap": 4 }, "children": ["m1", "m2"] }, "m1": { "type": "Metric", "props": { "label": "Revenue", "value": "$42k", "trend": "up" } }, "m2": { "type": "Metric", "props": { "label": "Signups", "value": "1,200" } } } }
+
 Return only valid JSON. Do not include any explanation or wrapping text.
 
 Components:
@@ -29,10 +33,11 @@ Components:
 - LineChart: line chart for trends. Props: { data: { label: string, value: number }[], title?: string, color?: string }
 - Callout: highlighted info/tip/warning block. Props: { type: "info" | "tip" | "warning", content: string, title?: string }
 - Timeline: vertical list of steps/events. Props: { items: { title: string, description?: string, date?: string, status?: "completed" | "current" | "upcoming" }[] }
-- Stack: flex layout container for composing multiple components. Props: { children: string[], direction?: "vertical" | "horizontal", gap?: number }
+- Stack: flex layout container. Props: { direction?: "vertical" | "horizontal", gap?: number }. Children: list of element keys in top-level "children" array, not inside props.
 
 Priority (highest first): ImageCard > RepoCard > CodeBlock > Table > BarChart/LineChart > Poll > Timeline > Metric (via Stack) > Callout > LinkPreview > TextMessage
-Default to TextMessage if nothing else fits.`;
+Default to TextMessage if nothing else fits.
+For Stack: always put child keys in "children" on the element, never inside "props".`;
 
 export default class Server implements Party.Server {
   private readonly buckets = new Map<string, TokenBucket>();

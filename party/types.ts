@@ -9,6 +9,7 @@ export const ComponentSchema = Schema.Struct({
   elements: Schema.Record({
     key: Schema.String,
     value: Schema.Struct({
+      children: Schema.optional(Schema.mutable(Schema.Array(Schema.String))),
       props: Schema.Record({ key: Schema.String, value: Schema.Unknown }),
       type: Schema.String,
     }),

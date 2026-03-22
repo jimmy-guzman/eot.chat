@@ -299,25 +299,18 @@ describe("schemas.Metric", () => {
 });
 
 describe("schemas.Stack", () => {
-  it("should accept valid props with children", () => {
-    expect(schemas.Stack.parse({ children: ["a", "b"] })).toStrictEqual({
-      children: ["a", "b"],
-    });
+  it("should accept empty props", () => {
+    expect(schemas.Stack.parse({})).toStrictEqual({});
   });
 
   it("should accept optional direction and gap", () => {
     const result = schemas.Stack.parse({
-      children: [],
       direction: "horizontal",
       gap: 2,
     });
 
     expect(result.direction).toBe("horizontal");
     expect(result.gap).toBe(2);
-  });
-
-  it("should reject missing children", () => {
-    expect(() => schemas.Stack.parse({})).toThrow("Invalid input");
   });
 });
 
