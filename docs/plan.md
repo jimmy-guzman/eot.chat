@@ -8,6 +8,8 @@ Spec-driven, phase-by-phase. Each phase is independently shippable and leaves th
 
 _Get the project buildable with the correct design system before touching features._
 
+**Install dependency** — `pnpm add zod` (required by `@json-render/react` for `defineCatalog` prop schemas in Phase 2)
+
 **`panda.config.ts`**
 
 - Add all 12 color tokens from `docs/product/visual.md` as semantic tokens
@@ -107,23 +109,23 @@ _The Create entry point at `/`._
 
 _The live chat surface. Delivers the full working product._
 
-**`src/app/r/[id]/page.tsx`** — new
+**`src/app/r/[id]/page.tsx`** — new (Server Component)
 
-Server part:
+- Fetches room name from PartyKit via `GET /parties/main/<id>`
+- If room not found (empty storage / 404) → `redirect('/')`
+- Passes `{ id, name }` as props to `<RoomClient>`
 
-- Fetches room name from PartyKit storage (via `GET /parties/main/<id>`)
-- If room not found (storage empty) → redirect to `/`
-- Checks `sessionStorage` for `displayName`; if missing → render join credential form (password + displayName → `POST /parties/main/<id>` with `X-Action: join` → store displayName → re-render as participant)
-- Passes `{ id, name }` as props to the client component
+**`src/app/r/[id]/RoomClient.tsx`** — new (`'use client'`)
 
-Client part:
-
-- Connects to PartyKit via `partysocket`
-- On mount: sends `{ type: "join", displayName }`
-- Receives `{ type: "init", messages[], participants[] }` and populates local state
+- On mount: checks `sessionStorage` for `room:${id}:displayName`
+- If not found: renders the inline display name prompt form
+  - On submit: stores `displayName` in sessionStorage, triggers connection
+- Connects to PartyKit via `partysocket` once `displayName` is known
+- On connect: sends `{ type: "join", displayName }`
+- Receives `{ type: "init", messages[], participants[] }` → populates local state
 - Incoming `message` → append to local messages list
 - Incoming `joined` / `left` → update participant list display
-- Incoming `error` with reason `"room not found"` → redirect to `/`
+- Incoming `error` with reason `"room not found"` → `router.push('/')`
 - For each message, renders the `component` field via `registry.render({ type, props })`
 - Own messages left-aligned, others right-aligned
 - Message input → sends `{ type: "message", body }`
@@ -143,7 +145,8 @@ Header:
 src/
   app/
     r/
-      [id]/page.tsx             Room page (+ displayName prompt for joiners)
+      [id]/page.tsx             Room page server component (fetches room name, redirects if not found)
+      [id]/RoomClient.tsx       Room page client component (WS, displayName prompt, message rendering)
     layout.tsx                  Font + metadata
     page.tsx                    Landing (Create only)
     globals.css                 PandaCSS layers (unchanged)

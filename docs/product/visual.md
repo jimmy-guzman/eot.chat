@@ -54,6 +54,48 @@ Drawn from csms--001, csms--002, csms--005, csms--006, csms--010: fire red, coba
 
 ---
 
+## Spacing
+
+8px base unit. Nothing too tight — density is achieved through layering objects, not compressing whitespace.
+
+| Token      | Value  | Usage                                         |
+| ---------- | ------ | --------------------------------------------- |
+| `space.1`  | `4px`  | Tight internal gaps (icon padding, hairlines) |
+| `space.2`  | `8px`  | Default inner padding, small chip gaps        |
+| `space.3`  | `12px` | Component inner padding                       |
+| `space.4`  | `16px` | Standard section gaps, card padding           |
+| `space.5`  | `24px` | Comfortable layout breathing room             |
+| `space.6`  | `32px` | Section separation                            |
+| `space.8`  | `48px` | Large section gaps                            |
+| `space.10` | `64px` | Page-level spacing                            |
+
+---
+
+## Radius
+
+Very rounded throughout. Soft edges reinforce the kawaii-adjacent warmth — nothing should feel sharp or corporate.
+
+| Token         | Value    | Usage                                          |
+| ------------- | -------- | ---------------------------------------------- |
+| `radius.sm`   | `8px`    | Subtle rounding — inputs, tags, small chips    |
+| `radius.md`   | `16px`   | Cards, message components, form surfaces       |
+| `radius.lg`   | `24px`   | Panels, modal-like surfaces, large containers  |
+| `radius.full` | `9999px` | Pills, avatar bubbles, round buttons           |
+
+---
+
+## Shadows
+
+Warm-tinted shadows only. No cold gray — even depth should feel like it belongs in the same sunlit room.
+
+| Token       | Value                              | Usage                              |
+| ----------- | ---------------------------------- | ---------------------------------- |
+| `shadow.sm` | `0 1px 4px rgba(26,26,26,0.08)`   | Subtle card lift, resting state    |
+| `shadow.md` | `0 4px 16px rgba(26,26,26,0.12)`  | Floating components, hover state   |
+| `shadow.lg` | `0 8px 32px rgba(26,26,26,0.16)`  | Prominent cards, modal surfaces    |
+
+---
+
 ## Typography
 
 **Typeface: M PLUS Rounded 1c** — warm, rounded, slightly handmade. Japanese-designed, works across Latin and Japanese scripts. Reflects the kawaii-adjacent softness of csms--008 and the warm hand-lettered quality of the gallery-wall art in csms--001.

@@ -225,6 +225,8 @@ This caps one participant from triggering more than ~20 AI calls per minute whil
 
 Single-shot: one OpenRouter call per message. The system prompt includes the full component catalog from `docs/product/catalog.md`.
 
+**Model:** `google/gemini-2.0-flash-001` via OpenRouter.
+
 **System prompt structure:**
 
 ```
