@@ -119,21 +119,28 @@ expect(Either.isLeft(result)).toBe(true);
 
 **Mocking OpenRouter with MSW**
 
-MSW intercepts `fetch` transparently — `Effect.tryPromise(() => fetch(...))` sees the mock with no special setup. Add per-test handlers with `server.use(...)` and they are torn down automatically after each test:
+MSW intercepts `fetch` transparently — `Effect.tryPromise(() => fetch(...))` sees the mock with no special setup. Add per-test handlers with `server.use(...)` and they are torn down automatically after each test.
+
+The global setup in `src/testing/vitest.setup.ts` passes `onUnhandledRequest: "error"` to `server.listen()` — any `fetch` without a matching handler throws immediately. This means mocks **must** target the exact endpoint the SDK actually calls. The `@openrouter/sdk` `callModel().getText()` uses the [OpenRouter Responses API](https://openrouter.ai/docs/responses-api) at `POST /v1/responses` with a streaming SSE response, not the legacy `/v1/chat/completions` endpoint.
 
 ```ts
 import { http, HttpResponse } from "msw";
 import { server } from "@/testing/mocks/server";
 
+const content = '{"type":"TextMessage","props":{"body":"hi"}}';
+const sseBody = `data: ${JSON.stringify({
+  response: { id: "r1", output: [], outputText: content, status: "completed" },
+  type: "response.completed",
+})}\n\n`;
+
 server.use(
-  http.post("https://openrouter.ai/api/v1/chat/completions", () =>
-    HttpResponse.json({
-      choices: [
-        {
-          message: { content: '{"type":"TextMessage","props":{"body":"hi"}}' },
-        },
-      ],
-    }),
+  http.post(
+    "https://openrouter.ai/api/v1/responses",
+    () =>
+      new HttpResponse(sseBody, {
+        headers: { "Content-Type": "text/event-stream" },
+        status: 200,
+      }),
   ),
 );
 ```
