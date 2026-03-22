@@ -27,24 +27,25 @@ Tracks completion of each phase in `docs/plan.md`. Check off tasks as they are d
 
 ## Phase 1 — PartyKit server
 
-- [ ] **Phase complete**
+- [x] **Phase complete**
 
 ### Files
 
-- [ ] `party/types.ts` — create (Effect Schema definitions for `ClientMessage`, `ServerMessage`, `Participant`, `Message`)
-- [ ] `party/token-bucket.ts` — create (plain `TokenBucket` class, workerd-safe)
-- [ ] `party/index.ts` — rewrite (`onRequest`, `onConnect`, `onMessage`, `onClose` handlers)
-- [ ] `party/classify.ts` — create (Effect pipeline → OpenRouter → fallback to `TextMessage`)
+- [x] `party/types.ts` — create (Effect Schema definitions for `ClientMessage`, `ServerMessage`, `Participant`, `Message`)
+- [x] `party/token-bucket.ts` — create (plain `TokenBucket` class, workerd-safe)
+- [x] `party/index.ts` — rewrite (`onRequest`, `onConnect`, `onMessage`, `onClose` handlers)
+- [x] `party/classify.ts` — create (Effect pipeline → OpenRouter → fallback to `TextMessage`)
 
 ### Tests
 
-- [ ] `party/classify.spec.ts`
-- [ ] `party/types.spec.ts`
-- [ ] `party/token-bucket.spec.ts`
+- [x] `party/classify.spec.ts`
+- [x] `party/index.spec.ts`
+- [x] `party/types.spec.ts`
+- [x] `party/token-bucket.spec.ts`
 
 ### Verification
 
-- [ ] `pnpm test --run` green
+- [x] `pnpm test --run` green
 - [ ] Room creation `POST /parties/main/<id>` with `X-Action: create` returns `200 { id, name }`
 - [ ] WebSocket `join` → `init` round-trip works via `npx partykit dev`
 
