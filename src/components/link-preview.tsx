@@ -1,4 +1,4 @@
-import { css, cx  } from "styled-system/css";
+import { css, cx } from "styled-system/css";
 import { card } from "styled-system/recipes";
 
 interface Props {
@@ -45,7 +45,14 @@ export const LinkPreview = ({ description, domain, title, url }: Props) => {
         {title}
       </p>
       {description ? (
-        <p className={css({ color: "ink", fontSize: "sm", opacity: 0.8 })}>
+        <p
+          className={css({
+            color: "ink",
+            fontSize: "sm",
+            lineHeight: "body",
+            opacity: 0.8,
+          })}
+        >
           {description}
         </p>
       ) : null}

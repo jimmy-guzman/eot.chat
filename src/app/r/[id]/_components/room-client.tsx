@@ -16,6 +16,7 @@ import { css, cx } from "styled-system/css";
 import { badge, button, input } from "styled-system/recipes";
 
 import { registry } from "@/catalog/registry";
+import { PlantMotif } from "@/components/illustrations";
 
 import type {
   Message,
@@ -233,13 +234,13 @@ export const RoomClient = ({ id, name }: Props) => {
         >
           <h1
             className={css({
-              color: "ink",
-              fontSize: "base",
+              color: "cobalt",
+              fontSize: "lg",
               fontWeight: "extrabold",
+              letterSpacing: "display",
             })}
           >
-            You Are Now in Room:{" "}
-            <span className={css({ color: "cobalt" })}>{name}</span>
+            {name}
           </h1>
           <div className={css({ display: "flex", gap: "2" })}>
             <button
@@ -318,16 +319,28 @@ export const RoomClient = ({ id, name }: Props) => {
         })}
       >
         {optimisticMessages.length === 0 ? (
-          <p
+          <div
             className={css({
-              color: "ink",
-              fontSize: "sm",
-              opacity: 0.4,
-              textAlign: "center",
+              alignItems: "center",
+              display: "flex",
+              flexDirection: "column",
+              gap: "3",
+              justifyContent: "center",
+              paddingY: "10",
             })}
           >
-            No messages yet. Say something!
-          </p>
+            <PlantMotif />
+            <p
+              className={css({
+                color: "ink",
+                fontSize: "sm",
+                opacity: 0.5,
+                textAlign: "center",
+              })}
+            >
+              The room is waiting.
+            </p>
+          </div>
         ) : null}
         <div
           className={css({
@@ -343,7 +356,7 @@ export const RoomClient = ({ id, name }: Props) => {
               <div
                 className={css({
                   alignItems: "flex-start",
-                  alignSelf: isOwn ? "flex-start" : "flex-end",
+                  alignSelf: isOwn ? "flex-end" : "flex-start",
                   display: "flex",
                   flexDirection: "column",
                   gap: "1",

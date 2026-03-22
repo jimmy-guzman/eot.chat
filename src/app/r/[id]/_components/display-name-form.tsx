@@ -4,6 +4,8 @@ import { useTransition } from "react";
 import { css, cx } from "styled-system/css";
 import { button, input } from "styled-system/recipes";
 
+import { CatMotif } from "@/components/illustrations";
+
 interface Props {
   onJoin: (displayName: string) => void;
 }
@@ -42,14 +44,16 @@ export const DisplayNameForm = ({ onJoin }: Props) => {
           boxShadow: "lg",
           maxWidth: "card",
           padding: "8",
+          position: "relative",
           width: "100%",
         })}
       >
         <h1
           className={css({
-            color: "ink",
-            fontSize: "xl",
+            color: "cobalt",
+            fontSize: "2xl",
             fontWeight: "extrabold",
+            letterSpacing: "display",
             marginBottom: "2",
           })}
         >
@@ -59,6 +63,7 @@ export const DisplayNameForm = ({ onJoin }: Props) => {
           className={css({
             color: "ink",
             fontSize: "sm",
+            lineHeight: "body",
             marginBottom: "6",
             opacity: 0.6,
           })}
@@ -101,6 +106,18 @@ export const DisplayNameForm = ({ onJoin }: Props) => {
             Enter Room
           </button>
         </form>
+
+        <div
+          className={css({
+            alignItems: "flex-end",
+            display: "flex",
+            justifyContent: "flex-end",
+            marginTop: "6",
+            pointerEvents: "none",
+          })}
+        >
+          <CatMotif />
+        </div>
       </div>
     </main>
   );

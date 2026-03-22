@@ -184,24 +184,24 @@ Tracks completion of each phase in `docs/plan.md`. Check off tasks as they are d
 
 ## Phase 7 — Visual identity
 
-- [ ] **Phase complete**
+- [x] **Phase complete**
 
 ### Files
 
-- [ ] `src/components/illustrations.tsx` — create (`PlantMotif` + `CatMotif` inline SVGs)
-- [ ] `src/app/page.tsx` — add `PlantMotif`, heading and tagline typography treatment
-- [ ] `src/app/r/[id]/_components/display-name-form.tsx` — add `CatMotif`, heading treatment
-- [ ] `src/app/r/[id]/_components/room-client.tsx` — fix bubble alignment inversion; update room name header; update empty state; add `backgroundColor: "surface"` to `CodeBlock` `<pre>`
-- [ ] `src/components/link-preview.tsx` — add `lineHeight: "body"` to description `<p>`
-- [ ] `src/components/repo-card.tsx` — add `lineHeight: "body"` to description `<p>`
-- [ ] `src/components/code-block.tsx` — add `backgroundColor: "surface"` to `<pre>`
+- [x] `src/components/illustrations.tsx` — create (`PlantMotif` + `CatMotif` inline SVGs)
+- [x] `src/app/page.tsx` — add `PlantMotif`, heading and tagline typography treatment
+- [x] `src/app/r/[id]/_components/display-name-form.tsx` — add `CatMotif`, heading treatment
+- [x] `src/app/r/[id]/_components/room-client.tsx` — fix bubble alignment inversion; update room name header; update empty state; add `backgroundColor: "surface"` to `CodeBlock` `<pre>`
+- [x] `src/components/link-preview.tsx` — add `lineHeight: "body"` to description `<p>`
+- [x] `src/components/repo-card.tsx` — add `lineHeight: "body"` to description `<p>`
+- [x] `src/components/code-block.tsx` — add `backgroundColor: "surface"` to `<pre>`
 
 ### Verification
 
-- [ ] `pnpm typecheck` clean
-- [ ] `pnpm lint` clean
-- [ ] `pnpm test --run` green
-- [ ] `pnpm build` succeeds
+- [x] `pnpm typecheck` clean
+- [x] `pnpm lint` clean
+- [x] `pnpm test --run` green
+- [x] `pnpm build` succeeds
 
 ---
 
