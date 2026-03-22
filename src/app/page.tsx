@@ -33,7 +33,7 @@ export default function HomePage() {
             marginBottom: "2",
           })}
         >
-          Salita
+          EOT
         </h1>
         <p
           className={css({

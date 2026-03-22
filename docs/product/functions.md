@@ -1,4 +1,4 @@
-# Function Definition — Salita.chat
+# Function Definition — eot.chat
 
 Derived from wireframes in `docs/prompts/excalidraw.md` and the [Excalidraw diagram](/docs/reference/wireframe.excalidraw.png).
 
@@ -6,7 +6,7 @@ Derived from wireframes in `docs/prompts/excalidraw.md` and the [Excalidraw diag
 
 ## Application Overview
 
-Salita.chat is an ephemeral real-time chat room. Send messages, they appear as plain text. When everyone leaves, the room dissolves.
+eot.chat is an ephemeral real-time chat room. Send messages, they appear as plain text. When everyone leaves, the room dissolves.
 
 There are no user accounts — identity is a display name chosen at entry.
 
@@ -56,7 +56,7 @@ There are no user accounts — identity is a display name chosen at entry.
 **Header:**
 
 - Room name displayed as: `<Room Name>`
-- Shareable link bar: `https://salita.chat/r/<room-id>` with a one-click copy action
+- Shareable link bar: `https://eot.chat/r/<room-id>` with a one-click copy action
 
 **Message Area:**
 

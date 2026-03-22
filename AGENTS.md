@@ -1,4 +1,4 @@
-# Salita.chat — Agent Rules
+# eot.chat — Agent Rules
 
 ## Specs
 

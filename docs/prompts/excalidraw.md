@@ -1,4 +1,4 @@
-# Excalidraw Prompt — Salita.chat Wireframes
+# Excalidraw Prompt — eot.chat Wireframes
 
 Paste the block below directly into Excalidraw AI.
 
@@ -47,7 +47,7 @@ Full-width navigation bar at the top. "Logo" bold on the left.
 
 Below the nav bar, centered, is the heading "You Are Now in Room: <Room Name>" in bold.
 
-Directly below the heading is a wide rectangular bar labeled "<https://salita.chat/r/><room-id> 📋 Copy Link" — this is the shareable room link.
+Directly below the heading is a wide rectangular bar labeled "<https://eot.chat/r/><room-id> 📋 Copy Link" — this is the shareable room link.
 
 Below the link bar is a narrow full-width strip containing small pill-shaped badges for each participant currently in the room, e.g. "Blastoise59 (You)" and "Karmaggedon2". The current user's pill is visually distinct (darker fill).
 

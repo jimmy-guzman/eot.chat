@@ -1,4 +1,4 @@
-# Testing — Salita.chat
+# Testing — eot.chat
 
 ---
 

@@ -1,4 +1,4 @@
-# Implementation Progress — Salita.chat
+# Implementation Progress — eot.chat
 
 Tracks completion of each phase in `docs/plan.md`. Check off tasks as they are done.
 
