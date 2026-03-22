@@ -44,7 +44,7 @@ export default function HomePage() {
             opacity: 0.6,
           })}
         >
-          Rooms that feel like home
+          End of transmission.
         </p>
         <CreateRoomForm />
       </div>
