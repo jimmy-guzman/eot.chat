@@ -56,17 +56,49 @@ src/
     table.spec.tsx
     poll.spec.tsx
     image-card.spec.tsx
+    bar-chart.spec.tsx
+    line-chart.spec.tsx
+    metric.spec.tsx
+    callout.spec.tsx
+    timeline.spec.tsx
+    stack.spec.tsx
 ```
 
 ### Coverage per file
 
-| File                    | What to test                                                                                                                                                                                     |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `party/classify.ts`     | Valid OpenRouter response → correct `Classification`; 8s timeout → `TextMessage` fallback; malformed JSON response → `TextMessage` fallback; unknown `type` in response → `TextMessage` fallback |
-| `party/types.ts`        | Valid `ClientMessage` shapes decode successfully; invalid shapes (missing fields, wrong `type`) return `Left`; valid `ServerMessage` shapes decode successfully                                  |
-| `party/token-bucket.ts` | `consume()` returns `true` within burst capacity; `consume()` returns `false` when empty; tokens refill correctly after elapsed time                                                             |
-| `src/catalog/schema.ts` | Each Zod schema accepts valid props; each schema rejects missing required fields with a `ZodError`                                                                                               |
-| `src/components/*.tsx`  | Each component renders without throwing given valid props                                                                                                                                        |
+| File                        | What to test                                                                                                                                                                                                          |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `party/classify.ts`         | Valid OpenRouter response → correct spec tree; 8s timeout → `TextMessage` spec tree fallback; malformed JSON response → fallback; unknown `type` in response → fallback; single-component result wrapped in spec tree |
+| `party/types.ts`            | Valid `ClientMessage` shapes decode successfully; invalid shapes (missing fields, wrong `type`) return `Left`; valid `ServerMessage` shapes decode successfully; `Message.component` decodes as spec tree             |
+| `party/token-bucket.ts`     | `consume()` returns `true` within burst capacity; `consume()` returns `false` when empty; tokens refill correctly after elapsed time                                                                                  |
+| `src/catalog/schema.ts`     | Each Zod schema accepts valid props; each schema rejects missing required fields with a `ZodError` — including all 6 Phase 8 schemas                                                                                  |
+| `src/components/*.tsx`      | Each component renders without throwing given valid props                                                                                                                                                             |
+| `src/components/bar-chart`  | Renders with `data` array; renders with optional `title`; renders without crashing when `data` is empty                                                                                                               |
+| `src/components/line-chart` | Renders with `data` array; renders with optional `title`; renders without crashing when `data` is empty                                                                                                               |
+| `src/components/metric`     | Renders `label` and `value`; renders `trend: "up"` / `"down"` / `"neutral"` indicator; renders without `trend` prop                                                                                                   |
+| `src/components/callout`    | Renders `type: "info"`, `"tip"`, `"warning"` each with correct background token class; renders optional `title`                                                                                                       |
+| `src/components/timeline`   | Renders all items; renders `status: "completed"`, `"current"`, `"upcoming"` with correct dot colors; renders item without optional fields                                                                             |
+| `src/components/stack`      | Renders with `direction: "vertical"` (default); renders with `direction: "horizontal"`; renders with custom `gap`                                                                                                     |
+
+### Mocking recharts in Vitest
+
+recharts components use `ResizeObserver` and SVG APIs that are not available in happy-dom. Mock the entire `recharts` module in the spec file:
+
+```ts
+vi.mock("recharts", () => ({
+  BarChart: ({ children }: { children: React.ReactNode }) => <div data-testid="bar-chart">{children}</div>,
+  Bar: () => null,
+  CartesianGrid: () => null,
+  LineChart: ({ children }: { children: React.ReactNode }) => <div data-testid="line-chart">{children}</div>,
+  Line: () => null,
+  ResponsiveContainer: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  Tooltip: () => null,
+  XAxis: () => null,
+  YAxis: () => null,
+}));
+```
+
+Place this at the top of the spec file, before any imports that trigger the module.
 
 ### Effect test patterns
 
@@ -75,10 +107,12 @@ src/
 `party/classify.ts` collapses all errors via `catchAll`, so the error channel is `never`. Use `Effect.runPromise` directly:
 
 ```ts
-const result = await Effect.runPromise(classify("some text", "sk-key"));
+const result = await Effect.runPromise(
+  classify("some text", "sk-key", systemPrompt),
+);
 expect(result).toMatchObject({
-  type: "TextMessage",
-  props: { body: "some text" },
+  elements: { root: { type: "TextMessage", props: { body: "some text" } } },
+  root: "root",
 });
 ```
 
@@ -103,7 +137,7 @@ if (Exit.isFailure(exit)) {
 import { Schema } from "effect";
 
 const result = Schema.decodeUnknownSync(ClientMessageSchema)({ type: "leave" });
-expect(result).toEqual({ type: "leave" });
+expect(result).toStrictEqual({ type: "leave" });
 ```
 
 **Schema — error path**
@@ -117,7 +151,7 @@ const result = Schema.decodeUnknownEither(ClientMessageSchema)({
 expect(Either.isLeft(result)).toBe(true);
 ```
 
-**Mocking OpenRouter with MSW**
+### Mocking OpenRouter with MSW
 
 MSW intercepts `fetch` transparently — `Effect.tryPromise(() => fetch(...))` sees the mock with no special setup. Add per-test handlers with `server.use(...)` and they are torn down automatically after each test.
 
@@ -125,11 +159,16 @@ The global setup in `src/testing/vitest.setup.ts` passes `onUnhandledRequest: "e
 
 Return a **non-streaming JSON response** (Content-Type: `application/json`). The SDK detects non-streaming responses via the presence of an `output` field and the absence of `toReadableStream`. Required fields include `usage.input_tokens_details` and `usage.output_tokens_details` — omitting them causes `ResponseValidationError`.
 
+For Phase 8, the mock response must return a valid spec tree JSON string. Example:
+
 ```ts
 import { http, HttpResponse } from "msw";
 import { server } from "@/testing/mocks/server";
 
-const content = '{"type":"TextMessage","props":{"body":"hi"}}';
+const specTree = JSON.stringify({
+  elements: { root: { type: "TextMessage", props: { body: "hi" } } },
+  root: "root",
+});
 
 server.use(
   http.post("https://openrouter.ai/api/v1/responses", () =>
@@ -141,7 +180,7 @@ server.use(
           id: "msg_1",
           type: "message",
           role: "assistant",
-          content: [{ type: "output_text", text: content }],
+          content: [{ type: "output_text", text: specTree }],
         },
       ],
       usage: {
@@ -191,3 +230,6 @@ What "done" looks like at the end of each phase:
 | 3 — Component catalog | All component unit tests pass; `pnpm build` succeeds                                                                                        |
 | 4 — Landing page      | Form creates a room and redirects; `pnpm typecheck` clean                                                                                   |
 | 5 — Room page         | `pnpm e2e` green (full happy path passes)                                                                                                   |
+| 6 — Clear chat        | `pnpm typecheck` clean; `pnpm lint` clean; `pnpm test --run` green; `pnpm build` succeeds                                                   |
+| 7 — Visual identity   | `pnpm typecheck` clean; `pnpm lint` clean; `pnpm test --run` green; `pnpm build` succeeds                                                   |
+| 8 — Generative UI     | `pnpm typecheck` clean; `pnpm lint` clean; `pnpm test --run` green; `pnpm build` succeeds                                                   |

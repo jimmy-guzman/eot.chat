@@ -179,3 +179,68 @@ Tracks completion of each phase in `docs/plan.md`. Check off tasks as they are d
 - [x] `pnpm lint` clean
 - [x] `pnpm test --run` green
 - [x] `pnpm build` succeeds
+
+---
+
+## Phase 7 — Visual identity
+
+- [ ] **Phase complete**
+
+### Files
+
+- [ ] `src/components/illustrations.tsx` — create (`PlantMotif` + `CatMotif` inline SVGs)
+- [ ] `src/app/page.tsx` — add `PlantMotif`, heading and tagline typography treatment
+- [ ] `src/app/r/[id]/_components/display-name-form.tsx` — add `CatMotif`, heading treatment
+- [ ] `src/app/r/[id]/_components/room-client.tsx` — fix bubble alignment inversion; update room name header; update empty state; add `backgroundColor: "surface"` to `CodeBlock` `<pre>`
+- [ ] `src/components/link-preview.tsx` — add `lineHeight: "body"` to description `<p>`
+- [ ] `src/components/repo-card.tsx` — add `lineHeight: "body"` to description `<p>`
+- [ ] `src/components/code-block.tsx` — add `backgroundColor: "surface"` to `<pre>`
+
+### Verification
+
+- [ ] `pnpm typecheck` clean
+- [ ] `pnpm lint` clean
+- [ ] `pnpm test --run` green
+- [ ] `pnpm build` succeeds
+
+---
+
+## Phase 8 — Generative UI expansion
+
+- [ ] **Phase complete**
+
+### Dependencies
+
+- [ ] `pnpm add recharts`
+
+### Files
+
+- [ ] `party/types.ts` — migrate `ComponentSchema` to spec tree format `{ elements, root }`
+- [ ] `party/classify.ts` — update `ClassificationSchema` and system prompt for spec tree output + 6 new components
+- [ ] `src/catalog/schema.ts` — add Zod schemas for `Stack`, `Metric`, `BarChart`, `LineChart`, `Callout`, `Timeline`
+- [ ] `src/catalog/index.ts` — register 6 new components
+- [ ] `src/catalog/registry.tsx` — wire 6 new components to React implementations
+- [ ] `src/components/bar-chart.tsx` — create (recharts `BarChart` with Panda tokens)
+- [ ] `src/components/line-chart.tsx` — create (recharts `LineChart` with Panda tokens)
+- [ ] `src/components/metric.tsx` — create (KPI metric with trend indicator)
+- [ ] `src/components/callout.tsx` — create (info/tip/warning callout block)
+- [ ] `src/components/timeline.tsx` — create (vertical timeline with status dots)
+- [ ] `src/components/stack.tsx` — create (flex layout container for composed specs)
+- [ ] `src/components/index.ts` — update barrel export (add 6 new components)
+- [ ] `src/app/r/[id]/_components/room-client.tsx` — remove `makeSpec()` wrapper; pass `msg.component` spec tree directly to `<Renderer>`
+
+### Tests
+
+- [ ] `src/components/bar-chart.spec.tsx`
+- [ ] `src/components/line-chart.spec.tsx`
+- [ ] `src/components/metric.spec.tsx`
+- [ ] `src/components/callout.spec.tsx`
+- [ ] `src/components/timeline.spec.tsx`
+- [ ] `src/components/stack.spec.tsx`
+
+### Verification
+
+- [ ] `pnpm typecheck` clean
+- [ ] `pnpm lint` clean
+- [ ] `pnpm test --run` green
+- [ ] `pnpm build` succeeds
