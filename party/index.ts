@@ -1,6 +1,6 @@
 import type * as Party from "partykit/server";
 
-import { Effect, Match, Schema } from "effect";
+import { Effect, Logger, Match, Schema } from "effect";
 import { nanoid } from "nanoid";
 
 import type { Message, Participant } from "./types";
@@ -47,6 +47,14 @@ export default class Server implements Party.Server {
       return;
     }
 
+    await Effect.runPromise(
+      Effect.logDebug("onConnect: init sent", {
+        connId: conn.id,
+        messageCount: this.messages.length,
+        participantCount: this.participants.size,
+      }).pipe(Effect.provide(Logger.json)),
+    );
+
     conn.send(
       JSON.stringify({
         messages: this.messages,
@@ -76,12 +84,16 @@ export default class Server implements Party.Server {
 
     const program = Match.value(msg).pipe(
       Match.when({ type: "join" }, ({ displayName }) => {
-        return Effect.sync(() => {
+        return Effect.gen(this, function* () {
           const isDuplicate = [...this.participants.values()].some(
             (p) => p.displayName === displayName,
           );
 
           if (isDuplicate) {
+            yield* Effect.logWarning("join: duplicate displayName rejected", {
+              displayName,
+            });
+
             return;
           }
 
@@ -91,6 +103,11 @@ export default class Server implements Party.Server {
           };
 
           this.participants.set(sender.id, participant);
+
+          yield* Effect.logInfo("join: participant joined", {
+            displayName,
+            participantCount: this.participants.size,
+          });
 
           this.room.broadcast(
             JSON.stringify({
@@ -118,6 +135,12 @@ export default class Server implements Party.Server {
 
           const apiKey = this.room.env.OPENROUTER_API_KEY as string | undefined;
 
+          if (!apiKey) {
+            yield* Effect.logWarning(
+              "message: OPENROUTER_API_KEY not set — skipping classification",
+            );
+          }
+
           let bucket = this.buckets.get(sender.id);
 
           if (!bucket) {
@@ -125,7 +148,15 @@ export default class Server implements Party.Server {
             this.buckets.set(sender.id, bucket);
           }
 
-          const canClassify = bucket.consume() && apiKey;
+          const tokenConsumed = bucket.consume();
+
+          if (!tokenConsumed) {
+            yield* Effect.logWarning("message: rate limited", {
+              senderId: sender.id,
+            });
+          }
+
+          const canClassify = tokenConsumed && apiKey;
 
           const component = canClassify
             ? yield* classify(body, apiKey, SYSTEM_PROMPT)
@@ -140,6 +171,11 @@ export default class Server implements Party.Server {
             sentAt: new Date().toISOString(),
           };
 
+          yield* Effect.logDebug("message: broadcast", {
+            id: message.id,
+            type: component.type,
+          });
+
           this.messages.push(message);
           this.room.broadcast(JSON.stringify({ message, type: "message" }));
         });
@@ -150,7 +186,12 @@ export default class Server implements Party.Server {
       Match.exhaustive,
     );
 
-    await Effect.runPromise(program.pipe(Effect.catchAll(() => Effect.void)));
+    await Effect.runPromise(
+      program.pipe(
+        Effect.catchAll(() => Effect.void),
+        Effect.provide(Logger.json),
+      ),
+    );
   }
 
   async onRequest(req: Party.Request) {
@@ -219,6 +260,14 @@ export default class Server implements Party.Server {
 
     this.participants.delete(connId);
     this.buckets.delete(connId);
+
+    await Effect.runPromise(
+      Effect.logInfo("leave: participant left", {
+        displayName: participant.displayName,
+        participantCount: this.participants.size,
+        roomDissolved: this.participants.size === 0,
+      }).pipe(Effect.provide(Logger.json)),
+    );
 
     this.room.broadcast(
       JSON.stringify({
