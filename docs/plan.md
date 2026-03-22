@@ -1,6 +1,8 @@
 # Build Plan — Salita.chat
 
-Spec-driven, phase-by-phase. Each phase is independently shippable and leaves the project in a working state. Phases 0–5 deliver a working product. Phase 6 adds clear-chat. Phase 7 delivers the visual identity. Phase 8 delivers the generative UI expansion.
+Spec-driven, phase-by-phase. Each phase is independently shippable and leaves the project in a working state. Phases 0–5 deliver a working product. Phase 6 adds clear-chat. Phase 7 delivers the visual identity. Phase 8 delivered the generative UI expansion (now removed — see note below).
+
+> **Note:** Phases 3 and 8 (component catalog, AI classification, rich generative UI) have been removed. The codebase now delivers plain text messaging only. The design system, PartyKit infrastructure, room dissolution mechanic, and visual identity all remain. The phase descriptions below are preserved for historical reference.
 
 ---
 

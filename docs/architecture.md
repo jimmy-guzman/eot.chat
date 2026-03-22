@@ -8,23 +8,18 @@ Effect (`effect` v3) is used as a **pipeline assembler on the PartyKit server on
 
 ### What uses Effect
 
-| File                | Pattern                              | APIs                                                                                           |
-| ------------------- | ------------------------------------ | ---------------------------------------------------------------------------------------------- |
-| `party/types.ts`    | Schema definitions for wire types    | `Schema.Struct`, `Schema.Union`, `Schema.Literal`, `Schema.Type`                               |
-| `party/classify.ts` | AI classification pipeline           | `Effect.gen`, `Effect.tryPromise`, `Effect.timeout`, `Schema.decodeUnknown`, `Effect.catchAll` |
-| `party/index.ts`    | Message routing + handler boundaries | `Match.value`, `Match.tag`, `Match.exhaustive`, `Effect.runPromise`                            |
+| File             | Pattern                              | APIs                                                                                        |
+| ---------------- | ------------------------------------ | ------------------------------------------------------------------------------------------- |
+| `party/types.ts` | Schema definitions for wire types    | `Schema.Struct`, `Schema.Union`, `Schema.Literal`, `Schema.Type`                            |
+| `party/index.ts` | Message routing + handler boundaries | `Match.value`, `Match.tag`, `Match.exhaustive`, `Effect.runPromise`, `Effect.gen`, `Logger` |
 
 ### What does not use Effect
 
-- **`party/token-bucket.ts`** — rate limiting is a plain TypeScript class. Effect's `RateLimiter` relies on fiber scheduling that is incompatible with the workerd runtime.
-- **`src/catalog/schema.ts`** — Zod is used here, as required by `@json-render/react`'s `defineCatalog` API.
 - **`src/app/`** — React client components use plain TypeScript and React hooks. Effect's fiber model does not compose with React hooks.
 
 ### workerd compatibility
 
 Effect computations run inside standard `Promise` boundaries (`Effect.runPromise`). Each `onMessage` and `onRequest` call constructs an `Effect.gen(...)` program and executes it at the boundary — Effect as a description language, `runPromise` as the executor. workerd supports `Promise` natively so this pattern is safe.
-
-The `@/` path alias is a TypeScript compiler alias only. `party/classify.ts` imports `src/catalog/schema.ts` via a **relative path** (`../../src/catalog/schema`) to ensure esbuild can resolve it when bundling the party worker.
 
 ---
 
@@ -42,7 +37,6 @@ The `@/` path alias is a TypeScript compiler alias only. `party/classify.ts` imp
 │                                 │     │                                      │
 │                                 │     │  WebSocket (onConnect/onMessage):    │
 │                                 │     │    real-time message broadcast       │
-│                                 │     │    AI classification per message     │
 │                                 │     │                                      │
 │                                 │     │  Storage:                            │
 │                                 │     │    room.storage → name               │
@@ -50,14 +44,12 @@ The `@/` path alias is a TypeScript compiler alias only. `party/classify.ts` imp
 │                                 │     │    participants Map                   │
 │                                 │     │    messages[]                        │
 └─────────────────────────────────┘     │                                      │
-                                        │  Outbound:                           │
-                                        │    OpenRouter API (AI classification)│
                                         └──────────────────────────────────────┘
 ```
 
 **Next.js on Vercel** — UI shell only. No API routes for room management. No database client. Serves the landing page and room page. All room logic is delegated to PartyKit.
 
-**PartyKit hosted** — `workerd` runtime (Cloudflare-based). Owns all room logic: creation, participant tracking, message history, AI classification, and room dissolution. Uses `onRequest` for HTTP room creation and `onConnect` / `onMessage` for WebSocket real-time messaging.
+**PartyKit hosted** — `workerd` runtime (Cloudflare-based). Owns all room logic: creation, participant tracking, message history, and room dissolution. Uses `onRequest` for HTTP room creation and `onConnect` / `onMessage` for WebSocket real-time messaging.
 
 There is no database and no password/token auth. The room ID is the only access control — it is a nanoid and is unguessable. Room state is split between:
 
@@ -85,13 +77,12 @@ There is no database and no password/token auth. The room ID is the only access 
 
 ### Message (in-memory)
 
-| Field               | Where     | Notes                                                         |
-| ------------------- | --------- | ------------------------------------------------------------- |
-| `id`                | in-memory | nanoid                                                        |
-| `authorDisplayName` | in-memory | Display name of sender                                        |
-| `rawInput`          | in-memory | The original text the user sent                               |
-| `component`         | in-memory | AI-classified spec tree `{ elements, root }` per `catalog.md` |
-| `sentAt`            | in-memory | ISO timestamp                                                 |
+| Field               | Where     | Notes                           |
+| ------------------- | --------- | ------------------------------- |
+| `id`                | in-memory | nanoid                          |
+| `authorDisplayName` | in-memory | Display name of sender          |
+| `rawInput`          | in-memory | The original text the user sent |
+| `sentAt`            | in-memory | ISO timestamp                   |
 
 ---
 
@@ -118,7 +109,7 @@ Creates a new room.
 **Behavior:**
 
 1. Check `room.storage.get("name")` — if already set, return `409 Conflict`
-2. `room.storage.set("name", name)`
+2. `room.storage.put("name", name)`
 3. Return `200 { id, name }`
 
 The room ID is determined by `:id` in the URL — generated client-side (nanoid) before the request.
@@ -159,10 +150,6 @@ type Message = {
   id: string;
   authorDisplayName: string;
   rawInput: string;
-  component: {
-    elements: Record<string, { type: string; props: Record<string, unknown> }>;
-    root: string;
-  };
   sentAt: string; // ISO timestamp
 };
 ```
@@ -210,20 +197,11 @@ If `room.storage` has no `name` (room does not exist), PartyKit sends `{ type: "
 
 ```
 Browser → PartyKit WS: { type: "message", body }
-PartyKit → rate limit check (token bucket per connection, 1/3s, burst 3):
-           - tokens available: consume 1, proceed to AI classification
-           - no tokens: skip AI, use TextMessage fallback directly
-PartyKit → AI classification (if not rate-limited):
-           1. Call OpenRouter with catalog context
-           2. Get back { elements, root } spec tree
-           3. Validate all element types are in catalog
-           4. Build Message object
+PartyKit → build Message { id, authorDisplayName, rawInput, sentAt }
 PartyKit → push to in-memory messages[]
 PartyKit → room.broadcast({ type: "message", message })
 All clients ← { type: "message", message }
 ```
-
-If AI classification fails (timeout, invalid JSON, unknown type) or is rate-limited, PartyKit falls back to `{ elements: { root: { type: "TextMessage", props: { body } } }, root: "root" }`. The message is always delivered — the fallback is silent.
 
 ### Clear Chat
 
@@ -260,95 +238,11 @@ A room is dissolved when the last participant disconnects. PartyKit handles this
 
 ---
 
-## Rate Limiting
-
-AI classification (OpenRouter calls) is rate-limited per connection using a token bucket:
-
-- **Capacity:** 3 tokens
-- **Refill rate:** 1 token every 3 seconds
-- **Behaviour on empty bucket:** skip AI, fall back to `TextMessage` silently
-- **Implementation:** in-memory on the PartyKit connection object — no external dependency
-
-This caps one participant from triggering more than ~20 AI calls per minute while still allowing short bursts of rapid messages.
-
----
-
-## AI Classification
-
-Single-shot: one OpenRouter call per message. The system prompt includes the full component catalog from `docs/product/catalog.md`.
-
-**Model:** `google/gemini-2.0-flash-001` via OpenRouter.
-
-**Output format:** The AI returns a spec tree in `{ elements, root }` format. Single-component results are a trivial tree:
-
-```json
-{
-  "elements": {
-    "root": { "type": "TextMessage", "props": { "body": "hello" } }
-  },
-  "root": "root"
-}
-```
-
-Composed results reference multiple elements:
-
-```json
-{
-  "elements": {
-    "root": {
-      "type": "Stack",
-      "props": { "direction": "vertical", "children": ["a", "b"] }
-    },
-    "a": {
-      "type": "Metric",
-      "props": { "label": "Revenue", "value": "$4.2M", "trend": "up" }
-    },
-    "b": {
-      "type": "Metric",
-      "props": { "label": "Margin", "value": "38%", "trend": "neutral" }
-    }
-  },
-  "root": "root"
-}
-```
-
-**System prompt structure:**
-
-```
-You are a message classifier for a chat application.
-Classify the user's message by returning a JSON spec tree in { elements, root } format.
-Each element has a type (from the catalog below) and props.
-For a single component, use { "elements": { "root": { "type": "...", "props": {...} } }, "root": "root" }.
-For composed output, use Stack as the root and reference child elements by key.
-Return only valid JSON. Do not include any explanation or wrapping text.
-
-[catalog component descriptions and props schemas]
-```
-
-**Failure handling:** If the response is not valid JSON, or any `type` in the tree is not in the catalog, or required props are missing — fall back to `{ elements: { root: { type: "TextMessage", props: { body } } }, root: "root" }`. The message is always delivered — the fallback is silent.
-
----
-
-## Interactive Component State
-
-Interactive components (e.g. `Poll`) store their selection state **local per-client** — vote choices are not broadcast to other participants. No server protocol changes are needed.
-
-A future phase may add a `vote` / `interact` client message type with a corresponding `interacted` server broadcast to sync interactive state across participants. That would require:
-
-- New entries in `ClientMessageSchema` and `ServerMessageSchema` in `party/types.ts`
-- A new handler branch in `party/index.ts`
-- Client-side state merging in `room-client.tsx`
-
-Until then, interactive components behave as local UI — different participants may have different selections on the same message.
-
----
-
 ## Environment Variables
 
-| Variable                    | Used by  | Description                                           |
-| --------------------------- | -------- | ----------------------------------------------------- |
-| `NEXT_PUBLIC_PARTYKIT_HOST` | Browser  | PartyKit host, e.g. `salita-chat.<user>.partykit.dev` |
-| `OPENROUTER_API_KEY`        | PartyKit | OpenRouter API key for AI message classification      |
+| Variable                    | Used by | Description                                           |
+| --------------------------- | ------- | ----------------------------------------------------- |
+| `NEXT_PUBLIC_PARTYKIT_HOST` | Browser | PartyKit host, e.g. `salita-chat.<user>.partykit.dev` |
 
 PartyKit env vars are set via `partykit env add` (stored in PartyKit's hosted secrets, accessible via `this.room.env`).
 

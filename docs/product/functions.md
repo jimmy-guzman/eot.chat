@@ -6,7 +6,7 @@ Derived from wireframes in `docs/prompts/excalidraw.md` and the [Excalidraw diag
 
 ## Application Overview
 
-Salita.chat is an ephemeral chat room where messages are alive. Not text bubbles — rich, AI-generated components shaped by what you share. Paste a GitHub link, get a repo card. Drop a CSV, get a table. Ask a question, get a poll. The AI classifies every message and renders the right component. When everyone leaves, the room dissolves.
+Salita.chat is an ephemeral real-time chat room. Send messages, they appear as plain text. When everyone leaves, the room dissolves.
 
 There are no user accounts — identity is a display name chosen at entry.
 
@@ -51,29 +51,28 @@ There are no user accounts — identity is a display name chosen at entry.
 
 ### Screen 3 — Chat Room
 
-**Purpose:** The primary surface. A live, shared message thread inside a named room where every message is a rendered component.
+**Purpose:** The primary surface. A live, shared message thread inside a named room.
 
 **Header:**
 
-- Room name displayed as: `You Are Now in Room: <Room Name>`
+- Room name displayed as: `<Room Name>`
 - Shareable link bar: `https://salita.chat/r/<room-id>` with a one-click copy action
 
 **Message Area:**
 
 - Scrollable list of messages, ordered chronologically
-- Each message is rendered as an AI-classified component — not a plain text bubble
-- The component type is determined by the content: a URL becomes a link preview, a GitHub repo becomes a repo card, a CSV becomes a table, a question becomes a poll, a code snippet becomes a code block, plain text becomes a text message
-- The current user's own messages are visually distinguished and left-aligned
-- Other participants' messages are right-aligned
+- Each message is rendered as a plain text bubble
+- The current user's own messages are visually distinguished (powder-blue bubble, right-aligned)
+- Other participants' messages are left-aligned
 - New participants receive the full message history from the start of the session
 
 **Message Input:**
 
-- Wide text field with placeholder: `Send anything...`
+- Multi-line text area with placeholder: `Send anything...`. `Enter` submits; `Shift+Enter` inserts a newline.
 
 **Actions:**
 
-- `Send` — submits the input, triggers AI classification, broadcasts the rendered component to all participants
+- `Send` — submits the input, broadcasts the message to all participants
 - `Copy Link` — copies the shareable room URL to clipboard
 - `Clear Chat` — clears all messages for every participant in the room immediately; also triggered automatically when any participant leaves
 - `Exit Room` — removes the user from the room and returns them to the landing page
@@ -105,13 +104,12 @@ Participants live in PartyKit's in-memory room state for the duration of their c
 
 Messages live in PartyKit's in-memory room state. They are sent to new participants on join but are not persisted after the room dissolves.
 
-| Field               | Type      | Notes                                                    |
-| ------------------- | --------- | -------------------------------------------------------- |
-| `id`                | string    | nanoid                                                   |
-| `authorDisplayName` | string    |                                                          |
-| `rawInput`          | string    | The original text the user sent                          |
-| `component`         | UIElement | The AI-classified json-render element (`type` + `props`) |
-| `sentAt`            | timestamp |                                                          |
+| Field               | Type      | Notes                           |
+| ------------------- | --------- | ------------------------------- |
+| `id`                | string    | nanoid                          |
+| `authorDisplayName` | string    |                                 |
+| `rawInput`          | string    | The original text the user sent |
+| `sentAt`            | timestamp |                                 |
 
 ---
 
@@ -131,7 +129,5 @@ Messages live in PartyKit's in-memory room state. They are sent to new participa
 - Display names are scoped to a single room session
 - Rooms are identified by a short URL-safe ID
 - The shareable link (`/r/<room-id>`) is the primary invite mechanism
-- Every message is classified by AI — plain text is a valid fallback (`TextMessage`)
-- AI is constrained to the component catalog — no hallucinated component types
 - Rooms and messages are ephemeral — no database, no persistence after dissolution
 - Messages are cleared immediately when any participant leaves, or when any participant manually triggers a clear

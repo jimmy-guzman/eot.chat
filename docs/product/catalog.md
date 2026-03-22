@@ -8,21 +8,25 @@ The catalog is implemented using `@json-render/core` + `@json-render/react`. The
 
 ## Classification Format
 
-The AI returns a spec tree JSON object. Single-component messages use a trivial tree with one element:
+The AI returns a spec tree JSON object. The root element is **always a Stack**. Every message — even a single component — is wrapped in a Stack:
 
 ```typescript
 interface SpecTree {
-  elements: Record<string, { type: string; props: Record<string, unknown> }>;
-  root: string; // key into elements that is the top-level node
+  elements: Record<
+    string,
+    { type: string; props: Record<string, unknown>; children?: string[] }
+  >;
+  root: string; // key into elements that is the top-level node — always a Stack
 }
 ```
 
-**Single component example:**
+**Single component example** (Stack wrapping one TextMessage):
 
 ```json
 {
   "elements": {
-    "root": {
+    "root": { "type": "Stack", "props": {}, "children": ["msg"] },
+    "msg": {
       "type": "TextMessage",
       "props": { "body": "Short all the energy stocks." }
     }
@@ -414,12 +418,13 @@ A flex layout container. Allows the AI to compose multiple components into a sin
 When classifying a message, the AI must:
 
 1. Return a valid spec tree in `{ elements, root }` format
-2. Only use component types defined in this catalog — no invented types
-3. Default to `TextMessage` if no other type clearly fits
-4. Apply the most specific type that fits — e.g. a GitHub URL is `RepoCard`, not `LinkPreview`
-5. Populate all required props — omit optional props if the information is not available
-6. Not invent prop values — only use information present in the message body
-7. Use `Stack` to compose multiple components when the message contains naturally separable pieces of information (e.g. a set of KPIs, a chart plus a summary)
+2. Always use `Stack` as the root element — no exceptions, even for single-component messages
+3. Only use component types defined in this catalog — no invented types
+4. Default to `TextMessage` (inside a Stack) if no other type clearly fits
+5. Apply the most specific type that fits — e.g. a GitHub URL is `RepoCard`, not `LinkPreview`
+6. Populate all required props — omit optional props if the information is not available
+7. Not invent prop values — only use information present in the message body
+8. Use multiple children in the Stack when the message contains naturally separable pieces of information (e.g. a set of KPIs, a chart plus a summary)
 
 ### Classification Priority
 
