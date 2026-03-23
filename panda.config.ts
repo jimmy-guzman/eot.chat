@@ -1,29 +1,18 @@
 import { defineConfig, defineSlotRecipe } from "@pandacss/dev";
 
 export default defineConfig({
-  // Files to exclude
   exclude: [],
-
-  // Global base styles
   globalCss: {
     "html, body": {
       fontFamily: "body",
     },
   },
-
-  // Where to look for your css declarations
   include: [
     "./src/components/**/*.{ts,tsx,js,jsx}",
     "./src/app/**/*.{ts,tsx,js,jsx}",
   ],
-
-  // The output directory for your css system
   outdir: "styled-system",
-
-  // Whether to use css reset
   preflight: true,
-
-  // Useful for theme customization
   theme: {
     extend: {
       recipes: {
@@ -180,6 +169,8 @@ export default defineConfig({
           // Error — destructive actions
           "error": { value: "#D44E1A" },
           "error-content": { value: "#F5EEE0" },
+          // error-text: orange-red text on dark surfaces (e.g. validation messages)
+          "error-text": { value: "#D44E1A" },
           // Primary — main interactive color
           "primary": { value: "#D44E1A" },
           "primary-content": { value: "#F5EEE0" },
@@ -195,6 +186,49 @@ export default defineConfig({
         },
       },
       slotRecipes: {
+        alertDialog: defineSlotRecipe({
+          base: {
+            actions: {
+              display: "flex",
+              gap: "3",
+              justifyContent: "flex-end",
+            },
+            backdrop: {
+              backgroundColor: "rgba(13,14,16,0.85)",
+              inset: "0",
+              minHeight: "100dvh",
+              position: "fixed",
+            },
+            description: {
+              color: "base-content-muted",
+              fontSize: "sm",
+              lineHeight: "body",
+              marginBottom: "6",
+            },
+            popup: {
+              backgroundColor: "base-200",
+              border: "1px solid token(colors.base-300)",
+              borderRadius: "lg",
+              boxShadow: "lg",
+              left: "50%",
+              maxWidth: "calc(100vw - token(spacing.6))",
+              padding: "8",
+              position: "fixed",
+              top: "50%",
+              transform: "translate(-50%, -50%)",
+              width: "token(sizes.card)",
+            },
+            title: {
+              color: "base-content",
+              fontSize: "lg",
+              fontWeight: "extrabold",
+              letterSpacing: "display",
+              marginBottom: "2",
+            },
+          },
+          className: "alert-dialog",
+          slots: ["actions", "backdrop", "description", "popup", "title"],
+        }),
         menu: defineSlotRecipe({
           base: {
             item: {

@@ -124,22 +124,20 @@ export const RoomClient = ({ displayName, id, name, roomUrl }: Props) => {
         setValue={setInputValue}
         value={inputValue}
       />
-      {pendingAction === "clear" ? (
-        <ConfirmDialog
-          description="This will remove all messages for everyone in the room. This cannot be undone."
-          onCancel={handleConfirmCancel}
-          onConfirm={handleClearConfirmed}
-          title="Clear Chat?"
-        />
-      ) : null}
-      {pendingAction === "exit" ? (
-        <ConfirmDialog
-          description="You will leave the room. You can rejoin at any time."
-          onCancel={handleConfirmCancel}
-          onConfirm={handleExitConfirmed}
-          title="Exit Room?"
-        />
-      ) : null}
+      <ConfirmDialog
+        description="This will remove all messages for everyone in the room. This cannot be undone."
+        onCancel={handleConfirmCancel}
+        onConfirm={handleClearConfirmed}
+        open={pendingAction === "clear"}
+        title="Clear Chat?"
+      />
+      <ConfirmDialog
+        description="You will leave the room. You can rejoin at any time."
+        onCancel={handleConfirmCancel}
+        onConfirm={handleExitConfirmed}
+        open={pendingAction === "exit"}
+        title="Exit Room?"
+      />
     </div>
   );
 };

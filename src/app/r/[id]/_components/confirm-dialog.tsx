@@ -1,12 +1,13 @@
 "use client";
 
-import { css } from "styled-system/css";
-import { button, card } from "styled-system/recipes";
+import { AlertDialog } from "@base-ui/react/alert-dialog";
+import { alertDialog, button } from "styled-system/recipes";
 
 interface Props {
   description: string;
   onCancel: () => void;
   onConfirm: () => void;
+  open: boolean;
   title: string;
 }
 
@@ -14,77 +15,38 @@ export const ConfirmDialog = ({
   description,
   onCancel,
   onConfirm,
+  open,
   title,
 }: Props) => {
+  const classes = alertDialog();
+
   return (
-    <div
-      aria-modal="true"
-      className={css({
-        alignItems: "center",
-        backgroundColor: "rgba(13,14,16,0.85)",
-        bottom: "0",
-        display: "flex",
-        justifyContent: "center",
-        left: "0",
-        padding: "6",
-        position: "fixed",
-        right: "0",
-        top: "0",
-        zIndex: 100,
-      })}
-      role="dialog"
-    >
-      <div
-        className={card({
-          variant: "default",
-        })}
-      >
-        <div className={css({ padding: "8" })}>
-          <h2
-            className={css({
-              color: "base-content",
-              fontSize: "lg",
-              fontWeight: "extrabold",
-              letterSpacing: "display",
-              marginBottom: "2",
-            })}
-          >
+    <AlertDialog.Root onOpenChange={onCancel} open={open}>
+      <AlertDialog.Portal>
+        <AlertDialog.Backdrop className={classes.backdrop} />
+        <AlertDialog.Popup className={classes.popup}>
+          <AlertDialog.Title className={classes.title}>
             {title}
-          </h2>
-          <p
-            className={css({
-              color: "base-content-muted",
-              fontSize: "sm",
-              lineHeight: "body",
-              marginBottom: "6",
-            })}
-          >
+          </AlertDialog.Title>
+          <AlertDialog.Description className={classes.description}>
             {description}
-          </p>
-          <div
-            className={css({
-              display: "flex",
-              gap: "3",
-              justifyContent: "flex-end",
-            })}
-          >
-            <button
+          </AlertDialog.Description>
+          <div className={classes.actions}>
+            <AlertDialog.Close
               className={button({ size: "sm", variant: "ghost" })}
               onClick={onCancel}
-              type="button"
             >
               Cancel
-            </button>
-            <button
+            </AlertDialog.Close>
+            <AlertDialog.Close
               className={button({ size: "sm", variant: "danger" })}
               onClick={onConfirm}
-              type="button"
             >
               Confirm
-            </button>
+            </AlertDialog.Close>
           </div>
-        </div>
-      </div>
-    </div>
+        </AlertDialog.Popup>
+      </AlertDialog.Portal>
+    </AlertDialog.Root>
   );
 };

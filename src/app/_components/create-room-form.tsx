@@ -64,7 +64,7 @@ export const CreateRoomForm = () => {
         <p
           aria-live="polite"
           className={css({
-            color: "error",
+            color: "error-text",
             fontSize: "sm",
             marginBottom: "4",
           })}

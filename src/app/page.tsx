@@ -13,7 +13,7 @@ export default function HomePage() {
           backgroundColor: "base-100",
           display: "flex",
           justifyContent: "center",
-          minHeight: "100vh",
+          minHeight: "100dvh",
           padding: "6",
         })}
       >
