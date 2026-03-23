@@ -8,10 +8,11 @@ Effect (`effect` v3) is used as a **pipeline assembler on the PartyKit server on
 
 ### What uses Effect
 
-| File             | Pattern                              | APIs                                                                                        |
-| ---------------- | ------------------------------------ | ------------------------------------------------------------------------------------------- |
-| `party/types.ts` | Schema definitions for wire types    | `Schema.Struct`, `Schema.Union`, `Schema.Literal`, `Schema.Type`                            |
-| `party/index.ts` | Message routing + handler boundaries | `Match.value`, `Match.tag`, `Match.exhaustive`, `Effect.runPromise`, `Effect.gen`, `Logger` |
+| File                            | Pattern                              | APIs                                                                                        |
+| ------------------------------- | ------------------------------------ | ------------------------------------------------------------------------------------------- |
+| `party/types.ts`                | Schema definitions for wire types    | `Schema.Struct`, `Schema.Union`, `Schema.Literal`, `Schema.Type`                            |
+| `party/index.ts`                | Message routing + handler boundaries | `Match.value`, `Match.tag`, `Match.exhaustive`, `Effect.runPromise`, `Effect.gen`, `Logger` |
+| `src/server/partykit-client.ts` | HTTP client for PartyKit API         | `Effect.gen`, `HttpClient`, `HttpClientRequest`, `HttpClientResponse`                       |
 
 ### What does not use Effect
 
@@ -127,7 +128,8 @@ type ClientMessage =
   | { type: "join"; displayName: string }
   | { type: "message"; body: string }
   | { type: "clear" }
-  | { type: "leave" };
+  | { type: "leave" }
+  | { type: "typing" };
 ```
 
 ### Server → Client
@@ -138,7 +140,8 @@ type ServerMessage =
   | { type: "joined"; participant: Participant; participants: Participant[] }
   | { type: "message"; message: Message }
   | { type: "left"; displayName: string; participants: Participant[] }
-  | { type: "cleared" }
+  | { type: "cleared"; displayName: string }
+  | { type: "typing"; displayName: string }
   | { type: "error"; reason: string };
 
 type Participant = {
@@ -217,6 +220,21 @@ PartyKit → in-memory messages[] = []
          → room.broadcast({ type: "cleared" })
 All clients ← { type: "cleared" }
 ```
+
+### Typing Indicator
+
+```
+Browser → PartyKit WS: { type: "typing" }    (throttled to once per second)
+PartyKit → look up sender's displayName from participants map
+         → if not found: no-op (must have joined first)
+         → room.broadcast({ type: "typing", displayName }, except sender)
+Other clients ← { type: "typing", displayName }
+             → add displayName to typingNames[] in XState context
+             → start 3 s auto-expiry timer per name
+             → cleared immediately when a "message" arrives from that name
+```
+
+The `typing` message type is ephemeral — it is never stored in `messages[]` and is not replayed on join.
 
 ### Exit Room / Disconnect
 

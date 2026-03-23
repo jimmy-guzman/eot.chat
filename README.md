@@ -20,7 +20,8 @@ An ephemeral real-time chat room. No accounts, no history. When everyone leaves,
 ## Stack
 
 - **PartyKit** — room state and real-time broadcast
-- **Effect-TS** — typed pipelines for room operations
+- **XState** — WebSocket lifecycle state machine
+- **Effect-TS** — wire type schemas and message routing
 - **PandaCSS** — design tokens and recipes
 - **next-safe-action + valibot** — type-safe Server Actions
 - **TanStack Form** — form state management
@@ -28,8 +29,9 @@ An ephemeral real-time chat room. No accounts, no history. When everyone leaves,
 
 ## Running locally
 
-```bash
-pnpm dev
-```
+Two servers are required:
 
-Starts the Next.js app and the PartyKit server concurrently.
+```bash
+pnpm dev            # Next.js on http://localhost:3000
+pnpm partykit:dev   # PartyKit on http://localhost:1999
+```
