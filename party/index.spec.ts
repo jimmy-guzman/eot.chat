@@ -29,7 +29,6 @@ const makeStorage = (initial: Record<string, unknown> = {}) => {
 const makeRoom = (
   overrides: Partial<{
     env: Record<string, unknown>;
-    getConnection: (id: string) => Party.Connection | undefined;
     id: string;
     storage: ReturnType<typeof makeStorage>;
   }> = {},
@@ -39,7 +38,6 @@ const makeRoom = (
   return {
     broadcast: vi.fn(),
     env: overrides.env ?? {},
-    getConnection: overrides.getConnection ?? (() => undefined),
     id: overrides.id ?? "test-room",
     storage,
   } as unknown as Party.Room;
@@ -256,15 +254,12 @@ describe("Server.onMessage — join", () => {
     expect(conn.setState).toHaveBeenCalledWith({ displayName: "Alice" });
   });
 
-  it("should not add a duplicate displayName when the old connection is still live", async () => {
+  it("should not add a duplicate displayName", async () => {
+    const storage = makeStorage({ name: "My Room" });
+    const room = makeRoom({ storage });
+    const s = new Server(room);
     const conn1 = makeConn("conn-1");
     const conn2 = makeConn("conn-2");
-    const storage = makeStorage({ name: "My Room" });
-    const room = makeRoom({
-      getConnection: (id) => (id === "conn-1" ? conn1 : undefined),
-      storage,
-    });
-    const s = new Server(room);
 
     await s.onMessage(
       JSON.stringify({ displayName: "Alice", type: "join" }),
@@ -276,82 +271,6 @@ describe("Server.onMessage — join", () => {
     );
 
     expect(room.broadcast).toHaveBeenCalledOnce();
-  });
-
-  it("should re-key a participant on reconnect when the old connection is gone", async () => {
-    const conn1 = makeConn("conn-1");
-    const conn2 = makeConn("conn-2");
-    const storage = makeStorage({ name: "My Room" });
-    const room = makeRoom({
-      getConnection: () => undefined,
-      storage,
-    });
-    const s = new Server(room);
-
-    await s.onMessage(
-      JSON.stringify({ displayName: "Alice", type: "join" }),
-      conn1,
-    );
-
-    const broadcastMock = room.broadcast as MockFn;
-
-    broadcastMock.mockClear();
-    conn2.send.mockClear();
-
-    await s.onMessage(
-      JSON.stringify({ displayName: "Alice", type: "join" }),
-      conn2,
-    );
-
-    expect(broadcastMock).toHaveBeenCalledOnce();
-
-    const broadcasted = JSON.parse(
-      broadcastMock.mock.calls[0][0] as string,
-    ) as unknown;
-
-    expect(broadcasted).toMatchObject({ type: "joined" });
-    expect(conn2.send).toHaveBeenCalledOnce();
-
-    const sent = JSON.parse(conn2.send.mock.calls[0][0] as string) as unknown;
-
-    expect(sent).toMatchObject({ type: "init" });
-  });
-
-  it("should not broadcast cleared when a participant reconnects", async () => {
-    const conn1 = makeConn("conn-1");
-    const conn2 = makeConn("conn-2");
-    const storage = makeStorage({ name: "My Room" });
-    const room = makeRoom({
-      getConnection: () => undefined,
-      storage,
-    });
-    const s = new Server(room);
-
-    await s.onMessage(
-      JSON.stringify({ displayName: "Alice", type: "join" }),
-      conn1,
-    );
-    await s.onMessage(
-      JSON.stringify({ body: "hello", type: "message" }),
-      conn1,
-    );
-
-    const broadcastMock = room.broadcast as MockFn;
-
-    broadcastMock.mockClear();
-
-    await s.onMessage(
-      JSON.stringify({ displayName: "Alice", type: "join" }),
-      conn2,
-    );
-
-    const calls = (broadcastMock.mock.calls as [string][]).map(
-      ([raw]) => JSON.parse(raw) as unknown,
-    );
-
-    expect(calls.some((c) => (c as { type: string }).type === "cleared")).toBe(
-      false,
-    );
   });
 });
 

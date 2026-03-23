@@ -81,42 +81,24 @@ const socketActor = fromCallback<
   };
 
   const onMessage = (event: MessageEvent<string>) => {
-    // TODO: remove debug logging
-    console.log("[socket] raw message received", event.data);
-
     let raw: unknown;
 
     try {
       raw = JSON.parse(event.data) as unknown;
     } catch {
-      // TODO: remove debug logging
-      console.log("[socket] JSON.parse failed", event.data);
-
       return;
     }
-
-    // TODO: remove debug logging
-    console.log("[socket] parsed", raw);
 
     let msg;
 
     try {
       msg = decodeServerMessage(raw);
-    } catch (error) {
-      // TODO: remove debug logging
-      console.log("[socket] decodeServerMessage failed", error, raw);
-
+    } catch {
       return;
     }
 
-    // TODO: remove debug logging
-    console.log("[socket] decoded message", msg.type, msg);
-
     switch (msg.type) {
       case "cleared": {
-        // TODO: remove debug logging
-        console.log("[socket] sending SOCKET_CLEARED to machine");
-
         sendBack({ displayName: msg.displayName, type: "SOCKET_CLEARED" });
 
         break;
@@ -286,9 +268,6 @@ export const roomMachine = setup({
         },
         SOCKET_CLEARED: {
           actions: enqueueActions(({ enqueue, event }) => {
-            // TODO: remove debug logging
-            console.log("[machine] SOCKET_CLEARED received", event);
-
             enqueue.assign({ messages: [] });
             enqueue.cancel("status-notification");
             enqueue.assign({
