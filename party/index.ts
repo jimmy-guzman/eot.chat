@@ -69,30 +69,16 @@ export default class Server implements Party.Server {
     const program = Match.value(msg).pipe(
       Match.when({ type: "join" }, ({ displayName }) => {
         return Effect.gen(this, function* () {
-          const existingEntry = [...this.participants.entries()].find(
-            ([, p]) => p.displayName === displayName,
+          const isDuplicate = [...this.participants.values()].some(
+            (p) => p.displayName === displayName,
           );
 
-          if (existingEntry) {
-            const [oldConnId] = existingEntry;
-            const isStillAlive =
-              this.room.getConnection(oldConnId) !== undefined;
-
-            if (isStillAlive) {
-              yield* Effect.logWarning("join: duplicate displayName rejected", {
-                displayName,
-              });
-
-              return;
-            }
-
-            yield* Effect.logInfo("join: reconnect detected, re-keying", {
+          if (isDuplicate) {
+            yield* Effect.logWarning("join: duplicate displayName rejected", {
               displayName,
-              newConnId: sender.id,
-              oldConnId,
             });
 
-            this.participants.delete(oldConnId);
+            return;
           }
 
           const participant: Participant = {
