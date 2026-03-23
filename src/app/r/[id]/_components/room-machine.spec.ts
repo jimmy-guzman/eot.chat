@@ -100,7 +100,7 @@ describe("roomMachine", () => {
     expect(messages[0]).toStrictEqual(realMessage);
   });
 
-  it("should clear messages on SOCKET_CLEARED", () => {
+  it("should clear messages and set cleared notification on SOCKET_CLEARED", () => {
     const actor = makeActor();
 
     actor.send({
@@ -108,35 +108,150 @@ describe("roomMachine", () => {
       participants: [],
       type: "SOCKET_INIT",
     });
-    actor.send({ type: "SOCKET_CLEARED" });
+    actor.send({ displayName: "Bob", type: "SOCKET_CLEARED" });
 
-    expect(actor.getSnapshot().context.messages).toStrictEqual([]);
+    const { context } = actor.getSnapshot();
+
+    expect(context.messages).toStrictEqual([]);
+    expect(context.activeNotification).toStrictEqual({
+      displayName: "Bob",
+      type: "cleared",
+    });
   });
 
-  it("should update participants on SOCKET_JOINED", () => {
+  it("should clear the cleared notification after 3000ms", () => {
     const actor = makeActor();
-    const participants = [makeParticipant("Alice"), makeParticipant("Bob")];
 
-    actor.send({ participants, type: "SOCKET_JOINED" });
+    actor.send({ displayName: "Bob", type: "SOCKET_CLEARED" });
 
-    expect(actor.getSnapshot().context.participants).toStrictEqual(
-      participants,
-    );
+    expect(actor.getSnapshot().context.activeNotification).toStrictEqual({
+      displayName: "Bob",
+      type: "cleared",
+    });
+
+    vi.advanceTimersByTime(3000);
+
+    expect(actor.getSnapshot().context.activeNotification).toBeNull();
   });
 
-  it("should update participants on SOCKET_LEFT", () => {
+  it("should update participants and set entered notification on SOCKET_JOINED", () => {
+    const actor = makeActor();
+    const participant = makeParticipant("Bob");
+    const participants = [makeParticipant("Alice"), participant];
+
+    actor.send({ participant, participants, type: "SOCKET_JOINED" });
+
+    const { context } = actor.getSnapshot();
+
+    expect(context.participants).toStrictEqual(participants);
+    expect(context.activeNotification).toStrictEqual({
+      displayName: "Bob",
+      type: "entered",
+    });
+  });
+
+  it("should clear the entered notification after 3000ms", () => {
+    const actor = makeActor();
+    const participant = makeParticipant("Bob");
+
+    actor.send({
+      participant,
+      participants: [participant],
+      type: "SOCKET_JOINED",
+    });
+
+    vi.advanceTimersByTime(3000);
+
+    expect(actor.getSnapshot().context.activeNotification).toBeNull();
+  });
+
+  it("should update participants and set exited notification on SOCKET_LEFT", () => {
     const actor = makeActor();
     const participants = [makeParticipant("Alice")];
 
     actor.send({
+      participant: makeParticipant("Bob"),
       participants: [makeParticipant("Alice"), makeParticipant("Bob")],
       type: "SOCKET_JOINED",
     });
-    actor.send({ participants, type: "SOCKET_LEFT" });
+    actor.send({ displayName: "Bob", participants, type: "SOCKET_LEFT" });
 
-    expect(actor.getSnapshot().context.participants).toStrictEqual(
-      participants,
-    );
+    const { context } = actor.getSnapshot();
+
+    expect(context.participants).toStrictEqual(participants);
+    expect(context.activeNotification).toStrictEqual({
+      displayName: "Bob",
+      type: "exited",
+    });
+  });
+
+  it("should clear the exited notification after 3000ms", () => {
+    const actor = makeActor();
+
+    actor.send({
+      displayName: "Bob",
+      participants: [],
+      type: "SOCKET_LEFT",
+    });
+
+    vi.advanceTimersByTime(3000);
+
+    expect(actor.getSnapshot().context.activeNotification).toBeNull();
+  });
+
+  it("should replace an active notification when a new presence event fires", () => {
+    const actor = makeActor();
+
+    actor.send({
+      participant: makeParticipant("Bob"),
+      participants: [makeParticipant("Bob")],
+      type: "SOCKET_JOINED",
+    });
+
+    expect(actor.getSnapshot().context.activeNotification).toStrictEqual({
+      displayName: "Bob",
+      type: "entered",
+    });
+
+    actor.send({
+      participant: makeParticipant("Carol"),
+      participants: [makeParticipant("Bob"), makeParticipant("Carol")],
+      type: "SOCKET_JOINED",
+    });
+
+    expect(actor.getSnapshot().context.activeNotification).toStrictEqual({
+      displayName: "Carol",
+      type: "entered",
+    });
+  });
+
+  it("should reset the status timer when a new presence event replaces the active notification", () => {
+    const actor = makeActor();
+
+    actor.send({
+      participant: makeParticipant("Bob"),
+      participants: [makeParticipant("Bob")],
+      type: "SOCKET_JOINED",
+    });
+
+    vi.advanceTimersByTime(2000);
+
+    actor.send({
+      participant: makeParticipant("Carol"),
+      participants: [makeParticipant("Bob"), makeParticipant("Carol")],
+      type: "SOCKET_JOINED",
+    });
+
+    vi.advanceTimersByTime(2000);
+
+    expect(actor.getSnapshot().context.activeNotification).toStrictEqual({
+      displayName: "Carol",
+      type: "entered",
+    });
+
+    vi.advanceTimersByTime(1000);
+
+    expect(actor.getSnapshot().context.activeNotification).toBeNull();
   });
 
   it("should add a name to typingNames on SOCKET_TYPING", () => {

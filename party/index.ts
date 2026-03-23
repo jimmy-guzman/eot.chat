@@ -132,10 +132,23 @@ export default class Server implements Party.Server {
       }),
       Match.when({ type: "clear" }, () => {
         return Effect.gen(this, function* () {
+          const participant = this.participants.get(sender.id);
+
+          if (!participant) {
+            return;
+          }
+
           this.messages.length = 0;
-          this.room.broadcast(JSON.stringify({ type: "cleared" }));
+          this.room.broadcast(
+            JSON.stringify({
+              displayName: participant.displayName,
+              type: "cleared",
+            }),
+            [sender.id],
+          );
 
           yield* Effect.logInfo("clear: messages cleared by participant", {
+            displayName: participant.displayName,
             senderId: sender.id,
           });
         });
@@ -247,7 +260,9 @@ export default class Server implements Party.Server {
     );
 
     this.messages.length = 0;
-    this.room.broadcast(JSON.stringify({ type: "cleared" }));
+    this.room.broadcast(
+      JSON.stringify({ displayName: participant.displayName, type: "cleared" }),
+    );
 
     this.room.broadcast(
       JSON.stringify({

@@ -21,7 +21,10 @@ export const ClientMessageSchema = Schema.Union(
 );
 
 export const ServerMessageSchema = Schema.Union(
-  Schema.Struct({ type: Schema.Literal("cleared") }),
+  Schema.Struct({
+    displayName: Schema.String,
+    type: Schema.Literal("cleared"),
+  }),
   Schema.Struct({
     messages: Schema.Array(MessageSchema),
     participants: Schema.Array(ParticipantSchema),

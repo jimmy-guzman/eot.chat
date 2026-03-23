@@ -15,7 +15,7 @@ import { MessageList } from "./message-list";
 import { ParticipantStrip } from "./participant-strip";
 import { RoomHeader } from "./room-header";
 import { roomMachine } from "./room-machine";
-import { TypingIndicator } from "./typing-indicator";
+import { StatusBar } from "./status-bar";
 
 const TYPING_THROTTLE_MS = 1000;
 
@@ -36,7 +36,16 @@ export const RoomClient = ({ displayName, id, name, roomUrl }: Props) => {
 
   const messages = useSelector(actorRef, (s) => s.context.messages);
   const participants = useSelector(actorRef, (s) => s.context.participants);
-  const typingNames = useSelector(actorRef, (s) => s.context.typingNames);
+
+  const statusNotification = useSelector(actorRef, (s) => {
+    if (s.context.activeNotification) return s.context.activeNotification;
+
+    if (s.context.typingNames.length > 0) {
+      return { names: s.context.typingNames, type: "typing" as const };
+    }
+
+    return null;
+  });
 
   const [inputValue, setInputValue] = useState("");
   const [pendingAction, setPendingAction] = useState<PendingAction>(null);
@@ -110,7 +119,7 @@ export const RoomClient = ({ displayName, id, name, roomUrl }: Props) => {
         roomUrl={roomUrl}
       />
       <ParticipantStrip displayName={displayName} participants={participants} />
-      <TypingIndicator names={typingNames} />
+      <StatusBar notification={statusNotification} />
       <MessageList
         bottomRef={bottomRef}
         displayName={displayName}

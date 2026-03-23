@@ -8,7 +8,15 @@ import type { Message, Participant } from "../../../../../party/types";
 
 import { ServerMessageSchema } from "../../../../../party/types";
 
+export type StatusNotification =
+  | null
+  | { displayName: string; type: "cleared" }
+  | { displayName: string; type: "entered" }
+  | { displayName: string; type: "exited" }
+  | { names: string[]; type: "typing" };
+
 interface RoomContext {
+  activeNotification: StatusNotification;
   displayName: string;
   exitReason: "error" | "left" | null;
   id: string;
@@ -35,17 +43,24 @@ export type SocketEvent =
 
 type RoomEvent =
   | { body: string; optimisticId: string; type: "SEND_MESSAGE" }
+  | { displayName: string; participants: Participant[]; type: "SOCKET_LEFT" }
+  | { displayName: string; type: "SOCKET_CLEARED" }
   | { displayName: string; type: "SOCKET_TYPING" }
   | { displayName: string; type: "TYPING_EXPIRED" }
   | { message: Message; type: "SOCKET_MESSAGE" }
   | { messages: Message[]; participants: Participant[]; type: "SOCKET_INIT" }
-  | { participants: Participant[]; type: "SOCKET_JOINED" }
-  | { participants: Participant[]; type: "SOCKET_LEFT" }
+  | {
+      participant: Participant;
+      participants: Participant[];
+      type: "SOCKET_JOINED";
+    }
   | { type: "CLEAR" }
   | { type: "LEAVE" }
-  | { type: "SOCKET_CLEARED" }
   | { type: "SOCKET_ERROR" }
+  | { type: "STATUS_EXPIRED" }
   | { type: "TYPING" };
+
+const STATUS_NOTIFICATION_DURATION_MS = 3000;
 
 const decodeServerMessage = Schema.decodeUnknownSync(ServerMessageSchema);
 
@@ -84,7 +99,7 @@ const socketActor = fromCallback<
 
     switch (msg.type) {
       case "cleared": {
-        sendBack({ type: "SOCKET_CLEARED" });
+        sendBack({ displayName: msg.displayName, type: "SOCKET_CLEARED" });
 
         break;
       }
@@ -104,6 +119,7 @@ const socketActor = fromCallback<
       }
       case "joined": {
         sendBack({
+          participant: msg.participant,
           participants: [...msg.participants],
           type: "SOCKET_JOINED",
         });
@@ -111,7 +127,11 @@ const socketActor = fromCallback<
         break;
       }
       case "left": {
-        sendBack({ participants: [...msg.participants], type: "SOCKET_LEFT" });
+        sendBack({
+          displayName: msg.displayName,
+          participants: [...msg.participants],
+          type: "SOCKET_LEFT",
+        });
 
         break;
       }
@@ -188,6 +208,7 @@ export const roomMachine = setup({
 }).createMachine({
   context: ({ input }) => {
     return {
+      activeNotification: null,
       displayName: input.displayName,
       exitReason: null,
       id: input.id,
@@ -240,7 +261,23 @@ export const roomMachine = setup({
           }),
         },
         SOCKET_CLEARED: {
-          actions: assign({ messages: [] }),
+          actions: enqueueActions(({ enqueue, event }) => {
+            enqueue.assign({ messages: [] });
+            enqueue.cancel("status-notification");
+            enqueue.assign({
+              activeNotification: {
+                displayName: event.displayName,
+                type: "cleared",
+              },
+            });
+            enqueue.raise(
+              { type: "STATUS_EXPIRED" },
+              {
+                delay: STATUS_NOTIFICATION_DURATION_MS,
+                id: "status-notification",
+              },
+            );
+          }),
         },
         SOCKET_ERROR: {
           actions: assign({ exitReason: "error" }),
@@ -253,13 +290,41 @@ export const roomMachine = setup({
           }),
         },
         SOCKET_JOINED: {
-          actions: assign({
-            participants: ({ event }) => event.participants,
+          actions: enqueueActions(({ enqueue, event }) => {
+            enqueue.assign({ participants: ({ event: e }) => e.participants });
+            enqueue.cancel("status-notification");
+            enqueue.assign({
+              activeNotification: {
+                displayName: event.participant.displayName,
+                type: "entered",
+              },
+            });
+            enqueue.raise(
+              { type: "STATUS_EXPIRED" },
+              {
+                delay: STATUS_NOTIFICATION_DURATION_MS,
+                id: "status-notification",
+              },
+            );
           }),
         },
         SOCKET_LEFT: {
-          actions: assign({
-            participants: ({ event }) => event.participants,
+          actions: enqueueActions(({ enqueue, event }) => {
+            enqueue.assign({ participants: ({ event: e }) => e.participants });
+            enqueue.cancel("status-notification");
+            enqueue.assign({
+              activeNotification: {
+                displayName: event.displayName,
+                type: "exited",
+              },
+            });
+            enqueue.raise(
+              { type: "STATUS_EXPIRED" },
+              {
+                delay: STATUS_NOTIFICATION_DURATION_MS,
+                id: "status-notification",
+              },
+            );
           }),
         },
         SOCKET_MESSAGE: {
@@ -302,6 +367,9 @@ export const roomMachine = setup({
               { delay: 3000, id: `typing-${event.displayName}` },
             );
           }),
+        },
+        STATUS_EXPIRED: {
+          actions: assign({ activeNotification: null }),
         },
         TYPING: {
           actions: enqueueActions(({ enqueue }) => {
