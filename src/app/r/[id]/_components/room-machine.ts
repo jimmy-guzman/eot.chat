@@ -334,26 +334,36 @@ export const roomMachine = setup({
           }),
         },
         SOCKET_MESSAGE: {
-          actions: assign({
-            messages: ({ context, event }) => {
-              const idx = context.messages.findIndex((m) => {
-                return (
-                  m.id.startsWith("optimistic-") &&
-                  m.rawInput === event.message.rawInput &&
-                  m.authorDisplayName === context.displayName
+          actions: enqueueActions(({ enqueue, event }) => {
+            enqueue.cancel(`typing-${event.message.authorDisplayName}`);
+            enqueue.assign({
+              typingNames: ({ context }) => {
+                return context.typingNames.filter(
+                  (n) => n !== event.message.authorDisplayName,
                 );
-              });
+              },
+            });
+            enqueue.assign({
+              messages: ({ context }) => {
+                const idx = context.messages.findIndex((m) => {
+                  return (
+                    m.id.startsWith("optimistic-") &&
+                    m.rawInput === event.message.rawInput &&
+                    m.authorDisplayName === context.displayName
+                  );
+                });
 
-              if (idx !== -1) {
-                const next = [...context.messages];
+                if (idx !== -1) {
+                  const next = [...context.messages];
 
-                next[idx] = event.message;
+                  next[idx] = event.message;
 
-                return next;
-              }
+                  return next;
+                }
 
-              return [...context.messages, event.message];
-            },
+                return [...context.messages, event.message];
+              },
+            });
           }),
         },
         SOCKET_TYPING: {

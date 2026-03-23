@@ -332,4 +332,33 @@ describe("roomMachine", () => {
 
     expect(actor.getSnapshot().context.messages).toStrictEqual([]);
   });
+
+  it("should remove the sender from typingNames on SOCKET_MESSAGE", () => {
+    const actor = makeActor();
+
+    actor.send({ displayName: "Bob", type: "SOCKET_TYPING" });
+
+    expect(actor.getSnapshot().context.typingNames).toStrictEqual(["Bob"]);
+
+    actor.send({
+      message: makeMessage({ authorDisplayName: "Bob", id: "msg-2" }),
+      type: "SOCKET_MESSAGE",
+    });
+
+    expect(actor.getSnapshot().context.typingNames).toStrictEqual([]);
+  });
+
+  it("should cancel the typing timer for the sender on SOCKET_MESSAGE", () => {
+    const actor = makeActor();
+
+    actor.send({ displayName: "Bob", type: "SOCKET_TYPING" });
+    actor.send({
+      message: makeMessage({ authorDisplayName: "Bob", id: "msg-2" }),
+      type: "SOCKET_MESSAGE",
+    });
+
+    vi.advanceTimersByTime(3000);
+
+    expect(actor.getSnapshot().context.typingNames).toStrictEqual([]);
+  });
 });
