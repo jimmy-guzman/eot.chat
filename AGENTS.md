@@ -10,6 +10,7 @@
 - **Actions:** `next-safe-action` + Valibot — type-safe server actions with schema validation
 - **Forms:** TanStack Form — form state and field context
 - **Design system:** PandaCSS — design tokens, recipes, and utility classes
+- **Motion:** Motion (`motion` package, import `motion/react`) — client-only polish; use `LazyMotion` + `domMax` where layout animations are needed; prefer PandaCSS transitions and keyframes for simple enter/opacity effects
 - **Linting:** ESLint 9 with `@jimmy.codes/eslint-config`
 - **Formatting:** oxfmt (Prettier-compatible, Rust-based)
 - **Testing:** Vitest + Testing Library + happy-dom (unit/component), Playwright (e2e), MSW (HTTP mocking)

@@ -23,12 +23,19 @@ export const MessageList = ({ bottomRef, displayName, messages }: Props) => {
       {messages.length === 0 ? (
         <div
           className={css({
-            alignItems: "center",
-            display: "flex",
-            flexDirection: "column",
-            gap: "3",
-            justifyContent: "center",
-            paddingY: "10",
+            "@media (prefers-reduced-motion: reduce)": {
+              animation: "none",
+            },
+            "alignItems": "center",
+            "animationDuration": "token(durations.polish)",
+            "animationFillMode": "forwards",
+            "animationName": "polishFadeIn",
+            "animationTimingFunction": "token(easings.polishOut)",
+            "display": "flex",
+            "flexDirection": "column",
+            "gap": "3",
+            "justifyContent": "center",
+            "paddingY": "10",
           })}
         >
           <p
@@ -55,11 +62,18 @@ export const MessageList = ({ bottomRef, displayName, messages }: Props) => {
           return (
             <div
               className={css({
-                alignItems: "flex-start",
-                alignSelf: isOwn ? "flex-end" : "flex-start",
-                display: "flex",
-                flexDirection: "column",
-                gap: "1",
+                "@media (prefers-reduced-motion: reduce)": {
+                  animation: "none",
+                },
+                "alignItems": "flex-start",
+                "alignSelf": isOwn ? "flex-end" : "flex-start",
+                "animationDuration": "token(durations.polish)",
+                "animationFillMode": "forwards",
+                "animationName": "polishMessageIn",
+                "animationTimingFunction": "token(easings.polishOut)",
+                "display": "flex",
+                "flexDirection": "column",
+                "gap": "1",
               })}
               key={msg.id}
             >
