@@ -45,15 +45,34 @@ const makeRoom = (
   } as unknown as Party.Room;
 };
 
-const makeConn = (id = "conn-1") => {
+const makeConn = (
+  id = "conn-1",
+  initialState: Record<string, unknown> = {},
+) => {
   const close: MockFn = vi.fn();
   const send: MockFn = vi.fn();
 
-  return {
+  let state: Record<string, unknown> = initialState;
+
+  const setState: MockFn = vi.fn((s: Record<string, unknown>) => {
+    state = s;
+  });
+
+  const conn = {
     close,
     id,
     send,
-  } as unknown as Party.Connection & { close: MockFn; send: MockFn };
+    setState,
+    get state() {
+      return state;
+    },
+  } as unknown as Party.Connection & {
+    close: MockFn;
+    send: MockFn;
+    setState: MockFn;
+  };
+
+  return conn;
 };
 
 const makeRequest = (
@@ -234,6 +253,7 @@ describe("Server.onMessage — join", () => {
     ) as unknown;
 
     expect(broadcasted).toMatchObject({ type: "joined" });
+    expect(conn.setState).toHaveBeenCalledWith({ displayName: "Alice" });
   });
 
   it("should not add a duplicate displayName when the old connection is still live", async () => {
@@ -483,6 +503,32 @@ describe("Server.onMessage — clear", () => {
     ) as unknown;
 
     expect(broadcasted).toMatchObject({ type: "cleared" });
+  });
+
+  it("should clear messages and broadcast cleared when clear arrives before join but connection state is set", async () => {
+    const storage = makeStorage({ name: "My Room" });
+    const room = makeRoom({ storage });
+    const s = new Server(room);
+    const conn = makeConn("conn-1", { displayName: "Alice" });
+
+    await s.onMessage(JSON.stringify({ body: "hello", type: "message" }), conn);
+
+    const broadcastMock = room.broadcast as MockFn;
+
+    broadcastMock.mockClear();
+
+    await s.onMessage(JSON.stringify({ type: "clear" }), conn);
+
+    expect(broadcastMock).toHaveBeenCalledOnce();
+
+    const broadcasted = JSON.parse(
+      broadcastMock.mock.calls[0][0] as string,
+    ) as unknown;
+
+    expect(broadcasted).toMatchObject({
+      displayName: "Alice",
+      type: "cleared",
+    });
   });
 
   it("should clear messages and broadcast cleared when a participant leaves mid-session", async () => {

@@ -7,6 +7,10 @@ import type { Message, Participant } from "./types";
 
 import { ClientMessageSchema } from "./types";
 
+interface ConnectionState {
+  displayName: string;
+}
+
 export default class Server implements Party.Server {
   private readonly messages: Message[] = [];
   private readonly participants = new Map<string, Participant>();
@@ -97,6 +101,7 @@ export default class Server implements Party.Server {
           };
 
           this.participants.set(sender.id, participant);
+          sender.setState({ displayName });
 
           yield* Effect.logInfo("join: participant joined", {
             displayName,
@@ -122,14 +127,15 @@ export default class Server implements Party.Server {
         });
       }),
       Match.when({ type: "message" }, ({ body }) => {
+        const displayName = this.resolveDisplayName(sender);
+
         return Effect.gen(this, function* () {
-          if (!body.trim()) {
+          if (!body.trim() || !displayName) {
             return;
           }
 
           const message: Message = {
-            authorDisplayName:
-              this.participants.get(sender.id)?.displayName ?? "Unknown",
+            authorDisplayName: displayName,
             id: nanoid(),
             rawInput: body,
             sentAt: new Date().toISOString(),
@@ -145,42 +151,42 @@ export default class Server implements Party.Server {
         return Effect.promise(() => this.handleLeave(sender.id));
       }),
       Match.when({ type: "clear" }, () => {
-        return Effect.gen(this, function* () {
-          const participant = this.participants.get(sender.id);
+        const displayName = this.resolveDisplayName(sender);
 
-          if (!participant) {
+        return Effect.gen(this, function* () {
+          if (!displayName) {
             return;
           }
 
           this.messages.length = 0;
           this.room.broadcast(
             JSON.stringify({
-              displayName: participant.displayName,
+              displayName,
               type: "cleared",
             }),
           );
 
           yield* Effect.logInfo("clear: messages cleared by participant", {
-            displayName: participant.displayName,
+            displayName,
             senderId: sender.id,
           });
         });
       }),
       Match.when({ type: "typing" }, () => {
-        return Effect.gen(this, function* () {
-          const participant = this.participants.get(sender.id);
+        const displayName = this.resolveDisplayName(sender);
 
-          if (!participant) {
+        return Effect.gen(this, function* () {
+          if (!displayName) {
             return;
           }
 
           yield* Effect.logDebug("typing: broadcast", {
-            displayName: participant.displayName,
+            displayName,
           });
 
           this.room.broadcast(
             JSON.stringify({
-              displayName: participant.displayName,
+              displayName,
               type: "typing",
             }),
             [sender.id],
@@ -288,6 +294,16 @@ export default class Server implements Party.Server {
     if (this.participants.size === 0) {
       await this.room.storage.delete("name");
     }
+  }
+
+  private resolveDisplayName(conn: Party.Connection): null | string {
+    const fromParticipants = this.participants.get(conn.id)?.displayName;
+
+    if (fromParticipants) return fromParticipants;
+
+    const state = conn.state as ConnectionState | null;
+
+    return state?.displayName ?? null;
   }
 }
 

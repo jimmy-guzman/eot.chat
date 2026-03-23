@@ -157,7 +157,9 @@ const socketActor = fromCallback<
   receive((event) => {
     switch (event.type) {
       case "CLEAR": {
-        socket.send(JSON.stringify({ type: "clear" }));
+        if (socket.readyState === WebSocket.OPEN) {
+          socket.send(JSON.stringify({ type: "clear" }));
+        }
 
         break;
       }
@@ -174,12 +176,16 @@ const socketActor = fromCallback<
         break;
       }
       case "SEND_MESSAGE": {
-        socket.send(JSON.stringify({ body: event.body, type: "message" }));
+        if (socket.readyState === WebSocket.OPEN) {
+          socket.send(JSON.stringify({ body: event.body, type: "message" }));
+        }
 
         break;
       }
       case "TYPING": {
-        socket.send(JSON.stringify({ type: "typing" }));
+        if (socket.readyState === WebSocket.OPEN) {
+          socket.send(JSON.stringify({ type: "typing" }));
+        }
 
         break;
       }
