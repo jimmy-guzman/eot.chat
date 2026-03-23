@@ -4,8 +4,6 @@ import type { Metadata } from "next";
 
 import { IBM_Plex_Mono } from "next/font/google";
 
-import { SiteFooter } from "./_components/site-footer";
-
 const ibmPlexMono = IBM_Plex_Mono({
   subsets: ["latin"],
   variable: "--font-mono",
@@ -27,10 +25,7 @@ export default function RootLayout({
       <head>
         <meta content="dark" name="color-scheme" />
       </head>
-      <body>
-        {children}
-        <SiteFooter />
-      </body>
+      <body>{children}</body>
     </html>
   );
 }
