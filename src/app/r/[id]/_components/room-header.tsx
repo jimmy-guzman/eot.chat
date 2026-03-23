@@ -4,21 +4,22 @@ import { css } from "styled-system/css";
 import { button } from "styled-system/recipes";
 
 interface Props {
-  id: string;
   name: string;
   onClear: () => void;
   onCopyLink: () => void;
   onExit: () => void;
+  roomUrl: string;
 }
 
 export const RoomHeader = ({
-  id,
   name,
   onClear,
   onCopyLink,
   onExit,
+  roomUrl,
 }: Props) => {
-  return <header
+  return (
+    <header
       className={css({
         backgroundColor: "base-200",
         borderBottom: "1px solid token(colors.base-300)",
@@ -77,7 +78,8 @@ export const RoomHeader = ({
           marginTop: "1",
         })}
       >
-        {`https://eot.chat/r/${id}`}
+        {roomUrl}
       </p>
-    </header>;
+    </header>
+  );
 };

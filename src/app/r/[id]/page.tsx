@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { env } from "@/env";
+import { getAppUrl } from "@/lib/app-url";
 
 import { RoomClient } from "./_components/room-client";
 
@@ -37,5 +38,12 @@ export default async function RoomPage({ params }: Props) {
   const cookieStore = await cookies();
   const displayName = cookieStore.get(`display-name-${id}`)?.value ?? null;
 
-  return <RoomClient displayName={displayName} id={id} name={name} />;
+  return (
+    <RoomClient
+      displayName={displayName}
+      id={id}
+      name={name}
+      roomUrl={`${getAppUrl()}/r/${id}`}
+    />
+  );
 }

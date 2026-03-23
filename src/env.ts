@@ -1,4 +1,5 @@
 import { createEnv } from "@t3-oss/env-nextjs";
+import { vercel } from "@t3-oss/env-nextjs/presets-valibot";
 import * as v from "valibot";
 
 export const env = createEnv({
@@ -8,6 +9,7 @@ export const env = createEnv({
   experimental__runtimeEnv: {
     NEXT_PUBLIC_PARTYKIT_HOST: process.env.NEXT_PUBLIC_PARTYKIT_HOST,
   },
+  extends: [vercel()],
   server: {
     PARTYKIT_URL: v.pipe(v.string(), v.url()),
   },

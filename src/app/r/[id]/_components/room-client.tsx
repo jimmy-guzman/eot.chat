@@ -39,6 +39,7 @@ interface Props {
   displayName: null | string;
   id: string;
   name: string;
+  roomUrl: string;
 }
 
 const copyRoomLink = () => {
@@ -49,6 +50,7 @@ export const RoomClient = ({
   displayName: initialDisplayName,
   id,
   name,
+  roomUrl,
 }: Props) => {
   const router = useRouter();
   const [, startTransition] = useTransition();
@@ -255,7 +257,6 @@ export const RoomClient = ({
       })}
     >
       <RoomHeader
-        id={id}
         name={name}
         onClear={() => {
           setPendingAction("clear");
@@ -264,6 +265,7 @@ export const RoomClient = ({
         onExit={() => {
           setPendingAction("exit");
         }}
+        roomUrl={roomUrl}
       />
       <ParticipantStrip
         displayName={resolvedDisplayName}
