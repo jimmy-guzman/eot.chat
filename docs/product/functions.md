@@ -1,7 +1,5 @@
 # Function Definition — eot.chat
 
-Derived from wireframes in `docs/prompts/excalidraw.md` and the [Excalidraw diagram](/docs/reference/wireframe.excalidraw.png).
-
 ---
 
 ## Application Overview
@@ -62,7 +60,7 @@ There are no user accounts — identity is a display name chosen at entry.
 
 - Scrollable list of messages, ordered chronologically
 - Each message is rendered as a plain text bubble
-- The current user's own messages are visually distinguished (powder-blue bubble, right-aligned)
+- The current user's own messages are visually distinguished (primary-colored bubble, right-aligned)
 - Other participants' messages are left-aligned
 - New participants receive the full message history from the start of the session
 
@@ -85,11 +83,11 @@ There are no user accounts — identity is a display name chosen at entry.
 
 Room state lives entirely in PartyKit's in-memory server and storage. Nothing is persisted to a database.
 
-| Field        | Type      | Notes                                                                  |
-| ------------ | --------- | ---------------------------------------------------------------------- |
-| `id`         | string    | URL-safe nanoid, used in shareable link — also the only access control |
-| `name`       | string    | Human-readable name — stored in PartyKit `room.storage`                |
-| `created_at` | timestamp | In-memory only                                                         |
+| Field       | Type      | Notes                                                                  |
+| ----------- | --------- | ---------------------------------------------------------------------- |
+| `id`        | string    | URL-safe nanoid, used in shareable link — also the only access control |
+| `name`      | string    | Human-readable name — stored in PartyKit `room.storage`                |
+| `createdAt` | timestamp | In-memory only                                                         |
 
 ### Participant
 
