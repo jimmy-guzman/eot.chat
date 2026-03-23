@@ -23,18 +23,21 @@ export const ParticipantStrip = ({ displayName, participants }: Props) => {
         gap: "2",
         listStyle: "none",
         margin: "0",
+        overflowX: "auto",
         padding: "2 5",
       })}
     >
       {participants.map((p) => {
-        return <li
+        return (
+          <li
             className={badge({
               variant: p.displayName === displayName ? "active" : "default",
             })}
             key={p.displayName}
           >
             {p.displayName}
-          </li>;
+          </li>
+        );
       })}
     </ul>
   );

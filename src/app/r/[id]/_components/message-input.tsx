@@ -41,7 +41,13 @@ export const MessageInput = ({ onSend, onTyping, setValue, value }: Props) => {
         autoComplete="off"
         className={cx(
           input(),
-          css({ flex: "1", resize: "none", width: "auto" }),
+          css({
+            fieldSizing: "content",
+            flex: "1",
+            maxHeight: "8rem",
+            resize: "none",
+            width: "auto",
+          }),
         )}
         onChange={(e) => {
           setValue(e.target.value);
@@ -52,7 +58,6 @@ export const MessageInput = ({ onSend, onTyping, setValue, value }: Props) => {
         }}
         onKeyDown={handleKeyDown}
         placeholder="Send anything…"
-        rows={1}
         value={value}
       />
       <button

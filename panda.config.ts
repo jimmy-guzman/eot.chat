@@ -1,4 +1,4 @@
-import { defineConfig } from "@pandacss/dev";
+import { defineConfig, defineSlotRecipe } from "@pandacss/dev";
 
 export default defineConfig({
   // Files to exclude
@@ -193,6 +193,65 @@ export default defineConfig({
           md: { value: "4px" },
           sm: { value: "2px" },
         },
+      },
+      slotRecipes: {
+        menu: defineSlotRecipe({
+          base: {
+            item: {
+              "&[data-highlighted]": {
+                backgroundColor: "base-300",
+                outline: "none",
+              },
+              "_focusVisible": { outline: "none" },
+              "borderRadius": "sm",
+              "color": "base-content",
+              "cursor": "pointer",
+              "display": "block",
+              "fontSize": "sm",
+              "fontWeight": "bold",
+              "letterSpacing": "display",
+              "padding": "2 3",
+              "userSelect": "none",
+              "width": "100%",
+            },
+            popup: {
+              backgroundColor: "base-200",
+              border: "1px solid token(colors.base-300)",
+              borderRadius: "md",
+              boxShadow: "md",
+              minWidth: "10rem",
+              padding: "1",
+            },
+            separator: {
+              borderBottom: "1px solid token(colors.base-300)",
+              margin: "1 0",
+            },
+            trigger: {
+              "&[data-popup-open]": { backgroundColor: "base-300" },
+              "_focusVisible": { boxShadow: "glow.md", outline: "none" },
+              "_hover": { boxShadow: "sm" },
+              "alignItems": "center",
+              "backgroundColor": "transparent",
+              "border": "2px solid token(colors.base-300)",
+              "borderRadius": "sm",
+              "color": "base-content",
+              "cursor": "pointer",
+              "display": "inline-flex",
+              "justifyContent": "center",
+              "padding": "1",
+              "transition": "box-shadow 80ms ease-out",
+            },
+          },
+          className: "menu",
+          slots: ["item", "popup", "separator", "trigger"],
+          variants: {
+            variant: {
+              danger: {
+                item: { color: "error-content" },
+              },
+            },
+          },
+        }),
       },
       tokens: {
         colors: {

@@ -1,7 +1,9 @@
 "use client";
 
+import { Menu } from "@base-ui/react/menu";
+import { EllipsisIcon } from "lucide-react";
 import { css } from "styled-system/css";
-import { button } from "styled-system/recipes";
+import { button, menu } from "styled-system/recipes";
 
 interface Props {
   name: string;
@@ -18,6 +20,8 @@ export const RoomHeader = ({
   onExit,
   roomUrl,
 }: Props) => {
+  const menuClasses = menu();
+
   return (
     <header
       className={css({
@@ -44,7 +48,9 @@ export const RoomHeader = ({
         >
           {name}
         </h1>
-        <div className={css({ display: "flex", gap: "2" })}>
+        <div
+          className={css({ alignItems: "center", display: "flex", gap: "2" })}
+        >
           <button
             aria-label="Copy room link to clipboard"
             className={button({ size: "sm", variant: "secondary" })}
@@ -53,22 +59,30 @@ export const RoomHeader = ({
           >
             Copy Link
           </button>
-          <button
-            aria-label="Clear all chat messages"
-            className={button({ size: "sm", variant: "ghost" })}
-            onClick={onClear}
-            type="button"
-          >
-            Clear Chat
-          </button>
-          <button
-            aria-label="Exit this room"
-            className={button({ size: "sm", variant: "danger" })}
-            onClick={onExit}
-            type="button"
-          >
-            Exit Room
-          </button>
+          <Menu.Root>
+            <Menu.Trigger
+              aria-label="Room actions"
+              className={menuClasses.trigger}
+            >
+              <EllipsisIcon size={16} />
+            </Menu.Trigger>
+            <Menu.Portal>
+              <Menu.Positioner align="end" sideOffset={6}>
+                <Menu.Popup className={menuClasses.popup}>
+                  <Menu.Item className={menuClasses.item} onClick={onClear}>
+                    Clear Chat
+                  </Menu.Item>
+                  <Menu.Separator className={menuClasses.separator} />
+                  <Menu.Item
+                    className={menu({ variant: "danger" }).item}
+                    onClick={onExit}
+                  >
+                    Exit Room
+                  </Menu.Item>
+                </Menu.Popup>
+              </Menu.Positioner>
+            </Menu.Portal>
+          </Menu.Root>
         </div>
       </div>
       <p

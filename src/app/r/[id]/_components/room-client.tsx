@@ -93,7 +93,7 @@ export const RoomClient = ({ displayName, id, name, roomUrl }: Props) => {
         backgroundColor: "base-100",
         display: "flex",
         flexDirection: "column",
-        height: "100vh",
+        height: "100dvh",
       })}
     >
       <RoomHeader
