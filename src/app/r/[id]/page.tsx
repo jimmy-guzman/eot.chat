@@ -1,6 +1,8 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
+import { env } from "@/env";
+
 import { RoomClient } from "./_components/room-client";
 
 interface Props {
@@ -9,12 +11,11 @@ interface Props {
 
 export default async function RoomPage({ params }: Props) {
   const { id } = await params;
-  const host = process.env.NEXT_PUBLIC_PARTYKIT_HOST;
 
   let name: string;
 
   try {
-    const res = await fetch(`http://${host}/parties/main/${id}`, {
+    const res = await fetch(`${env.PARTYKIT_URL}/parties/main/${id}`, {
       cache: "no-store",
     });
 

@@ -14,6 +14,7 @@ import {
 import { css } from "styled-system/css";
 
 import { leaveRoom } from "@/app/_actions/leave-room";
+import { env } from "@/env";
 
 import type {
   Message,
@@ -75,7 +76,7 @@ export const RoomClient = ({
     const typingTimers = new Map<string, ReturnType<typeof setTimeout>>();
 
     const socket = new PartySocketClient({
-      host: process.env.NEXT_PUBLIC_PARTYKIT_HOST ?? "localhost:1999",
+      host: env.NEXT_PUBLIC_PARTYKIT_HOST,
       party: "main",
       room: id,
     });

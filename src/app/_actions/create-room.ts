@@ -4,6 +4,7 @@ import { nanoid } from "nanoid";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
+import { env } from "@/env";
 import { actionClient } from "@/lib/safe-action";
 import { createRoomSchema } from "@/lib/schemas";
 
@@ -11,9 +12,8 @@ export const createRoom = actionClient
   .inputSchema(createRoomSchema)
   .action(async ({ parsedInput: { displayName, roomName } }) => {
     const id = nanoid();
-    const host = process.env.NEXT_PUBLIC_PARTYKIT_HOST;
 
-    const res = await fetch(`http://${host}/parties/main/${id}`, {
+    const res = await fetch(`${env.PARTYKIT_URL}/parties/main/${id}`, {
       body: JSON.stringify({ name: roomName }),
       headers: {
         "Content-Type": "application/json",

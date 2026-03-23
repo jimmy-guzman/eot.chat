@@ -18,6 +18,7 @@
     "typecheck": "tsc"
   },
   "dependencies": {
+    "@t3-oss/env-nextjs": "0.13.11",
     "@tanstack/pacer": "0.20.0",
     "@tanstack/react-form": "1.28.5",
     "@tanstack/react-pacer": "0.21.0",
