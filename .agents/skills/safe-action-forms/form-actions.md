@@ -9,11 +9,14 @@ import { useAction } from "next-safe-action/hooks";
 import { updateProfile } from "@/app/actions";
 
 export function ProfileForm({ user }: { user: User }) {
-  const { execute, result, isPending, hasSucceeded } = useAction(updateProfile, {
-    onSuccess: () => {
-      toast.success("Profile updated");
+  const { execute, result, isPending, hasSucceeded } = useAction(
+    updateProfile,
+    {
+      onSuccess: () => {
+        toast.success("Profile updated");
+      },
     },
-  });
+  );
 
   return (
     <form
@@ -30,7 +33,9 @@ export function ProfileForm({ user }: { user: User }) {
         Name
         <input name="name" defaultValue={user.name} />
         {result.validationErrors?.name?._errors?.map((e) => (
-          <span key={e} className="text-red-500 text-sm">{e}</span>
+          <span key={e} className="text-red-500 text-sm">
+            {e}
+          </span>
         ))}
       </label>
 
@@ -38,7 +43,9 @@ export function ProfileForm({ user }: { user: User }) {
         Bio
         <textarea name="bio" defaultValue={user.bio ?? ""} />
         {result.validationErrors?.bio?._errors?.map((e) => (
-          <span key={e} className="text-red-500 text-sm">{e}</span>
+          <span key={e} className="text-red-500 text-sm">
+            {e}
+          </span>
         ))}
       </label>
 
@@ -87,17 +94,21 @@ export function EditPostForm({ post }: { post: Post }) {
   const { execute, isPending } = useAction(boundAction);
 
   return (
-    <form onSubmit={(e) => {
-      e.preventDefault();
-      const fd = new FormData(e.currentTarget);
-      execute({
-        title: fd.get("title") as string,
-        content: fd.get("content") as string,
-      });
-    }}>
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        const fd = new FormData(e.currentTarget);
+        execute({
+          title: fd.get("title") as string,
+          content: fd.get("content") as string,
+        });
+      }}
+    >
       <input name="title" defaultValue={post.title} />
       <textarea name="content" defaultValue={post.content} />
-      <button type="submit" disabled={isPending}>Save</button>
+      <button type="submit" disabled={isPending}>
+        Save
+      </button>
     </form>
   );
 }
@@ -147,11 +158,13 @@ function FieldError({ errors }: { errors?: { _errors?: string[] } }) {
   if (!errors?._errors?.length) return null;
   return (
     <div className="text-red-500 text-sm mt-1">
-      {errors._errors.map((e, i) => <p key={i}>{e}</p>)}
+      {errors._errors.map((e, i) => (
+        <p key={i}>{e}</p>
+      ))}
     </div>
   );
 }
 
 // Usage:
-<FieldError errors={result.validationErrors?.email} />
+<FieldError errors={result.validationErrors?.email} />;
 ```

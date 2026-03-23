@@ -20,7 +20,7 @@ export const createUser = actionClient
       name: z.string().min(2),
       email: z.string().email(),
       age: z.number().int().min(18).optional(),
-    })
+    }),
   )
   .action(async ({ parsedInput }) => {
     // parsedInput is fully typed: { name: string; email: string; age?: number }
@@ -39,7 +39,7 @@ export const createUser = actionClient
     v.object({
       name: v.pipe(v.string(), v.minLength(2)),
       email: v.pipe(v.string(), v.email()),
-    })
+    }),
   )
   .action(async ({ parsedInput }) => {
     // Same typed parsedInput
@@ -58,7 +58,10 @@ export const updateUser = actionClient
     // clientInput is the raw input from the client
     const user = await db.user.findById((clientInput as any).id);
     return prevSchema.extend({
-      name: z.string().min(2).default(user?.name ?? ""),
+      name: z
+        .string()
+        .min(2)
+        .default(user?.name ?? ""),
     });
   })
   .action(async ({ parsedInput }) => {
@@ -78,7 +81,7 @@ export const getUser = actionClient
       id: z.string(),
       name: z.string(),
       email: z.string().email(),
-    })
+    }),
   )
   .action(async ({ parsedInput }) => {
     const user = await db.user.findById(parsedInput.id);
@@ -96,13 +99,10 @@ Override the default validation error shape per-action:
 import { flattenValidationErrors } from "next-safe-action";
 
 export const myAction = actionClient
-  .inputSchema(
-    z.object({ email: z.string().email() }),
-    {
-      handleValidationErrorsShape: async (validationErrors) =>
-        flattenValidationErrors(validationErrors),
-    }
-  )
+  .inputSchema(z.object({ email: z.string().email() }), {
+    handleValidationErrorsShape: async (validationErrors) =>
+      flattenValidationErrors(validationErrors),
+  })
   .action(async ({ parsedInput }) => {
     // ...
   });

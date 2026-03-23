@@ -13,12 +13,14 @@ import { createMiddleware } from "next-safe-action";
 ## Basic Usage
 
 ```ts
-const logMiddleware = createMiddleware().define(async ({ next, clientInput }) => {
-  console.log("Input:", clientInput);
-  const result = await next();
-  console.log("Result:", result);
-  return result;
-});
+const logMiddleware = createMiddleware().define(
+  async ({ next, clientInput }) => {
+    console.log("Input:", clientInput);
+    const result = await next();
+    console.log("Result:", result);
+    return result;
+  },
+);
 
 // Use in any client
 const client1 = createSafeActionClient().use(logMiddleware);

@@ -15,13 +15,13 @@ import { authActionClient } from "@/lib/safe-action";
 
 export const updatePost = authActionClient
   .bindArgsSchemas([
-    z.string().uuid(),  // postId — first bind arg
+    z.string().uuid(), // postId — first bind arg
   ])
   .inputSchema(
     z.object({
       title: z.string().min(1),
       content: z.string(),
-    })
+    }),
   )
   .action(async ({ parsedInput, bindArgsParsedInputs: [postId], ctx }) => {
     await db.post.update(postId, {
@@ -48,14 +48,16 @@ export function EditPostForm({ postId }: { postId: string }) {
   const { execute, isPending } = useAction(boundAction);
 
   return (
-    <form onSubmit={(e) => {
-      e.preventDefault();
-      const fd = new FormData(e.currentTarget);
-      execute({
-        title: fd.get("title") as string,
-        content: fd.get("content") as string,
-      });
-    }}>
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        const fd = new FormData(e.currentTarget);
+        execute({
+          title: fd.get("title") as string,
+          content: fd.get("content") as string,
+        });
+      }}
+    >
       <input name="title" />
       <textarea name="content" />
       <button disabled={isPending}>Save</button>
@@ -69,10 +71,15 @@ export function EditPostForm({ postId }: { postId: string }) {
 ```ts
 export const transferItem = authActionClient
   .bindArgsSchemas([
-    z.string().uuid(),  // fromWarehouseId
-    z.string().uuid(),  // toWarehouseId
+    z.string().uuid(), // fromWarehouseId
+    z.string().uuid(), // toWarehouseId
   ])
-  .inputSchema(z.object({ itemId: z.string().uuid(), quantity: z.number().int().positive() }))
+  .inputSchema(
+    z.object({
+      itemId: z.string().uuid(),
+      quantity: z.number().int().positive(),
+    }),
+  )
   .action(async ({ parsedInput, bindArgsParsedInputs: [fromId, toId] }) => {
     await db.transfer.create({
       fromWarehouseId: fromId,

@@ -74,7 +74,11 @@ Then use the appropriate client per action:
 "use server";
 
 import { z } from "zod";
-import { actionClient, authActionClient, adminActionClient } from "@/lib/safe-action";
+import {
+  actionClient,
+  authActionClient,
+  adminActionClient,
+} from "@/lib/safe-action";
 
 // Public action — no auth needed
 export const getPublicData = actionClient.action(async () => {
@@ -105,7 +109,7 @@ class AppError extends Error {
   constructor(
     message: string,
     public code: string,
-    public statusCode: number
+    public statusCode: number,
   ) {
     super(message);
   }

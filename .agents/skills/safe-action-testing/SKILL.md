@@ -16,7 +16,10 @@ import { createUser } from "@/app/actions";
 
 describe("createUser", () => {
   it("returns user data on valid input", async () => {
-    const result = await createUser({ name: "Alice", email: "alice@example.com" });
+    const result = await createUser({
+      name: "Alice",
+      email: "alice@example.com",
+    });
 
     expect(result.data).toEqual({
       id: expect.any(String),
@@ -39,10 +42,15 @@ describe("createUser", () => {
     await createUser({ name: "Alice", email: "alice@example.com" });
 
     // Attempt duplicate
-    const result = await createUser({ name: "Bob", email: "alice@example.com" });
+    const result = await createUser({
+      name: "Bob",
+      email: "alice@example.com",
+    });
 
     // If using returnValidationErrors:
-    expect(result.validationErrors?.email?._errors).toContain("Email already in use");
+    expect(result.validationErrors?.email?._errors).toContain(
+      "Email already in use",
+    );
 
     // OR if using throw + handleServerError:
     // expect(result.serverError).toBe("Email already in use");
@@ -72,8 +80,9 @@ describe("updatePost", () => {
     const boundAction = updatePost.bind(null, "not-a-uuid");
 
     // Bind args validation errors throw ActionBindArgsValidationError
-    await expect(boundAction({ title: "Test", content: "Test" }))
-      .rejects.toThrow();
+    await expect(
+      boundAction({ title: "Test", content: "Test" }),
+    ).rejects.toThrow();
   });
 });
 ```
@@ -150,7 +159,7 @@ describe("useAction", () => {
     const { result } = renderHook(() =>
       useAction(mockAction, {
         onSuccess: vi.fn(),
-      })
+      }),
     );
 
     act(() => {
@@ -208,7 +217,10 @@ describe("useAction", () => {
 ## Testing Validation Errors
 
 ```ts
-import { flattenValidationErrors, formatValidationErrors } from "next-safe-action";
+import {
+  flattenValidationErrors,
+  formatValidationErrors,
+} from "next-safe-action";
 
 describe("validation error utilities", () => {
   const formatted = {
@@ -222,7 +234,10 @@ describe("validation error utilities", () => {
 
     expect(flattened.formErrors).toEqual(["Form error"]);
     expect(flattened.fieldErrors.email).toEqual(["Invalid email"]);
-    expect(flattened.fieldErrors.name).toEqual(["Too short", "Must start with uppercase"]);
+    expect(flattened.fieldErrors.name).toEqual([
+      "Too short",
+      "Must start with uppercase",
+    ]);
   });
 
   it("formatValidationErrors is identity", () => {
@@ -273,6 +288,7 @@ packages/next-safe-action/src/__tests__/
 ```
 
 Run tests:
+
 ```bash
 # All tests
 pnpm run test:lib

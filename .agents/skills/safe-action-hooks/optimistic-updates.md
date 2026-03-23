@@ -12,7 +12,7 @@ import { useOptimisticAction } from "next-safe-action/hooks";
 
 ```ts
 useOptimisticAction(safeActionFn, {
-  currentState: State,          // Current server state
+  currentState: State, // Current server state
   updateFn: (state, input) => State, // Produces the optimistic state
   // ...optional callbacks
 });
@@ -82,8 +82,7 @@ const { execute, optimisticState } = useOptimisticAction(addTodo, {
 ```tsx
 const { execute, optimisticState } = useOptimisticAction(deleteTodo, {
   currentState: todos,
-  updateFn: (state, input) =>
-    state.filter((todo) => todo.id !== input.todoId),
+  updateFn: (state, input) => state.filter((todo) => todo.id !== input.todoId),
 });
 ```
 
@@ -94,9 +93,7 @@ const { execute, optimisticState } = useOptimisticAction(toggleTodo, {
   currentState: todos,
   updateFn: (state, input) =>
     state.map((todo) =>
-      todo.id === input.todoId
-        ? { ...todo, completed: !todo.completed }
-        : todo
+      todo.id === input.todoId ? { ...todo, completed: !todo.completed } : todo,
     ),
 });
 ```

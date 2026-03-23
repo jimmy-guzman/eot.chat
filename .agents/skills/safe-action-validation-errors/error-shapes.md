@@ -56,16 +56,16 @@ All actions created from this client will use the flattened shape by default.
 Override the shape for a specific action using `handleValidationErrorsShape` in `.inputSchema()`:
 
 ```ts
-import { flattenValidationErrors, formatValidationErrors } from "next-safe-action";
+import {
+  flattenValidationErrors,
+  formatValidationErrors,
+} from "next-safe-action";
 
 // Client uses "formatted" by default, but this action uses "flattened"
 export const myAction = actionClient
-  .inputSchema(
-    z.object({ email: z.string().email() }),
-    {
-      handleValidationErrorsShape: async (ve) => flattenValidationErrors(ve),
-    }
-  )
+  .inputSchema(z.object({ email: z.string().email() }), {
+    handleValidationErrorsShape: async (ve) => flattenValidationErrors(ve),
+  })
   .action(async ({ parsedInput }) => {
     // ...
   });
@@ -77,22 +77,21 @@ Return any shape you want from `handleValidationErrorsShape`:
 
 ```ts
 export const myAction = actionClient
-  .inputSchema(
-    z.object({ email: z.string().email(), name: z.string() }),
-    {
-      handleValidationErrorsShape: async (ve) => {
-        // Custom: just a flat record of field → first error
-        const errors: Record<string, string> = {};
-        for (const [key, value] of Object.entries(ve)) {
-          if (key !== "_errors" && value?._errors?.[0]) {
-            errors[key] = value._errors[0];
-          }
+  .inputSchema(z.object({ email: z.string().email(), name: z.string() }), {
+    handleValidationErrorsShape: async (ve) => {
+      // Custom: just a flat record of field → first error
+      const errors: Record<string, string> = {};
+      for (const [key, value] of Object.entries(ve)) {
+        if (key !== "_errors" && value?._errors?.[0]) {
+          errors[key] = value._errors[0];
         }
-        return errors;
-      },
-    }
-  )
-  .action(async ({ parsedInput }) => { /* ... */ });
+      }
+      return errors;
+    },
+  })
+  .action(async ({ parsedInput }) => {
+    /* ... */
+  });
 
 // result.validationErrors: { email?: string; name?: string }
 ```
@@ -146,19 +145,15 @@ const actionClient = createSafeActionClient({
 });
 
 // Or per-action
-export const myAction = actionClient
-  .inputSchema(schema)
-  .action(serverCodeFn, {
-    throwValidationErrors: true,
-  });
+export const myAction = actionClient.inputSchema(schema).action(serverCodeFn, {
+  throwValidationErrors: true,
+});
 
 // With custom error message
-export const myAction = actionClient
-  .inputSchema(schema)
-  .action(serverCodeFn, {
-    throwValidationErrors: {
-      overrideErrorMessage: async (validationErrors) =>
-        `Validation failed: ${JSON.stringify(validationErrors)}`,
-    },
-  });
+export const myAction = actionClient.inputSchema(schema).action(serverCodeFn, {
+  throwValidationErrors: {
+    overrideErrorMessage: async (validationErrors) =>
+      `Validation failed: ${JSON.stringify(validationErrors)}`,
+  },
+});
 ```

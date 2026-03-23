@@ -12,11 +12,11 @@ export const actionClient = createSafeActionClient().use(
     const duration = performance.now() - start;
 
     console.log(
-      `[Action] ${metadata?.actionName ?? "unknown"} completed in ${duration.toFixed(0)}ms`
+      `[Action] ${metadata?.actionName ?? "unknown"} completed in ${duration.toFixed(0)}ms`,
     );
 
     return result;
-  }
+  },
 );
 ```
 

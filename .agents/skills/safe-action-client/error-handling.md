@@ -40,7 +40,7 @@ Define domain-specific error classes to enable structured error handling:
 export class AppError extends Error {
   constructor(
     message: string,
-    public code: string
+    public code: string,
   ) {
     super(message);
     this.name = "AppError";
@@ -120,12 +120,12 @@ if (result.serverError) {
 
 ## Error Classes Provided by next-safe-action
 
-| Class | Thrown When | Holds |
-|---|---|---|
-| `ActionValidationError` | `throwValidationErrors` is enabled and input fails validation | `.validationErrors` |
-| `ActionBindArgsValidationError` | Bind args fail validation | `.validationErrors` |
-| `ActionMetadataValidationError` | Metadata fails schema validation | `.validationErrors` |
-| `ActionOutputDataValidationError` | Output fails schema validation | `.validationErrors` |
+| Class                             | Thrown When                                                   | Holds               |
+| --------------------------------- | ------------------------------------------------------------- | ------------------- |
+| `ActionValidationError`           | `throwValidationErrors` is enabled and input fails validation | `.validationErrors` |
+| `ActionBindArgsValidationError`   | Bind args fail validation                                     | `.validationErrors` |
+| `ActionMetadataValidationError`   | Metadata fails schema validation                              | `.validationErrors` |
+| `ActionOutputDataValidationError` | Output fails schema validation                                | `.validationErrors` |
 
 These are all importable from `next-safe-action`:
 
@@ -153,11 +153,14 @@ const actionClient = createSafeActionClient({
 // Or per-action
 export const myAction = actionClient
   .inputSchema(z.object({ name: z.string() }))
-  .action(async ({ parsedInput }) => {
-    return { name: parsedInput.name };
-  }, {
-    throwValidationErrors: true,
-  });
+  .action(
+    async ({ parsedInput }) => {
+      return { name: parsedInput.name };
+    },
+    {
+      throwValidationErrors: true,
+    },
+  );
 ```
 
 With custom error message:

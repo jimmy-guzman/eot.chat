@@ -328,9 +328,9 @@ function useToggle({
     pressed,
     toggle,
     buttonProps: {
-      role: "switch" as const,
+      "role": "switch" as const,
       "aria-checked": pressed,
-      onClick: toggle,
+      "onClick": toggle,
     },
   };
 }
@@ -403,10 +403,10 @@ function useListbox<T>({
       onKeyDown: handleKeyDown,
     },
     getOptionProps: (index: number) => ({
-      role: "option" as const,
+      "role": "option" as const,
       "aria-selected": index === selectedIndex,
-      onClick: () => select(index),
-      onMouseEnter: () => setHighlightedIndex(index),
+      "onClick": () => select(index),
+      "onMouseEnter": () => setHighlightedIndex(index),
     }),
   };
 }

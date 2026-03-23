@@ -24,21 +24,26 @@ import { useAction } from "next-safe-action/hooks";
 import { createUser } from "@/app/actions";
 
 export function CreateUserForm() {
-  const { execute, result, status, isExecuting, isPending } = useAction(createUser, {
-    onSuccess: ({ data }) => {
-      console.log("User created:", data);
+  const { execute, result, status, isExecuting, isPending } = useAction(
+    createUser,
+    {
+      onSuccess: ({ data }) => {
+        console.log("User created:", data);
+      },
+      onError: ({ error }) => {
+        console.error("Failed:", error.serverError);
+      },
     },
-    onError: ({ error }) => {
-      console.error("Failed:", error.serverError);
-    },
-  });
+  );
 
   return (
-    <form onSubmit={(e) => {
-      e.preventDefault();
-      const formData = new FormData(e.currentTarget);
-      execute({ name: formData.get("name") as string });
-    }}>
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        const formData = new FormData(e.currentTarget);
+        execute({ name: formData.get("name") as string });
+      }}
+    >
       <input name="name" required />
       <button type="submit" disabled={isPending}>
         {isPending ? "Creating..." : "Create User"}
@@ -84,21 +89,21 @@ export function TodoItem({ todo }: { todo: Todo }) {
 
 Both `useAction` and `useOptimisticAction` return:
 
-| Property | Type | Description |
-|---|---|---|
-| `execute(input)` | `(input) => void` | Fire-and-forget execution |
-| `executeAsync(input)` | `(input) => Promise<Result>` | Returns a promise with the result |
-| `input` | `Input \| undefined` | Last input passed to execute |
-| `result` | `SafeActionResult` | Last action result (`{ data?, serverError?, validationErrors? }`) |
-| `reset()` | `() => void` | Resets all state to initial values |
-| `status` | `HookActionStatus` | Current status string |
-| `isIdle` | `boolean` | No execution has started yet |
-| `isExecuting` | `boolean` | Action promise is pending |
-| `isTransitioning` | `boolean` | React transition is pending |
-| `isPending` | `boolean` | `isExecuting \|\| isTransitioning` |
-| `hasSucceeded` | `boolean` | Last execution returned data |
-| `hasErrored` | `boolean` | Last execution had an error |
-| `hasNavigated` | `boolean` | Last execution triggered a navigation |
+| Property              | Type                         | Description                                                       |
+| --------------------- | ---------------------------- | ----------------------------------------------------------------- |
+| `execute(input)`      | `(input) => void`            | Fire-and-forget execution                                         |
+| `executeAsync(input)` | `(input) => Promise<Result>` | Returns a promise with the result                                 |
+| `input`               | `Input \| undefined`         | Last input passed to execute                                      |
+| `result`              | `SafeActionResult`           | Last action result (`{ data?, serverError?, validationErrors? }`) |
+| `reset()`             | `() => void`                 | Resets all state to initial values                                |
+| `status`              | `HookActionStatus`           | Current status string                                             |
+| `isIdle`              | `boolean`                    | No execution has started yet                                      |
+| `isExecuting`         | `boolean`                    | Action promise is pending                                         |
+| `isTransitioning`     | `boolean`                    | React transition is pending                                       |
+| `isPending`           | `boolean`                    | `isExecuting \|\| isTransitioning`                                |
+| `hasSucceeded`        | `boolean`                    | Last execution returned data                                      |
+| `hasErrored`          | `boolean`                    | Last execution had an error                                       |
+| `hasNavigated`        | `boolean`                    | Last execution triggered a navigation                             |
 
 `useOptimisticAction` additionally returns:
 | `optimisticState` | `State` | The optimistically-updated state |

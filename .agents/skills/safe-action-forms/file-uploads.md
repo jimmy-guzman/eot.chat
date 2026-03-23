@@ -24,15 +24,16 @@ export const uploadAvatar = actionClient
   .inputSchema(
     zfd.formData({
       file: zfd.file(
-        z.instanceof(File)
+        z
+          .instanceof(File)
           .refine((f) => f.size < 5_000_000, "File must be under 5MB")
           .refine(
             (f) => ["image/jpeg", "image/png", "image/webp"].includes(f.type),
-            "Only JPEG, PNG, and WebP images are allowed"
-          )
+            "Only JPEG, PNG, and WebP images are allowed",
+          ),
       ),
       alt: zfd.text(z.string().min(1).optional()),
-    })
+    }),
   )
   .action(async ({ parsedInput: { file, alt } }) => {
     const buffer = Buffer.from(await file.arrayBuffer());
@@ -67,7 +68,9 @@ export function AvatarUpload() {
       </button>
       {result.data && <img src={result.data.url} alt={result.data.alt} />}
       {result.validationErrors?.file?._errors && (
-        <p className="text-red-500">{result.validationErrors.file._errors[0]}</p>
+        <p className="text-red-500">
+          {result.validationErrors.file._errors[0]}
+        </p>
       )}
     </form>
   );
@@ -86,7 +89,7 @@ export const uploadPostImage = authActionClient
     zfd.formData({
       image: zfd.file(z.instanceof(File)),
       caption: zfd.text(z.string().optional()),
-    })
+    }),
   )
   .action(async ({ parsedInput, bindArgsParsedInputs: [postId] }) => {
     const buffer = Buffer.from(await parsedInput.image.arrayBuffer());
@@ -114,16 +117,16 @@ export const uploadFiles = actionClient
   .inputSchema(
     zfd.formData({
       files: zfd.repeatableOfType(
-        zfd.file(z.instanceof(File).refine((f) => f.size < 10_000_000))
+        zfd.file(z.instanceof(File).refine((f) => f.size < 10_000_000)),
       ),
-    })
+    }),
   )
   .action(async ({ parsedInput: { files } }) => {
     const urls = await Promise.all(
       files.map(async (file) => {
         const buffer = Buffer.from(await file.arrayBuffer());
         return uploadToStorage(buffer, file.name);
-      })
+      }),
     );
     return { urls };
   });

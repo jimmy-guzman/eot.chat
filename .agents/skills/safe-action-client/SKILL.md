@@ -45,11 +45,11 @@ Each method returns a new client instance — the chain is immutable.
 
 ## Entry Points
 
-| Entry point | Environment | Exports |
-|---|---|---|
-| `next-safe-action` | Server | `createSafeActionClient`, `createMiddleware`, `returnValidationErrors`, `flattenValidationErrors`, `formatValidationErrors`, `DEFAULT_SERVER_ERROR_MESSAGE`, error classes, all core types |
-| `next-safe-action/hooks` | Client | `useAction`, `useOptimisticAction`, hook types |
-| `next-safe-action/stateful-hooks` | Client | `useStateAction` (deprecated — use React's `useActionState` directly) |
+| Entry point                       | Environment | Exports                                                                                                                                                                                    |
+| --------------------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `next-safe-action`                | Server      | `createSafeActionClient`, `createMiddleware`, `returnValidationErrors`, `flattenValidationErrors`, `formatValidationErrors`, `DEFAULT_SERVER_ERROR_MESSAGE`, error classes, all core types |
+| `next-safe-action/hooks`          | Client      | `useAction`, `useOptimisticAction`, hook types                                                                                                                                             |
+| `next-safe-action/stateful-hooks` | Client      | `useStateAction` (deprecated — use React's `useActionState` directly)                                                                                                                      |
 
 ## Supporting Docs
 
@@ -65,7 +65,7 @@ import { actionClient } from "@/lib/safe-action";
 export const myAction = actionClient.action(async () => {});
 
 // GOOD: Always include "use server" in action files
-"use server";
+("use server");
 import { actionClient } from "@/lib/safe-action";
 export const myAction = actionClient.action(async () => {});
 ```
@@ -78,9 +78,7 @@ const client = createSafeActionClient({
 client.action(async () => {}); // TypeScript error!
 
 // GOOD: Always provide metadata before .action() when schema is defined
-client
-  .metadata({ actionName: "myAction" })
-  .action(async () => {});
+client.metadata({ actionName: "myAction" }).action(async () => {});
 ```
 
 ```ts
