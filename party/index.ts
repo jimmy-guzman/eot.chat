@@ -144,7 +144,6 @@ export default class Server implements Party.Server {
               displayName: participant.displayName,
               type: "cleared",
             }),
-            [sender.id],
           );
 
           yield* Effect.logInfo("clear: messages cleared by participant", {
