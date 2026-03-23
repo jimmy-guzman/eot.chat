@@ -5,7 +5,7 @@ import { nanoid } from "nanoid";
 
 import type { Message, Participant } from "./types";
 
-import { ClientMessageSchema } from "./types";
+import { ClientMessageSchema, ROOM_EXPIRY_MS } from "./types";
 
 interface ConnectionState {
   displayName: string;
@@ -16,6 +16,10 @@ export default class Server implements Party.Server {
   private readonly participants = new Map<string, Participant>();
 
   constructor(readonly room: Party.Room) {}
+
+  async onAlarm() {
+    await this.room.storage.deleteAll();
+  }
 
   async onClose(conn: Party.Connection) {
     await this.handleLeave(conn.id);
@@ -30,6 +34,8 @@ export default class Server implements Party.Server {
 
       return;
     }
+
+    await this.room.storage.deleteAlarm();
 
     await Effect.runPromise(
       Effect.logDebug("onConnect: init sent", {
@@ -259,8 +265,8 @@ export default class Server implements Party.Server {
     await Effect.runPromise(
       Effect.logInfo("leave: participant left", {
         displayName: participant.displayName,
+        expiryScheduled: this.participants.size === 0,
         participantCount: this.participants.size,
-        roomDissolved: this.participants.size === 0,
       }).pipe(Effect.provide(Logger.json)),
     );
 
@@ -278,7 +284,7 @@ export default class Server implements Party.Server {
     );
 
     if (this.participants.size === 0) {
-      await this.room.storage.delete("name");
+      await this.room.storage.setAlarm(Date.now() + ROOM_EXPIRY_MS);
     }
   }
 

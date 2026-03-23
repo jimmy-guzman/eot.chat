@@ -1,5 +1,7 @@
 import { Schema } from "effect";
 
+export const ROOM_EXPIRY_MS = 60 * 60 * 1000;
+
 export const ParticipantSchema = Schema.Struct({
   displayName: Schema.String,
   joinedAt: Schema.String,
