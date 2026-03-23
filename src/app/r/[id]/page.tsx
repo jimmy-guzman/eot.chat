@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 
+import { Effect, Either } from "effect";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { cache } from "react";
 
-import { env } from "@/env";
 import { getAppUrl } from "@/lib/app-url";
+import { getRoomName } from "@/lib/partykit-client";
 
 import { RoomClient } from "./_components/room-client";
 
@@ -13,25 +14,21 @@ interface Props {
   params: Promise<{ id: string }>;
 }
 
-const getRoomName = cache(async (id: string): Promise<null | string> => {
-  try {
-    const res = await fetch(`${env.PARTYKIT_URL}/parties/main/${id}`, {
-      cache: "no-store",
-    });
+const fetchRoomName = cache(async (id: string): Promise<null | string> => {
+  const result = await Effect.runPromise(Effect.either(getRoomName(id)));
 
-    if (!res.ok) return null;
+  if (Either.isLeft(result)) {
+    if (result.left._tag === "RoomNotFoundError") return null;
 
-    const data = (await res.json()) as { name?: string };
-
-    return data.name ?? null;
-  } catch {
-    return null;
+    throw result.left;
   }
+
+  return result.right;
 });
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
-  const name = await getRoomName(id);
+  const name = await fetchRoomName(id);
 
   if (!name) return {};
 
@@ -53,7 +50,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function RoomPage({ params }: Props) {
   const { id } = await params;
-  const name = await getRoomName(id);
+  const name = await fetchRoomName(id);
 
   if (!name) redirect("/");
 

@@ -1,10 +1,11 @@
 "use server";
 
+import { Effect, Either } from "effect";
 import { nanoid } from "nanoid";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
-import { env } from "@/env";
+import { createPartyKitRoom } from "@/lib/partykit-client";
 import { actionClient } from "@/lib/safe-action";
 import { createRoomSchema } from "@/lib/schemas";
 
@@ -13,17 +14,12 @@ export const createRoom = actionClient
   .action(async ({ parsedInput: { displayName, roomName } }) => {
     const id = nanoid();
 
-    const res = await fetch(`${env.PARTYKIT_URL}/parties/main/${id}`, {
-      body: JSON.stringify({ name: roomName }),
-      headers: {
-        "Content-Type": "application/json",
-        "X-Action": "create",
-      },
-      method: "POST",
-    });
+    const result = await Effect.runPromise(
+      Effect.either(createPartyKitRoom(id, roomName)),
+    );
 
-    if (!res.ok) {
-      throw new Error(`Failed to create room (${res.status})`);
+    if (Either.isLeft(result)) {
+      throw new Error(`Failed to create room: ${result.left._tag}`);
     }
 
     const cookieStore = await cookies();

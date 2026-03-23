@@ -57,10 +57,15 @@ export const RoomClient = ({ displayName, id, name, roomUrl }: Props) => {
 
   useEffect(() => {
     if (snapshot.status === "done") {
+      const { reason } = snapshot.output;
+
       void leaveRoom({ roomId: id });
-      router.push("/");
+
+      if (reason === "left") {
+        router.push("/");
+      }
     }
-  }, [snapshot.status, id, router]);
+  }, [snapshot.status, snapshot.output, id, router]);
 
   const sendTypingThrottler = useThrottler(
     () => {

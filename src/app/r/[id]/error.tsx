@@ -1,41 +1,14 @@
-import type { Metadata } from "next";
+"use client";
 
-import { Effect, Either } from "effect";
-import { redirect } from "next/navigation";
+import Link from "next/link";
 import { css, cx } from "styled-system/css";
-import { card } from "styled-system/recipes";
-
-import { getRoomName } from "@/lib/partykit-client";
-
-import { DisplayNameForm } from "./_components/display-name-form";
+import { button, card } from "styled-system/recipes";
 
 interface Props {
-  params: Promise<{ id: string }>;
+  reset: () => void;
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { id } = await params;
-
-  void id;
-
-  return {
-    title: "Join the room",
-  };
-}
-
-export default async function JoinPage({ params }: Props) {
-  const { id } = await params;
-
-  const result = await Effect.runPromise(Effect.either(getRoomName(id)));
-
-  if (Either.isLeft(result)) {
-    if (result.left._tag === "RoomNotFoundError") {
-      redirect("/");
-    }
-
-    throw result.left;
-  }
-
+export default function RoomError({ reset }: Props) {
   return (
     <main
       className={css({
@@ -62,7 +35,7 @@ export default async function JoinPage({ params }: Props) {
             marginBottom: "2",
           })}
         >
-          Join the room
+          Something went wrong
         </h1>
         <p
           className={css({
@@ -72,9 +45,29 @@ export default async function JoinPage({ params }: Props) {
             marginBottom: "6",
           })}
         >
-          What should we call you?
+          Could not connect to the room. This is usually a temporary issue.
         </p>
-        <DisplayNameForm roomId={id} />
+        <div
+          className={css({
+            display: "flex",
+            flexDirection: "column",
+            gap: "3",
+          })}
+        >
+          <button
+            className={button({ size: "block", variant: "primary" })}
+            onClick={reset}
+            type="button"
+          >
+            Try again
+          </button>
+          <Link
+            className={button({ size: "block", variant: "ghost" })}
+            href="/"
+          >
+            Go home
+          </Link>
+        </div>
       </div>
     </main>
   );

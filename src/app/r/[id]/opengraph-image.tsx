@@ -1,9 +1,10 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 
+import { Effect, Either } from "effect";
 import { ImageResponse } from "next/og";
 
-import { env } from "@/env";
+import { getRoomName } from "@/lib/partykit-client";
 
 export const size = { height: 630, width: 1200 };
 export const contentType = "image/png";
@@ -19,21 +20,8 @@ export default async function Image({ params }: Props) {
     join(process.cwd(), "public/fonts/IBMPlexMono-Bold.ttf"),
   );
 
-  let roomName: null | string = null;
-
-  try {
-    const res = await fetch(`${env.PARTYKIT_URL}/parties/main/${id}`, {
-      cache: "no-store",
-    });
-
-    if (res.ok) {
-      const data = (await res.json()) as { name?: string };
-
-      roomName = data.name ?? null;
-    }
-  } catch {
-    // fall through to fallback
-  }
+  const result = await Effect.runPromise(Effect.either(getRoomName(id)));
+  const roomName = Either.isRight(result) ? result.right : null;
 
   return new ImageResponse(
     <div
