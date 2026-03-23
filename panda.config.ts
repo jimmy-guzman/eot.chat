@@ -15,6 +15,16 @@ export default defineConfig({
   preflight: true,
   theme: {
     extend: {
+      keyframes: {
+        enterFade: {
+          from: { opacity: "0" },
+          to: { opacity: "1" },
+        },
+        enterRaise: {
+          from: { opacity: "0", transform: "translateY(6px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
+        },
+      },
       recipes: {
         badge: {
           base: {
@@ -153,6 +163,30 @@ export default defineConfig({
           },
           className: "label",
         },
+        motionEnter: {
+          base: {
+            "@media (prefers-reduced-motion: reduce)": {
+              animation: "none",
+            },
+            "animationDuration": "token(durations.motion.normal)",
+            "animationFillMode": "forwards",
+            "animationTimingFunction": "token(easings.motion.standard)",
+          },
+          className: "motion-enter",
+          defaultVariants: {
+            preset: "fade",
+          },
+          variants: {
+            preset: {
+              fade: {
+                animationName: "enterFade",
+              },
+              raise: {
+                animationName: "enterRaise",
+              },
+            },
+          },
+        },
       },
       semanticTokens: {
         colors: {
@@ -194,10 +228,19 @@ export default defineConfig({
               justifyContent: "flex-end",
             },
             backdrop: {
-              backgroundColor: "rgba(13,14,16,0.85)",
-              inset: "0",
-              minHeight: "100dvh",
-              position: "fixed",
+              "&[data-ending-style]": { opacity: 0 },
+              "&[data-starting-style]": { opacity: 0 },
+              "@media (prefers-reduced-motion: reduce)": {
+                "&[data-ending-style], &[data-starting-style]": { opacity: 1 },
+                "transition": "none",
+              },
+              "backgroundColor": "rgba(13,14,16,0.85)",
+              "inset": "0",
+              "minHeight": "100dvh",
+              "opacity": 1,
+              "position": "fixed",
+              "transition":
+                "opacity token(durations.motion.normal) token(easings.motion.standard)",
             },
             description: {
               color: "base-content-muted",
@@ -206,17 +249,35 @@ export default defineConfig({
               marginBottom: "6",
             },
             popup: {
-              backgroundColor: "base-200",
-              border: "1px solid token(colors.base-300)",
-              borderRadius: "lg",
-              boxShadow: "lg",
-              left: "50%",
-              maxWidth: "calc(100vw - token(spacing.6))",
-              padding: "8",
-              position: "fixed",
-              top: "50%",
-              transform: "translate(-50%, -50%)",
-              width: "token(sizes.card)",
+              "&[data-ending-style]": {
+                opacity: 0,
+                transform: "translate(-50%, -50%) scale(0.97)",
+              },
+              "&[data-starting-style]": {
+                opacity: 0,
+                transform: "translate(-50%, -50%) scale(0.97)",
+              },
+              "@media (prefers-reduced-motion: reduce)": {
+                "&[data-ending-style], &[data-starting-style]": {
+                  opacity: 1,
+                  transform: "translate(-50%, -50%) scale(1)",
+                },
+                "transition": "none",
+              },
+              "backgroundColor": "base-200",
+              "border": "1px solid token(colors.base-300)",
+              "borderRadius": "lg",
+              "boxShadow": "lg",
+              "left": "50%",
+              "maxWidth": "calc(100vw - token(spacing.6))",
+              "opacity": 1,
+              "padding": "8",
+              "position": "fixed",
+              "top": "50%",
+              "transform": "translate(-50%, -50%) scale(1)",
+              "transition":
+                "opacity token(durations.motion.normal) token(easings.motion.standard), transform token(durations.motion.normal) token(easings.motion.standard)",
+              "width": "token(sizes.card)",
             },
             title: {
               color: "base-content",
@@ -294,6 +355,18 @@ export default defineConfig({
           "mauve-key": { value: "#8A6070" },
           "minitel-green": { value: "#4A7A3A" },
           "phosphor-olive": { value: "#B8A832" },
+        },
+        durations: {
+          motion: {
+            fast: { value: "150ms" },
+            normal: { value: "200ms" },
+            slow: { value: "300ms" },
+          },
+        },
+        easings: {
+          motion: {
+            standard: { value: "cubic-bezier(0.2, 0, 0, 1)" },
+          },
         },
         fonts: {
           body: { value: "var(--font-mono)" },

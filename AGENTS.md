@@ -10,6 +10,7 @@
 - **Actions:** `next-safe-action` + Valibot — type-safe server actions with schema validation
 - **Forms:** TanStack Form — form state and field context
 - **Design system:** PandaCSS — design tokens, recipes, and utility classes
+- **UI motion:** PandaCSS-first — use `durations.motion.{fast,normal,slow}`, `easings.motion.standard`, keyframes `enterFade` / `enterRaise`, and the `motionEnter` recipe (`preset`: `fade` | `raise`) for mount enter animations; overlay/dialog motion belongs on slot recipes (e.g. `alertDialog`). Compose with `motionEnter()` + `css()` via `cx()`. **`motion`** (`motion/react`) is allowed only for **`ParticipantStrip`** layout (`LazyMotion` + `domMax`, `layout` on chips): import spring config from `src/lib/layout-list-spring.ts`, use `useReducedMotion()`, and do not add Motion elsewhere without updating this doc
 - **Linting:** ESLint 9 with `@jimmy.codes/eslint-config`
 - **Formatting:** oxfmt (Prettier-compatible, Rust-based)
 - **Testing:** Vitest + Testing Library + happy-dom (unit/component), Playwright (e2e), MSW (HTTP mocking)
@@ -66,6 +67,7 @@ src/
   lib/                          # Client-safe utilities (no server-only imports)
     app-url.ts                  # Canonical app URL (Vercel env-aware)
     form.ts                     # TanStack Form hook factory (useAppForm)
+    layout-list-spring.ts       # Motion layout spring preset (ParticipantStrip only)
     safe-action.ts              # next-safe-action client instance
     schemas.ts                  # Valibot schemas (displayName, roomName, join, leave)
 
