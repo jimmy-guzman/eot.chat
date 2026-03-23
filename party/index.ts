@@ -22,7 +22,7 @@ export default class Server implements Party.Server {
   }
 
   async onClose(conn: Party.Connection) {
-    await this.handleLeave(conn.id);
+    await this.handleDisconnect(conn.id);
   }
 
   async onConnect(conn: Party.Connection) {
@@ -140,7 +140,7 @@ export default class Server implements Party.Server {
         });
       }),
       Match.when({ type: "leave" }, () => {
-        return Effect.promise(() => this.handleLeave(sender.id));
+        return Effect.promise(() => this.handleLeave(sender.id, true));
       }),
       Match.when({ type: "clear" }, () => {
         const displayName = this.resolveDisplayName(sender);
@@ -253,7 +253,11 @@ export default class Server implements Party.Server {
     return Response.json({ id: this.room.id, name }, { headers: corsHeaders });
   }
 
-  private async handleLeave(connId: string) {
+  private async handleDisconnect(connId: string) {
+    await this.handleLeave(connId, false);
+  }
+
+  private async handleLeave(connId: string, clearMessages: boolean) {
     const participant = this.participants.get(connId);
 
     if (!participant) {
@@ -264,16 +268,22 @@ export default class Server implements Party.Server {
 
     await Effect.runPromise(
       Effect.logInfo("leave: participant left", {
+        clearMessages,
         displayName: participant.displayName,
         expiryScheduled: this.participants.size === 0,
         participantCount: this.participants.size,
       }).pipe(Effect.provide(Logger.json)),
     );
 
-    this.messages.length = 0;
-    this.room.broadcast(
-      JSON.stringify({ displayName: participant.displayName, type: "cleared" }),
-    );
+    if (clearMessages) {
+      this.messages.length = 0;
+      this.room.broadcast(
+        JSON.stringify({
+          displayName: participant.displayName,
+          type: "cleared",
+        }),
+      );
+    }
 
     this.room.broadcast(
       JSON.stringify({
