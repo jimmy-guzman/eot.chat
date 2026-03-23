@@ -35,7 +35,8 @@ export default defineConfig({
             fontSize: "xs",
             fontWeight: "bold",
             lineHeight: "tight",
-            padding: "1 3",
+            paddingBlock: "1",
+            paddingInline: "3",
           },
           className: "badge",
           defaultVariants: {
@@ -57,6 +58,7 @@ export default defineConfig({
         button: {
           base: {
             _disabled: { cursor: "not-allowed", opacity: 0.5 },
+            _focusVisible: { boxShadow: "glow.md", outline: "none" },
             alignItems: "center",
             border: "none",
             cursor: "pointer",
@@ -74,15 +76,24 @@ export default defineConfig({
           },
           variants: {
             size: {
+              block: {
+                borderRadius: "sm",
+                fontSize: "base",
+                paddingBlock: "3",
+                paddingInline: "5",
+                width: "100%",
+              },
               md: {
                 borderRadius: "sm",
-                fontSize: "sm",
-                padding: "2 5",
+                fontSize: "base",
+                paddingBlock: "3",
+                paddingInline: "5",
               },
               sm: {
                 borderRadius: "sm",
                 fontSize: "xs",
-                padding: "1 3",
+                paddingBlock: "1",
+                paddingInline: "3",
               },
             },
             variant: {
@@ -132,7 +143,7 @@ export default defineConfig({
         },
         input: {
           base: {
-            _focus: { boxShadow: "glow.md", outline: "none" },
+            _focusVisible: { boxShadow: "glow.md", outline: "none" },
             backgroundColor: "base-200",
             border: "2px solid token(colors.base-300)",
             borderRadius: "sm",
@@ -164,14 +175,11 @@ export default defineConfig({
           "base-200": { value: "#1A1410" },
           "base-300": { value: "#2C1E14" },
           "base-content": { value: "#E0D8C0" },
-          // Palette tokens — non-semantic, reference only
-          "battleship": { value: "#6B6860" },
+          // Muted text — base-content at 50% opacity, baked as a token
+          "base-content-muted": { value: "rgba(224,216,192,0.5)" },
           // Error — destructive actions
           "error": { value: "#D44E1A" },
           "error-content": { value: "#F5EEE0" },
-          "mauve-key": { value: "#8A6070" },
-          "minitel-green": { value: "#4A7A3A" },
-          "phosphor-olive": { value: "#B8A832" },
           // Primary — main interactive color
           "primary": { value: "#D44E1A" },
           "primary-content": { value: "#F5EEE0" },
@@ -187,6 +195,13 @@ export default defineConfig({
         },
       },
       tokens: {
+        colors: {
+          // Palette tokens — non-semantic, reference only, never used in components
+          "battleship": { value: "#6B6860" },
+          "mauve-key": { value: "#8A6070" },
+          "minitel-green": { value: "#4A7A3A" },
+          "phosphor-olive": { value: "#B8A832" },
+        },
         fonts: {
           body: { value: "var(--font-mono)" },
         },

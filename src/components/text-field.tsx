@@ -6,11 +6,31 @@ import { input, label } from "styled-system/recipes";
 import { useFieldContext } from "@/lib/form";
 
 interface Props {
+  autoComplete?: string;
   label: string;
   placeholder?: string;
 }
 
-export const TextField = ({ label: labelText, placeholder }: Props) => {
+function errorMessage(e: unknown): string {
+  if (typeof e === "string") return e;
+
+  if (
+    typeof e === "object" &&
+    e !== null &&
+    "message" in e &&
+    typeof (e as Record<string, unknown>).message === "string"
+  ) {
+    return (e as Record<string, unknown>).message as string;
+  }
+
+  return "Invalid value";
+}
+
+export const TextField = ({
+  autoComplete,
+  label: labelText,
+  placeholder,
+}: Props) => {
   const field = useFieldContext<string>();
   const { errors } = field.state.meta;
 
@@ -23,6 +43,7 @@ export const TextField = ({ label: labelText, placeholder }: Props) => {
         {labelText}
       </label>
       <input
+        autoComplete={autoComplete}
         className={input()}
         id={field.name}
         name={field.name}
@@ -34,17 +55,17 @@ export const TextField = ({ label: labelText, placeholder }: Props) => {
         type="text"
         value={field.state.value}
       />
-      {errors.length > 0 ? (
-        <p
-          className={css({
-            color: "error",
-            fontSize: "xs",
-            marginTop: "1",
-          })}
-        >
-          {errors.join(", ")}
-        </p>
-      ) : null}
+      <p
+        aria-live="polite"
+        className={css({
+          color: "error",
+          fontSize: "xs",
+          marginTop: "1",
+          minHeight: "1em",
+        })}
+      >
+        {errors.length > 0 ? errors.map(errorMessage).join(", ") : null}
+      </p>
     </>
   );
 };

@@ -1,7 +1,6 @@
 "use client";
 
 import { useStore } from "@tanstack/react-form";
-import { css, cx } from "styled-system/css";
 import { button } from "styled-system/recipes";
 
 import { useFormContext } from "@/lib/form";
@@ -16,7 +15,7 @@ export const SubmitButton = ({ label }: Props) => {
 
   return (
     <button
-      className={cx(button({ variant: "primary" }), css({ width: "100%" }))}
+      className={button({ size: "block", variant: "primary" })}
       disabled={isSubmitting}
       type="submit"
     >

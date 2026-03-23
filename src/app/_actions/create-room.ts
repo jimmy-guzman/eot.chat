@@ -3,21 +3,12 @@
 import { nanoid } from "nanoid";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import * as v from "valibot";
 
 import { actionClient } from "@/lib/safe-action";
-
-const schema = v.object({
-  displayName: v.pipe(v.string(), v.trim(), v.minLength(1, "Name is required")),
-  roomName: v.pipe(
-    v.string(),
-    v.trim(),
-    v.minLength(1, "Room name is required"),
-  ),
-});
+import { createRoomSchema } from "@/lib/schemas";
 
 export const createRoom = actionClient
-  .inputSchema(schema)
+  .inputSchema(createRoomSchema)
   .action(async ({ parsedInput: { displayName, roomName } }) => {
     const id = nanoid();
     const host = process.env.NEXT_PUBLIC_PARTYKIT_HOST;

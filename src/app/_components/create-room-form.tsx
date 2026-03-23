@@ -1,15 +1,27 @@
 "use client";
 
+import { useState } from "react";
 import { css } from "styled-system/css";
 
 import { createRoom } from "@/app/_actions/create-room";
 import { useAppForm } from "@/lib/form";
+import { createRoomSchema } from "@/lib/schemas";
 
 export const CreateRoomForm = () => {
+  const [serverError, setServerError] = useState<null | string>(null);
+
   const form = useAppForm({
     defaultValues: { displayName: "", roomName: "" },
     onSubmit: async ({ value }) => {
-      await createRoom(value);
+      setServerError(null);
+      const result = await createRoom(value);
+
+      if (result.serverError) {
+        setServerError("Something went wrong. Please try again.");
+      }
+    },
+    validators: {
+      onSubmit: createRoomSchema,
     },
   });
 
@@ -25,6 +37,7 @@ export const CreateRoomForm = () => {
           {(field) => {
             return (
               <field.TextField
+                autoComplete="off"
                 label="Room name"
                 placeholder="e.g. Friday Standup"
               />
@@ -36,28 +49,29 @@ export const CreateRoomForm = () => {
       <div className={css({ marginBottom: "6" })}>
         <form.AppField name="displayName">
           {(field) => {
-            return <field.TextField label="Your name" placeholder="e.g. Ada" />;
+            return (
+              <field.TextField
+                autoComplete="nickname"
+                label="Your name"
+                placeholder="e.g. Ada"
+              />
+            );
           }}
         </form.AppField>
       </div>
 
-      <form.Subscribe selector={(state) => state.errors}>
-        {(errors) => {
-          const msg = errors.join(", ");
-
-          return msg ? (
-            <p
-              className={css({
-                color: "error",
-                fontSize: "sm",
-                marginBottom: "4",
-              })}
-            >
-              {msg}
-            </p>
-          ) : null;
-        }}
-      </form.Subscribe>
+      {serverError ? (
+        <p
+          aria-live="polite"
+          className={css({
+            color: "error",
+            fontSize: "sm",
+            marginBottom: "4",
+          })}
+        >
+          {serverError}
+        </p>
+      ) : null}
 
       <form.AppForm>
         <form.SubmitButton label="Create a Room" />

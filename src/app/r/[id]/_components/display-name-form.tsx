@@ -1,22 +1,40 @@
 "use client";
 
+import { useState } from "react";
 import { css, cx } from "styled-system/css";
 import { card } from "styled-system/recipes";
+import * as v from "valibot";
 
 import { joinRoom } from "@/app/_actions/join-room";
 import { useAppForm } from "@/lib/form";
+import { displayNameSchema } from "@/lib/schemas";
 
 interface Props {
   onJoin: (displayName: string) => void;
   roomId: string;
 }
 
+const formSchema = v.object({ displayName: displayNameSchema });
+
 export const DisplayNameForm = ({ onJoin, roomId }: Props) => {
+  const [serverError, setServerError] = useState<null | string>(null);
+
   const form = useAppForm({
     defaultValues: { displayName: "" },
     onSubmit: async ({ value }) => {
-      await joinRoom({ displayName: value.displayName, roomId });
+      setServerError(null);
+      const result = await joinRoom({ displayName: value.displayName, roomId });
+
+      if (result.serverError) {
+        setServerError("Something went wrong. Please try again.");
+
+        return;
+      }
+
       onJoin(value.displayName);
+    },
+    validators: {
+      onSubmit: formSchema,
     },
   });
 
@@ -50,11 +68,10 @@ export const DisplayNameForm = ({ onJoin, roomId }: Props) => {
         </h1>
         <p
           className={css({
-            color: "base-content",
+            color: "base-content-muted",
             fontSize: "sm",
             lineHeight: "body",
             marginBottom: "6",
-            opacity: 0.6,
           })}
         >
           What should we call you?
@@ -70,11 +87,28 @@ export const DisplayNameForm = ({ onJoin, roomId }: Props) => {
             <form.AppField name="displayName">
               {(field) => {
                 return (
-                  <field.TextField label="Your name" placeholder="e.g. Ada" />
+                  <field.TextField
+                    autoComplete="nickname"
+                    label="Your name"
+                    placeholder="e.g. Ada"
+                  />
                 );
               }}
             </form.AppField>
           </div>
+
+          {serverError ? (
+            <p
+              aria-live="polite"
+              className={css({
+                color: "error",
+                fontSize: "sm",
+                marginBottom: "4",
+              })}
+            >
+              {serverError}
+            </p>
+          ) : null}
 
           <form.AppForm>
             <form.SubmitButton label="Enter Room" />

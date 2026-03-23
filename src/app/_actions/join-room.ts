@@ -1,17 +1,12 @@
 "use server";
 
 import { cookies } from "next/headers";
-import * as v from "valibot";
 
 import { actionClient } from "@/lib/safe-action";
-
-const schema = v.object({
-  displayName: v.pipe(v.string(), v.trim(), v.minLength(1, "Name is required")),
-  roomId: v.pipe(v.string(), v.minLength(1)),
-});
+import { joinRoomSchema } from "@/lib/schemas";
 
 export const joinRoom = actionClient
-  .inputSchema(schema)
+  .inputSchema(joinRoomSchema)
   .action(async ({ parsedInput: { displayName, roomId } }) => {
     const cookieStore = await cookies();
 
