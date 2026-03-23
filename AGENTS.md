@@ -241,3 +241,13 @@ If the same error persists after 3 consecutive fix attempts, stop. Report what t
 - Import from `src/server/` in client components — all `"use client"` files must only import from `src/lib/`, `src/components/`, `@party/*`, or external packages.
 - Use relative paths that cross the `party/` ↔ `src/` boundary — always use `@party/*`.
 - Introduce a new pattern or structural change without updating `AGENTS.md`.
+
+---
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
+
+<!-- END:nextjs-agent-rules -->
