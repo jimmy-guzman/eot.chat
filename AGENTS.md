@@ -88,34 +88,15 @@ e2e/
 
 ## Architecture
 
-### Effect-TS boundaries
+See `docs/architecture.md` for the full system topology, Effect-TS boundaries, PartyKit protocol, and data flow diagrams.
 
-Effect is used as a **pipeline assembler on the server only** — never in the browser bundle.
+Key ownership rules:
 
-| File                            | Pattern                               | APIs used                                              |
-| ------------------------------- | ------------------------------------- | ------------------------------------------------------ |
-| `party/types.ts`                | Schema definitions for wire types     | `Schema.Struct`, `Schema.Union`, `Schema.Literal`      |
-| `party/index.ts`                | Message routing + handler boundaries  | `Match.exhaustive`, `Effect.runPromise`, `Logger`      |
-| `src/server/partykit-client.ts` | HTTP client with typed errors + retry | `HttpClient`, `Config`, `Schedule`, `Data.TaggedError` |
-
-React components never import Effect. XState actors and Next.js server actions call `Effect.runPromise` at their boundaries.
-
-### Key Patterns
-
-- **Server Actions** live in `src/app/_actions/`. Use `actionClient.inputSchema(schema).action(...)` from `@/lib/safe-action`. Errors are thrown as plain `Error` — the message surfaces as `serverError` on the client.
-- **PartyKit client** (`src/server/partykit-client.ts`) is server-only. It exports two Effect functions: `getRoomName(id)` and `createPartyKitRoom(id, name)`. Both map HTTP errors to typed errors (`PartyKitError`, `RoomNotFoundError`) and retry with exponential backoff. Callers unwrap with `Effect.runPromise(Effect.either(...))`.
-- **Room page auth gate** (`src/app/r/[id]/page.tsx`): reads `display-name-{id}` HttpOnly cookie. No cookie → redirect to `/r/{id}/join`. Room not found → redirect to `/`. Otherwise renders `<RoomClient>` with `displayName`, `name`, `id`, `roomUrl`.
-- **XState machine** (`room-machine.ts`): owns all real-time state — `messages`, `participants`, `typingNames`, `activeNotification`. The `socketActor` (`fromCallback`) creates a `PartySocketClient`, sends `join` on open, decodes incoming messages with `Schema.decodeUnknownSync(ServerMessageSchema)`, and forwards typed events to the machine. `room-client.tsx` is the only component that calls `useMachine`.
-- **TanStack Form**: forms use `useAppForm` from `@/lib/form`. Field components (`TextField`, `SubmitButton`) are in `src/components/form/` and wired into the hook factory via `createFormHook`. For submission, call `form.handleSubmit` — it validates and calls the server action. Show inline server errors from `action.result.serverError`.
-- **PandaCSS design system**: tokens → recipes → components. Never use raw CSS values — always use named tokens from `panda.config.ts`. Use `css()` for one-off styles, recipe functions (`button()`, `card()`, `badge()`, etc.) for component variants, and `cx()` to merge.
-- **`@party/*` alias**: wire types in `party/` are shared with the Next.js app. Import them using the `@party/*` alias (e.g. `import type { Message } from "@party/types"`), never with relative paths that traverse directory boundaries.
-
-### `src/lib/` vs `src/server/`
-
-| Directory     | Rule                                                                                                          |
-| ------------- | ------------------------------------------------------------------------------------------------------------- |
-| `src/lib/`    | Client-safe only — no server env vars, no Effect HTTP client, importable by both Server and Client Components |
-| `src/server/` | Server-only — may use `PARTYKIT_URL`, `@effect/platform`, Node APIs. Never imported by `"use client"` files   |
+| Directory / alias | Rule                                                                                                                |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `src/lib/`        | Client-safe only — no server env vars, no Effect HTTP client, importable by both Server and Client Components       |
+| `src/server/`     | Server-only — may use `PARTYKIT_URL`, `@effect/platform`, Node APIs. Never imported by `"use client"` files         |
+| `@party/*`        | Wire types shared across the `party/` ↔ `src/` boundary. Always use this alias — never traverse with relative paths |
 
 ## Commands
 
