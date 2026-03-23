@@ -3,6 +3,7 @@ import type * as Party from "partykit/server";
 import { describe, expect, it, vi } from "vitest";
 
 import Server from "./index";
+import { ROOM_EXPIRY_MS } from "./types";
 
 type MockFn = ReturnType<typeof vi.fn>;
 
@@ -14,6 +15,12 @@ const makeStorage = (initial: Record<string, unknown> = {}) => {
 
     return Promise.resolve();
   });
+  const deleteAll: MockFn = vi.fn(() => {
+    store.clear();
+
+    return Promise.resolve();
+  });
+  const deleteAlarm: MockFn = vi.fn(() => Promise.resolve());
   const get: MockFn = vi.fn(<T>(key: string) => {
     return Promise.resolve(store.get(key) as T | undefined);
   });
@@ -22,8 +29,9 @@ const makeStorage = (initial: Record<string, unknown> = {}) => {
 
     return Promise.resolve();
   });
+  const setAlarm: MockFn = vi.fn(() => Promise.resolve());
 
-  return { delete: del, get, put };
+  return { delete: del, deleteAlarm, deleteAll, get, put, setAlarm };
 };
 
 const makeRoom = (
@@ -222,6 +230,17 @@ describe("Server.onConnect", () => {
     expect(sent).toMatchObject({ reason: "room not found", type: "error" });
     expect(conn.close).toHaveBeenCalledOnce();
   });
+
+  it("should cancel a pending expiry alarm when a connection opens", async () => {
+    const storage = makeStorage({ name: "My Room" });
+    const room = makeRoom({ storage });
+    const s = new Server(room);
+    const conn = makeConn();
+
+    await s.onConnect(conn);
+
+    expect(storage.deleteAlarm).toHaveBeenCalledOnce();
+  });
 });
 
 describe("Server.onMessage — join", () => {
@@ -357,10 +376,55 @@ describe("Server.onMessage — leave", () => {
     expect(first).toMatchObject({ type: "cleared" });
     expect(second).toMatchObject({ type: "left" });
   });
+
+  it("should schedule a 1-hour expiry alarm when the last participant leaves", async () => {
+    const storage = makeStorage({ name: "My Room" });
+    const room = makeRoom({ storage });
+    const s = new Server(room);
+    const conn = makeConn("conn-1");
+
+    await s.onMessage(
+      JSON.stringify({ displayName: "Alice", type: "join" }),
+      conn,
+    );
+    await s.onMessage(JSON.stringify({ type: "leave" }), conn);
+
+    expect(storage.setAlarm).toHaveBeenCalledOnce();
+
+    const alarmTime = storage.setAlarm.mock.calls[0][0] as number;
+    const toleranceMs = 60_000;
+
+    expect(alarmTime).toBeGreaterThanOrEqual(
+      Date.now() + ROOM_EXPIRY_MS - toleranceMs,
+    );
+    expect(alarmTime).toBeLessThanOrEqual(
+      Date.now() + ROOM_EXPIRY_MS + toleranceMs,
+    );
+  });
+
+  it("should not schedule an alarm when other participants remain", async () => {
+    const storage = makeStorage({ name: "My Room" });
+    const room = makeRoom({ storage });
+    const s = new Server(room);
+    const conn1 = makeConn("conn-1");
+    const conn2 = makeConn("conn-2");
+
+    await s.onMessage(
+      JSON.stringify({ displayName: "Alice", type: "join" }),
+      conn1,
+    );
+    await s.onMessage(
+      JSON.stringify({ displayName: "Bob", type: "join" }),
+      conn2,
+    );
+    await s.onMessage(JSON.stringify({ type: "leave" }), conn1);
+
+    expect(storage.setAlarm).not.toHaveBeenCalled();
+  });
 });
 
 describe("Server.onClose", () => {
-  it("should dissolve the room when last participant disconnects", async () => {
+  it("should schedule a 1-hour expiry alarm when the last participant disconnects abruptly", async () => {
     const storage = makeStorage({ name: "My Room" });
     const room = makeRoom({ storage });
     const s = new Server(room);
@@ -372,10 +436,11 @@ describe("Server.onClose", () => {
     );
     await s.onClose(conn);
 
-    expect(storage.delete).toHaveBeenCalledWith("name");
+    expect(storage.setAlarm).toHaveBeenCalledOnce();
+    expect(storage.delete).not.toHaveBeenCalled();
   });
 
-  it("should not dissolve the room when other participants remain", async () => {
+  it("should not schedule an alarm when other participants remain after disconnect", async () => {
     const storage = makeStorage({ name: "My Room" });
     const room = makeRoom({ storage });
     const s = new Server(room);
@@ -392,7 +457,7 @@ describe("Server.onClose", () => {
     );
     await s.onClose(conn1);
 
-    expect(storage.delete).not.toHaveBeenCalled();
+    expect(storage.setAlarm).not.toHaveBeenCalled();
   });
 });
 
@@ -506,6 +571,18 @@ describe("Server.onMessage — invalid input", () => {
       s.onMessage(JSON.stringify({ type: "unknown" }), conn),
     ).resolves.toBeUndefined();
     expect(room.broadcast).not.toHaveBeenCalled();
+  });
+});
+
+describe("Server.onAlarm", () => {
+  it("should delete all storage when the alarm fires", async () => {
+    const storage = makeStorage({ name: "My Room" });
+    const room = makeRoom({ storage });
+    const s = new Server(room);
+
+    await s.onAlarm();
+
+    expect(storage.deleteAll).toHaveBeenCalledOnce();
   });
 });
 

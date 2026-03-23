@@ -1,5 +1,6 @@
 "use client";
 
+import { ROOM_EXPIRY_MS } from "@party/types";
 import { useThrottler } from "@tanstack/react-pacer";
 import { useMachine, useSelector } from "@xstate/react";
 import { nanoid } from "nanoid";
@@ -8,6 +9,7 @@ import { useEffect, useRef, useState } from "react";
 import { css } from "styled-system/css";
 
 import { leaveRoom } from "@/app/_actions/leave-room";
+import { formatDuration } from "@/lib/format-duration";
 
 import { ConfirmDialog } from "./confirm-dialog";
 import { MessageInput } from "./message-input";
@@ -146,7 +148,11 @@ export const RoomClient = ({ displayName, id, name, roomUrl }: Props) => {
         title="Clear Chat?"
       />
       <ConfirmDialog
-        description="You will leave the room. You can rejoin at any time."
+        description={
+          participants.length === 1
+            ? `You will leave the room. It will be deleted in ${formatDuration(ROOM_EXPIRY_MS)} if no one rejoins.`
+            : "You will leave the room. You can rejoin at any time."
+        }
         onCancel={handleConfirmCancel}
         onConfirm={handleExitConfirmed}
         open={pendingAction === "exit"}

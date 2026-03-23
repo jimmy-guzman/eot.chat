@@ -107,3 +107,19 @@ HttpOnly cookies also prevent client-side JS from reading or tampering with the 
 **Why:** Typing indicators are a standard chat UX affordance. The throttle prevents a typing event per keystroke saturating the WebSocket. The 3-second server-side auto-expiry (tracked in XState context as `typingNames[]` with per-name timers) means no explicit "stopped typing" message is needed — simplifying the protocol.
 
 **Implementation note:** The typing indicator is ephemeral — it is not part of the `Message` data model and is never persisted or replayed on join.
+
+---
+
+## Room expiry via Durable Object alarm instead of eager dissolution
+
+**What changed:** Previously, a room was permanently deleted (`room.storage.delete("name")`) the moment the last participant left or disconnected. The room link immediately became a 404. Now, when the last participant leaves, the server schedules a 1-hour Durable Object alarm (`room.storage.setAlarm`). If no one reconnects before the alarm fires, `onAlarm` calls `room.storage.deleteAll()` and the room is gone. If someone reconnects before the hour is up, `onConnect` cancels the alarm with `room.storage.deleteAlarm()`.
+
+Messages are still cleared on every leave (class assignment constraint). The expiry window applies to the room's existence, not to message retention.
+
+**Why:** The original eager dissolution meant a briefly-disconnected participant (network drop, accidental tab close) would return to a dead 404 link. The 1-hour grace period covers realistic reconnect scenarios without keeping abandoned rooms around indefinitely. Durable Object alarms are the idiomatic mechanism for this on Cloudflare/PartyKit — no external scheduler, no cron, no polling.
+
+**Last participant UX:** The exit dialog description adapts when `participants.length === 1`, informing the user that the room will be deleted in 1 hour if no one rejoins. No additional actions are presented — the 1-hour window is the only path.
+
+**Abrupt disconnects:** `onClose` (tab close, network drop) follows the same alarm path as a graceful leave — the room is never deleted synchronously on disconnect. This is safe because the in-memory participant map is cleared normally; if the worker hibernates and wakes on alarm, `onAlarm` has no participant state to clean up and simply wipes storage.
+
+**Trade-off:** A room with no active connections still occupies a Durable Object slot for up to 1 hour. This is acceptable given the low volume of rooms and the zero-infrastructure cost of storage alarms.
