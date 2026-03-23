@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+
 import { redirect } from "next/navigation";
 import { css, cx } from "styled-system/css";
 import { card } from "styled-system/recipes";
@@ -8,6 +10,16 @@ import { DisplayNameForm } from "./_components/display-name-form";
 
 interface Props {
   params: Promise<{ id: string }>;
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { id } = await params;
+
+  void id;
+
+  return {
+    title: "Join the room",
+  };
 }
 
 export default async function JoinPage({ params }: Props) {

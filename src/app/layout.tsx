@@ -4,6 +4,8 @@ import type { Metadata } from "next";
 
 import { IBM_Plex_Mono } from "next/font/google";
 
+import { getAppUrl } from "@/lib/app-url";
+
 const ibmPlexMono = IBM_Plex_Mono({
   subsets: ["latin"],
   variable: "--font-mono",
@@ -12,7 +14,22 @@ const ibmPlexMono = IBM_Plex_Mono({
 
 export const metadata = {
   description: "End of transmission.",
-  title: "EOT",
+  metadataBase: new URL(getAppUrl()),
+  openGraph: {
+    description: "End of transmission.",
+    siteName: "EOT",
+    title: "EOT",
+    type: "website",
+  },
+  title: {
+    default: "EOT",
+    template: "%s — EOT",
+  },
+  twitter: {
+    card: "summary_large_image",
+    description: "End of transmission.",
+    title: "EOT",
+  },
 } satisfies Metadata;
 
 export default function RootLayout({
