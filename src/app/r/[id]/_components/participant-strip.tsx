@@ -2,13 +2,6 @@
 
 import type { Participant } from "@party/types";
 
-import {
-  domMax,
-  LayoutGroup,
-  LazyMotion,
-  m,
-  useReducedMotion,
-} from "motion/react";
 import { css } from "styled-system/css";
 import { badge } from "styled-system/recipes";
 
@@ -18,46 +11,34 @@ interface Props {
 }
 
 export const ParticipantStrip = ({ displayName, participants }: Props) => {
-  const reduceMotion = useReducedMotion();
-
   if (participants.length === 0) return null;
 
   return (
-    <LazyMotion features={domMax}>
-      <LayoutGroup>
-        <ul
-          aria-label="Participants"
-          className={css({
-            backgroundColor: "base-200",
-            borderBottom: "1px solid token(colors.base-300)",
-            display: "flex",
-            gap: "2",
-            listStyle: "none",
-            margin: "0",
-            overflowX: "auto",
-            padding: "2 5",
-          })}
-        >
-          {participants.map((p) => {
-            return (
-              <m.li
-                className={badge({
-                  variant: p.displayName === displayName ? "active" : "default",
-                })}
-                key={p.displayName}
-                layout={!reduceMotion}
-                transition={
-                  reduceMotion
-                    ? { duration: 0 }
-                    : { damping: 35, stiffness: 500, type: "spring" }
-                }
-              >
-                {p.displayName}
-              </m.li>
-            );
-          })}
-        </ul>
-      </LayoutGroup>
-    </LazyMotion>
+    <ul
+      aria-label="Participants"
+      className={css({
+        backgroundColor: "base-200",
+        borderBottom: "1px solid token(colors.base-300)",
+        display: "flex",
+        gap: "2",
+        listStyle: "none",
+        margin: "0",
+        overflowX: "auto",
+        padding: "2 5",
+      })}
+    >
+      {participants.map((p) => {
+        return (
+          <li
+            className={badge({
+              variant: p.displayName === displayName ? "active" : "default",
+            })}
+            key={p.displayName}
+          >
+            {p.displayName}
+          </li>
+        );
+      })}
+    </ul>
   );
 };

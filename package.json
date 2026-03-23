@@ -29,7 +29,6 @@
     "@xstate/react": "6.1.0",
     "effect": "3.21.0",
     "lucide-react": "0.577.0",
-    "motion": "12.38.0",
     "nanoid": "5.1.7",
     "next": "16.2.1",
     "next-safe-action": "8.1.8",

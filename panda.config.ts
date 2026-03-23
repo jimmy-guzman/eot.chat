@@ -16,11 +16,11 @@ export default defineConfig({
   theme: {
     extend: {
       keyframes: {
-        polishFadeIn: {
+        enterFade: {
           from: { opacity: "0" },
           to: { opacity: "1" },
         },
-        polishMessageIn: {
+        enterRaise: {
           from: { opacity: "0", transform: "translateY(6px)" },
           to: { opacity: "1", transform: "translateY(0)" },
         },
@@ -163,6 +163,30 @@ export default defineConfig({
           },
           className: "label",
         },
+        motionEnter: {
+          base: {
+            "@media (prefers-reduced-motion: reduce)": {
+              animation: "none",
+            },
+            "animationDuration": "token(durations.motion.normal)",
+            "animationFillMode": "forwards",
+            "animationTimingFunction": "token(easings.motion.standard)",
+          },
+          className: "motion-enter",
+          defaultVariants: {
+            preset: "fade",
+          },
+          variants: {
+            preset: {
+              fade: {
+                animationName: "enterFade",
+              },
+              raise: {
+                animationName: "enterRaise",
+              },
+            },
+          },
+        },
       },
       semanticTokens: {
         colors: {
@@ -216,7 +240,7 @@ export default defineConfig({
               "opacity": 1,
               "position": "fixed",
               "transition":
-                "opacity token(durations.polish) token(easings.polishOut)",
+                "opacity token(durations.motion.normal) token(easings.motion.standard)",
             },
             description: {
               color: "base-content-muted",
@@ -252,7 +276,7 @@ export default defineConfig({
               "top": "50%",
               "transform": "translate(-50%, -50%) scale(1)",
               "transition":
-                "opacity token(durations.polish) token(easings.polishOut), transform token(durations.polish) token(easings.polishOut)",
+                "opacity token(durations.motion.normal) token(easings.motion.standard), transform token(durations.motion.normal) token(easings.motion.standard)",
               "width": "token(sizes.card)",
             },
             title: {
@@ -333,10 +357,16 @@ export default defineConfig({
           "phosphor-olive": { value: "#B8A832" },
         },
         durations: {
-          polish: { value: "200ms" },
+          motion: {
+            fast: { value: "150ms" },
+            normal: { value: "200ms" },
+            slow: { value: "300ms" },
+          },
         },
         easings: {
-          polishOut: { value: "cubic-bezier(0.2, 0, 0, 1)" },
+          motion: {
+            standard: { value: "cubic-bezier(0.2, 0, 0, 1)" },
+          },
         },
         fonts: {
           body: { value: "var(--font-mono)" },

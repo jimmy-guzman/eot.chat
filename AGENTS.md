@@ -10,7 +10,7 @@
 - **Actions:** `next-safe-action` + Valibot — type-safe server actions with schema validation
 - **Forms:** TanStack Form — form state and field context
 - **Design system:** PandaCSS — design tokens, recipes, and utility classes
-- **Motion:** Motion (`motion` package, import `motion/react`) — client-only polish; use `LazyMotion` + `domMax` where layout animations are needed; prefer PandaCSS transitions and keyframes for simple enter/opacity effects
+- **UI motion:** PandaCSS-only — use the `durations.motion.{fast,normal,slow}` and `easings.motion.standard` tokens, keyframes `enterFade` / `enterRaise`, and the `motionEnter` recipe (`preset`: `fade` | `raise`) for mount enter animations with a single `prefers-reduced-motion` rule in the recipe; overlay/dialog motion belongs on slot recipes (e.g. `alertDialog`). Compose with `motionEnter()` + `css()` via `cx()` in components — do not add ad hoc `ms` durations, duplicate reduced-motion blocks in routes, or introduce a separate animation runtime unless explicitly agreed
 - **Linting:** ESLint 9 with `@jimmy.codes/eslint-config`
 - **Formatting:** oxfmt (Prettier-compatible, Rust-based)
 - **Testing:** Vitest + Testing Library + happy-dom (unit/component), Playwright (e2e), MSW (HTTP mocking)
