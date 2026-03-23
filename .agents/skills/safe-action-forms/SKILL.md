@@ -7,11 +7,11 @@ description: Use when integrating next-safe-action with forms -- react-hook-form
 
 ## Options
 
-| Approach | When to Use |
-|---|---|
-| `useAction` + native form | Simple forms, no complex validation UI |
+| Approach                          | When to Use                                                      |
+| --------------------------------- | ---------------------------------------------------------------- |
+| `useAction` + native form         | Simple forms, no complex validation UI                           |
 | `useHookFormAction` (RHF adapter) | Complex forms with field-level errors, validation on change/blur |
-| `useHookFormOptimisticAction` | RHF forms with optimistic UI updates |
+| `useHookFormOptimisticAction`     | RHF forms with optimistic UI updates                             |
 
 ## Quick Start — Native Form
 
@@ -78,19 +78,25 @@ export function ContactForm() {
       actionProps: {
         onSuccess: () => toast.success("Message sent!"),
       },
-    }
+    },
   );
 
   return (
     <form onSubmit={handleSubmitWithAction}>
       <input {...form.register("name")} />
-      {form.formState.errors.name && <p>{form.formState.errors.name.message}</p>}
+      {form.formState.errors.name && (
+        <p>{form.formState.errors.name.message}</p>
+      )}
 
       <input {...form.register("email")} />
-      {form.formState.errors.email && <p>{form.formState.errors.email.message}</p>}
+      {form.formState.errors.email && (
+        <p>{form.formState.errors.email.message}</p>
+      )}
 
       <textarea {...form.register("message")} />
-      {form.formState.errors.message && <p>{form.formState.errors.message.message}</p>}
+      {form.formState.errors.message && (
+        <p>{form.formState.errors.message.message}</p>
+      )}
 
       {action.result.serverError && <p>{action.result.serverError}</p>}
 
@@ -110,7 +116,7 @@ export function ContactForm() {
 
 ## Entry Points
 
-| Package | Entry Point | Exports |
-|---|---|---|
-| `@next-safe-action/adapter-react-hook-form` | Default | `mapToHookFormErrors`, types |
-| `@next-safe-action/adapter-react-hook-form/hooks` | Hooks | `useHookFormAction`, `useHookFormOptimisticAction`, `useHookFormActionErrorMapper` |
+| Package                                           | Entry Point | Exports                                                                            |
+| ------------------------------------------------- | ----------- | ---------------------------------------------------------------------------------- |
+| `@next-safe-action/adapter-react-hook-form`       | Default     | `mapToHookFormErrors`, types                                                       |
+| `@next-safe-action/adapter-react-hook-form/hooks` | Hooks       | `useHookFormAction`, `useHookFormOptimisticAction`, `useHookFormActionErrorMapper` |

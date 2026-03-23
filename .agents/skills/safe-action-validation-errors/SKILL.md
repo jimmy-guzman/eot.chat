@@ -87,24 +87,40 @@ returnValidationErrors(schema, {
 
 ```tsx
 // Formatted shape (default)
-{result.validationErrors?.email?._errors?.map((error) => (
-  <p key={error} className="text-red-500">{error}</p>
-))}
+{
+  result.validationErrors?.email?._errors?.map((error) => (
+    <p key={error} className="text-red-500">
+      {error}
+    </p>
+  ));
+}
 
 // Root-level errors
-{result.validationErrors?._errors?.map((error) => (
-  <p key={error} className="text-red-500">{error}</p>
-))}
+{
+  result.validationErrors?._errors?.map((error) => (
+    <p key={error} className="text-red-500">
+      {error}
+    </p>
+  ));
+}
 ```
 
 ```tsx
 // Flattened shape
-{result.validationErrors?.fieldErrors?.email?.map((error) => (
-  <p key={error} className="text-red-500">{error}</p>
-))}
+{
+  result.validationErrors?.fieldErrors?.email?.map((error) => (
+    <p key={error} className="text-red-500">
+      {error}
+    </p>
+  ));
+}
 
 // Form-level errors (flattened)
-{result.validationErrors?.formErrors?.map((error) => (
-  <p key={error} className="text-red-500">{error}</p>
-))}
+{
+  result.validationErrors?.formErrors?.map((error) => (
+    <p key={error} className="text-red-500">
+      {error}
+    </p>
+  ));
+}
 ```

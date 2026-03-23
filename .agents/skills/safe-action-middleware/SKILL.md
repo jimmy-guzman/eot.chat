@@ -36,15 +36,15 @@ const authClient = actionClient.use(async ({ next }) => {
 ```ts
 const client = createSafeActionClient()
   .use(async ({ next }) => {
-    console.log("1: before");             // Runs 1st
+    console.log("1: before"); // Runs 1st
     const result = await next({ ctx: { a: 1 } });
-    console.log("1: after");              // Runs 4th
+    console.log("1: after"); // Runs 4th
     return result;
   })
   .use(async ({ next, ctx }) => {
-    console.log("2: before", ctx.a);      // Runs 2nd, ctx.a = 1
+    console.log("2: before", ctx.a); // Runs 2nd, ctx.a = 1
     const result = await next({ ctx: { b: 2 } });
-    console.log("2: after");              // Runs 3rd
+    console.log("2: after"); // Runs 3rd
     return result;
   });
 
@@ -55,15 +55,19 @@ const client = createSafeActionClient()
 
 ```ts
 async ({
-  clientInput,           // Raw input from the client (unknown)
-  bindArgsClientInputs,  // Raw bind args array
-  ctx,                   // Accumulated context from previous middleware
-  metadata,              // Metadata set via .metadata()
-  next,                  // Call to proceed to next middleware/action
+  clientInput, // Raw input from the client (unknown)
+  bindArgsClientInputs, // Raw bind args array
+  ctx, // Accumulated context from previous middleware
+  metadata, // Metadata set via .metadata()
+  next, // Call to proceed to next middleware/action
 }) => {
   // Optionally extend context
-  return next({ ctx: { /* new context properties */ } });
-}
+  return next({
+    ctx: {
+      /* new context properties */
+    },
+  });
+};
 ```
 
 ## Supporting Docs

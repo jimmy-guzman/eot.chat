@@ -123,7 +123,10 @@ import type {
 } from "next-safe-action/hooks";
 
 type ActionReturn = InferUseActionHookReturn<typeof myAction>;
-type OptimisticReturn = InferUseOptimisticActionHookReturn<typeof myAction, MyState>;
+type OptimisticReturn = InferUseOptimisticActionHookReturn<
+  typeof myAction,
+  MyState
+>;
 ```
 
 From `@next-safe-action/adapter-react-hook-form/hooks`:
@@ -148,7 +151,8 @@ function ActionResult<T extends (...args: any[]) => any>({
 }: {
   result: InferSafeActionFnResult<T>;
 }) {
-  if (result.serverError) return <div className="error">{result.serverError}</div>;
+  if (result.serverError)
+    return <div className="error">{result.serverError}</div>;
   if (result.data) return <div className="success">Success!</div>;
   return null;
 }

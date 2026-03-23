@@ -42,29 +42,32 @@ export const getPost = authActionClient
   });
 
 // Forbidden (403)
-export const adminAction = authActionClient
-  .action(async ({ ctx }) => {
-    if (ctx.userRole !== "admin") {
-      forbidden();
-    }
-    return { secret: "data" };
-  });
+export const adminAction = authActionClient.action(async ({ ctx }) => {
+  if (ctx.userRole !== "admin") {
+    forbidden();
+  }
+  return { secret: "data" };
+});
 
 // Unauthorized (401)
-export const protectedAction = actionClient
-  .action(async () => {
-    const session = await getSession();
-    if (!session) {
-      unauthorized();
-    }
-    return { data: "protected" };
-  });
+export const protectedAction = actionClient.action(async () => {
+  const session = await getSession();
+  if (!session) {
+    unauthorized();
+  }
+  return { data: "protected" };
+});
 ```
 
 ## NavigationKind
 
 ```ts
-type NavigationKind = "redirect" | "notFound" | "forbidden" | "unauthorized" | "other";
+type NavigationKind =
+  | "redirect"
+  | "notFound"
+  | "forbidden"
+  | "unauthorized"
+  | "other";
 ```
 
 `"other"` covers edge cases like CSR bailout, dynamic usage errors, and React postpone.
@@ -125,21 +128,19 @@ Framework errors thrown in middleware are also detected. If you catch errors in 
 Server-level callbacks on `.action()` fire even when navigation occurs:
 
 ```ts
-export const createPost = authActionClient
-  .inputSchema(schema)
-  .action(
-    async ({ parsedInput }) => {
-      const post = await db.post.create(parsedInput);
-      redirect(`/posts/${post.id}`);
+export const createPost = authActionClient.inputSchema(schema).action(
+  async ({ parsedInput }) => {
+    const post = await db.post.create(parsedInput);
+    redirect(`/posts/${post.id}`);
+  },
+  {
+    onNavigation: async ({ navigationKind }) => {
+      // Runs on the server before the error is re-thrown
+      console.log("Server: navigation occurred:", navigationKind);
     },
-    {
-      onNavigation: async ({ navigationKind }) => {
-        // Runs on the server before the error is re-thrown
-        console.log("Server: navigation occurred:", navigationKind);
-      },
-      onSettled: async ({ result }) => {
-        // Also runs — good for cleanup/metrics
-      },
-    }
-  );
+    onSettled: async ({ result }) => {
+      // Also runs — good for cleanup/metrics
+    },
+  },
+);
 ```

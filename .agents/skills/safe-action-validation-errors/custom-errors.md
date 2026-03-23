@@ -28,7 +28,10 @@ export const login = actionClient
       });
     }
 
-    const validPassword = await verifyPassword(parsedInput.password, user.passwordHash);
+    const validPassword = await verifyPassword(
+      parsedInput.password,
+      user.passwordHash,
+    );
     if (!validPassword) {
       returnValidationErrors(schema, {
         password: { _errors: ["Incorrect password"] },
@@ -95,7 +98,7 @@ try {
 } catch (e) {
   if (e instanceof ActionValidationError) {
     console.log(e.validationErrors); // The validation errors object
-    console.log(e.message);          // Error message (default or overridden)
+    console.log(e.message); // Error message (default or overridden)
   }
 }
 ```

@@ -47,7 +47,9 @@ export const adminActionClient = authActionClient.use(async ({ next, ctx }) => {
 export const orgActionClient = authActionClient
   .inputSchema(z.object({ orgId: z.string().uuid() }))
   .use(async ({ next, ctx, clientInput }) => {
-    const parsed = z.object({ orgId: z.string().uuid() }).safeParse(clientInput);
+    const parsed = z
+      .object({ orgId: z.string().uuid() })
+      .safeParse(clientInput);
     if (!parsed.success) throw new Error("Invalid input");
 
     const membership = await db.orgMember.find({

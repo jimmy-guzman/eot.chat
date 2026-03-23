@@ -75,8 +75,7 @@ export const getUserData = actionClient
 
 ```ts
 const actionClient = createSafeActionClient({
-  defineMetadataSchema: () =>
-    z.object({ actionName: z.string() }),
+  defineMetadataSchema: () => z.object({ actionName: z.string() }),
 }).use(async ({ next, metadata }) => {
   const start = performance.now();
   const result = await next({ ctx: {} });

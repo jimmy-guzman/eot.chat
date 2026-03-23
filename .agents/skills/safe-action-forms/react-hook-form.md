@@ -27,12 +27,12 @@ const { form, action, handleSubmitWithAction, resetFormAndAction } = useHookForm
 
 ### Return Value
 
-| Property | Type | Description |
-|---|---|---|
-| `form` | `UseFormReturn` | The react-hook-form `useForm` return value |
-| `action` | `UseActionHookReturn` | The `useAction` return value |
-| `handleSubmitWithAction` | `(e?) => Promise<void>` | Bound `handleSubmit(executeAsync)` |
-| `resetFormAndAction` | `() => void` | Resets both form and action state |
+| Property                 | Type                    | Description                                |
+| ------------------------ | ----------------------- | ------------------------------------------ |
+| `form`                   | `UseFormReturn`         | The react-hook-form `useForm` return value |
+| `action`                 | `UseActionHookReturn`   | The `useAction` return value               |
+| `handleSubmitWithAction` | `(e?) => Promise<void>` | Bound `handleSubmit(executeAsync)`         |
+| `resetFormAndAction`     | `() => void`            | Resets both form and action state          |
 
 ### Props
 
@@ -149,7 +149,7 @@ const { form, action, handleSubmitWithAction } = useHookFormOptimisticAction(
       currentState: settings,
       updateFn: (state, input) => ({ ...state, ...input }),
     },
-  }
+  },
 );
 
 // action.optimisticState is available
@@ -177,7 +177,7 @@ import { useHookFormActionErrorMapper } from "@next-safe-action/adapter-react-ho
 
 const { hookFormValidationErrors } = useHookFormActionErrorMapper(
   result.validationErrors,
-  { joinBy: ", " }
+  { joinBy: ", " },
 );
 
 // Pass to useForm's errors option

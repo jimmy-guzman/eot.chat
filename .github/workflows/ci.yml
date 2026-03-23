@@ -1,0 +1,40 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: ci-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  code_check:
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_PARTYKIT_HOST: localhost:1999
+      PARTYKIT_URL: http://localhost:1999
+
+    steps:
+      - name: 🏗 Setup Repository
+        uses: actions/checkout@v4
+
+      - name: 📦 Install
+        uses: ./.github/actions/install
+
+      - name: 🎨 Format
+        run: pnpm format
+
+      - name: 🚨 Lint
+        run: pnpm lint
+
+      - name: 🏷️ Typecheck
+        run: pnpm typecheck
+
+      - name: ✅ Test
+        run: pnpm test
+
+      - name: 🏗 Build
+        run: pnpm build

@@ -16,7 +16,7 @@ const { execute, result, isPending } = useAction(myAction, {
 });
 
 // Trigger
-<button onClick={() => execute({ name: "Alice" })}>Submit</button>
+<button onClick={() => execute({ name: "Alice" })}>Submit</button>;
 ```
 
 Internally, `execute` runs inside `React.startTransition` with a `setTimeout(0)` for deferred state updates.

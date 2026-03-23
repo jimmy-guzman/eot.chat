@@ -8,25 +8,25 @@ idle → executing → hasSucceeded
                  → hasNavigated
 ```
 
-| Status | Meaning |
-|---|---|
-| `idle` | No execution has started (or `reset()` was called) |
-| `executing` | Action promise is pending |
-| `hasSucceeded` | Last execution returned `data` |
-| `hasErrored` | Last execution had `serverError` or `validationErrors` |
+| Status         | Meaning                                                          |
+| -------------- | ---------------------------------------------------------------- |
+| `idle`         | No execution has started (or `reset()` was called)               |
+| `executing`    | Action promise is pending                                        |
+| `hasSucceeded` | Last execution returned `data`                                   |
+| `hasErrored`   | Last execution had `serverError` or `validationErrors`           |
 | `hasNavigated` | Last execution triggered a navigation (redirect, notFound, etc.) |
 
 ## Shorthand Booleans
 
 ```ts
 const {
-  isIdle,          // status === "idle"
-  isExecuting,     // status === "executing"
+  isIdle, // status === "idle"
+  isExecuting, // status === "executing"
   isTransitioning, // React transition is still pending (after action resolves)
-  isPending,       // isExecuting || isTransitioning
-  hasSucceeded,    // status === "hasSucceeded"
-  hasErrored,      // status === "hasErrored"
-  hasNavigated,    // status === "hasNavigated"
+  isPending, // isExecuting || isTransitioning
+  hasSucceeded, // status === "hasSucceeded"
+  hasErrored, // status === "hasErrored"
+  hasNavigated, // status === "hasNavigated"
 } = useAction(myAction);
 ```
 
