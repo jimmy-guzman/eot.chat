@@ -459,6 +459,77 @@ describe("Server.onClose", () => {
 
     expect(storage.setAlarm).not.toHaveBeenCalled();
   });
+
+  it("should broadcast left but not cleared when a participant disconnects abruptly", async () => {
+    const storage = makeStorage({ name: "My Room" });
+    const room = makeRoom({ storage });
+    const s = new Server(room);
+    const conn = makeConn("conn-1");
+
+    await s.onMessage(
+      JSON.stringify({ displayName: "Alice", type: "join" }),
+      conn,
+    );
+
+    const broadcastMock = room.broadcast as MockFn;
+
+    broadcastMock.mockClear();
+
+    await s.onClose(conn);
+
+    const calls = (broadcastMock.mock.calls as [string][]).map(
+      ([raw]) => JSON.parse(raw) as unknown,
+    );
+    const types = calls.map((c) => (c as { type: string }).type);
+
+    expect(types).toContain("left");
+    expect(types).not.toContain("cleared");
+  });
+
+  it("should preserve messages when a participant disconnects abruptly", async () => {
+    const storage = makeStorage({ name: "My Room" });
+    const room = makeRoom({ storage });
+    const s = new Server(room);
+    const conn1 = makeConn("conn-1");
+    const conn2 = makeConn("conn-2");
+
+    await s.onMessage(
+      JSON.stringify({ displayName: "Alice", type: "join" }),
+      conn1,
+    );
+    await s.onMessage(
+      JSON.stringify({ displayName: "Bob", type: "join" }),
+      conn2,
+    );
+    await s.onMessage(
+      JSON.stringify({ body: "fruit", type: "message" }),
+      conn1,
+    );
+
+    await s.onClose(conn1);
+
+    const broadcastMock = room.broadcast as MockFn;
+    const lastInit = broadcastMock.mock.calls
+      .map(([raw]) => JSON.parse(raw as string) as unknown)
+      .findLast((c) => (c as { type: string }).type === "left") as
+      | undefined
+      | {
+          participants: unknown[];
+          type: string;
+        };
+
+    expect(lastInit).toMatchObject({ type: "left" });
+
+    conn2.send.mockClear();
+    await s.onConnect(conn2);
+    const initSent = JSON.parse(conn2.send.mock.calls[0][0] as string) as {
+      messages: unknown[];
+      type: string;
+    };
+
+    expect(initSent.type).toBe("init");
+    expect(initSent.messages).toHaveLength(1);
+  });
 });
 
 describe("Server.onMessage — clear", () => {
