@@ -60,6 +60,12 @@ describe("roomMachine", () => {
     expect(actor.getSnapshot().value).toBe("connected");
   });
 
+  it("should not be initialized until SOCKET_INIT", () => {
+    const actor = makeActor();
+
+    expect(actor.getSnapshot().context.initialized).toBe(false);
+  });
+
   it("should set messages and participants on SOCKET_INIT", () => {
     const actor = makeActor();
     const messages = [makeMessage()];
@@ -69,6 +75,7 @@ describe("roomMachine", () => {
 
     const { context } = actor.getSnapshot();
 
+    expect(context.initialized).toBe(true);
     expect(context.messages).toStrictEqual(messages);
     expect(context.participants).toStrictEqual(participants);
   });

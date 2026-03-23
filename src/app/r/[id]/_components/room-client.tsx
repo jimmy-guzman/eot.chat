@@ -36,6 +36,7 @@ export const RoomClient = ({ displayName, id, name, roomUrl }: Props) => {
     input: { displayName, id },
   });
 
+  const initialized = useSelector(actorRef, (s) => s.context.initialized);
   const messages = useSelector(actorRef, (s) => s.context.messages);
   const participants = useSelector(actorRef, (s) => s.context.participants);
 
@@ -125,14 +126,20 @@ export const RoomClient = ({ displayName, id, name, roomUrl }: Props) => {
         }}
         roomUrl={roomUrl}
       />
-      <ParticipantStrip displayName={displayName} participants={participants} />
+      <ParticipantStrip
+        displayName={displayName}
+        initialized={initialized}
+        participants={participants}
+      />
       <StatusBar notification={statusNotification} />
       <MessageList
         bottomRef={bottomRef}
         displayName={displayName}
+        initialized={initialized}
         messages={messages}
       />
       <MessageInput
+        disabled={!initialized}
         onSend={handleSendMessage}
         onTyping={() => {
           sendTypingThrottler.maybeExecute();
