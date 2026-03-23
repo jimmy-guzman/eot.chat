@@ -23,3 +23,7 @@ export const joinRoomSchema = v.object({
   displayName: displayNameSchema,
   roomId: v.pipe(v.string(), v.minLength(1)),
 });
+
+export const leaveRoomSchema = v.object({
+  roomId: v.pipe(v.string(), v.minLength(1)),
+});

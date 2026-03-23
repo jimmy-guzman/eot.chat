@@ -13,6 +13,8 @@ import {
 } from "react";
 import { css } from "styled-system/css";
 
+import { leaveRoom } from "@/app/_actions/leave-room";
+
 import type {
   Message,
   Participant,
@@ -230,6 +232,7 @@ export const RoomClient = ({
   const handleExitConfirmed = () => {
     socketRef.current?.send(JSON.stringify({ type: "leave" }));
     socketRef.current?.close();
+    void leaveRoom({ roomId: id });
     router.push("/");
   };
 
