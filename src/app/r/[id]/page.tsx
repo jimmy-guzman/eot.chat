@@ -36,7 +36,11 @@ export default async function RoomPage({ params }: Props) {
   }
 
   const cookieStore = await cookies();
-  const displayName = cookieStore.get(`display-name-${id}`)?.value ?? null;
+  const displayName = cookieStore.get(`display-name-${id}`)?.value;
+
+  if (!displayName) {
+    redirect(`/r/${id}/join`);
+  }
 
   return (
     <RoomClient

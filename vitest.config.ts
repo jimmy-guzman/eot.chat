@@ -7,6 +7,10 @@ export default defineConfig({
     tsconfigPaths: true,
   },
   test: {
+    env: {
+      NEXT_PUBLIC_PARTYKIT_HOST: "localhost:1999",
+      PARTYKIT_URL: "http://localhost:1999",
+    },
     environment: "happy-dom",
     exclude: [...configDefaults.exclude, "e2e"],
     globals: true,

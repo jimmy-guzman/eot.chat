@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { css, cx } from "styled-system/css";
 import { card } from "styled-system/recipes";
@@ -10,13 +11,13 @@ import { useAppForm } from "@/lib/form";
 import { displayNameSchema } from "@/lib/schemas";
 
 interface Props {
-  onJoin: (displayName: string) => void;
   roomId: string;
 }
 
 const formSchema = v.object({ displayName: displayNameSchema });
 
-export const DisplayNameForm = ({ onJoin, roomId }: Props) => {
+export const DisplayNameForm = ({ roomId }: Props) => {
+  const router = useRouter();
   const [serverError, setServerError] = useState<null | string>(null);
 
   const form = useAppForm({
@@ -31,7 +32,7 @@ export const DisplayNameForm = ({ onJoin, roomId }: Props) => {
         return;
       }
 
-      onJoin(value.displayName);
+      router.push(`/r/${roomId}`);
     },
     validators: {
       onSubmit: formSchema,

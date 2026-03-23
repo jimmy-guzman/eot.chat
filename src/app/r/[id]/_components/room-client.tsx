@@ -1,251 +1,91 @@
 "use client";
 
 import { useThrottler } from "@tanstack/react-pacer";
+import { useMachine, useSelector } from "@xstate/react";
+import { nanoid } from "nanoid";
 import { useRouter } from "next/navigation";
-import PartySocketClient from "partysocket";
-import {
-  useCallback,
-  useEffect,
-  useOptimistic,
-  useRef,
-  useState,
-  useTransition,
-} from "react";
+import { useEffect, useRef, useState } from "react";
 import { css } from "styled-system/css";
 
 import { leaveRoom } from "@/app/_actions/leave-room";
-import { env } from "@/env";
-
-import type {
-  Message,
-  Participant,
-  ServerMessage,
-} from "../../../../../party/types";
 
 import { ConfirmDialog } from "./confirm-dialog";
-import { DisplayNameForm } from "./display-name-form";
 import { MessageInput } from "./message-input";
 import { MessageList } from "./message-list";
 import { ParticipantStrip } from "./participant-strip";
 import { RoomHeader } from "./room-header";
+import { roomMachine } from "./room-machine";
 import { TypingIndicator } from "./typing-indicator";
 
-const TYPING_CLEAR_DELAY_MS = 3000;
 const TYPING_THROTTLE_MS = 1000;
 
 type PendingAction = "clear" | "exit" | null;
 
 interface Props {
-  displayName: null | string;
+  displayName: string;
   id: string;
   name: string;
   roomUrl: string;
 }
 
-const copyRoomLink = () => {
-  void navigator.clipboard.writeText(globalThis.location.href);
-};
-
-export const RoomClient = ({
-  displayName: initialDisplayName,
-  id,
-  name,
-  roomUrl,
-}: Props) => {
+export const RoomClient = ({ displayName, id, name, roomUrl }: Props) => {
   const router = useRouter();
-  const [, startTransition] = useTransition();
-  const [overrideDisplayName, setOverrideDisplayName] = useState<null | string>(
-    null,
-  );
-  const resolvedDisplayName = overrideDisplayName ?? initialDisplayName;
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [optimisticMessages, addOptimisticMessage] = useOptimistic(
-    messages,
-    (state, newMessage: Message) => [...state, newMessage],
-  );
-  const [participants, setParticipants] = useState<Participant[]>([]);
+  const [snapshot, send, actorRef] = useMachine(roomMachine, {
+    input: { displayName, id },
+  });
+
+  const messages = useSelector(actorRef, (s) => s.context.messages);
+  const participants = useSelector(actorRef, (s) => s.context.participants);
+  const typingNames = useSelector(actorRef, (s) => s.context.typingNames);
+
   const [inputValue, setInputValue] = useState("");
-  const [typingNames, setTypingNames] = useState<string[]>([]);
   const [pendingAction, setPendingAction] = useState<PendingAction>(null);
-  const socketRef = useRef<InstanceType<typeof PartySocketClient> | null>(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    if (!resolvedDisplayName) {
-      return undefined;
-    }
-
-    const typingTimers = new Map<string, ReturnType<typeof setTimeout>>();
-
-    const socket = new PartySocketClient({
-      host: env.NEXT_PUBLIC_PARTYKIT_HOST,
-      party: "main",
-      room: id,
-    });
-
-    socketRef.current = socket;
-
-    const onOpen = () => {
-      socket.send(
-        JSON.stringify({ displayName: resolvedDisplayName, type: "join" }),
-      );
-    };
-
-    const onMessage = (event: MessageEvent<string>) => {
-      let msg: ServerMessage;
-
-      try {
-        msg = JSON.parse(event.data) as ServerMessage;
-      } catch {
-        return;
-      }
-
-      switch (msg.type) {
-        case "cleared": {
-          setMessages([]);
-
-          break;
-        }
-        case "error": {
-          router.push("/");
-
-          break;
-        }
-        case "init": {
-          setMessages([...msg.messages]);
-          setParticipants([...msg.participants]);
-
-          break;
-        }
-        case "joined": {
-          setParticipants([...msg.participants]);
-
-          break;
-        }
-        case "left": {
-          setParticipants([...msg.participants]);
-
-          break;
-        }
-        case "message": {
-          const { authorDisplayName } = msg.message;
-          const existing = typingTimers.get(authorDisplayName);
-
-          if (existing !== undefined) {
-            clearTimeout(existing);
-            typingTimers.delete(authorDisplayName);
-          }
-
-          setTypingNames((prev) => prev.filter((n) => n !== authorDisplayName));
-          setMessages((prev) => [...prev, msg.message]);
-
-          break;
-        }
-        case "typing": {
-          const { displayName } = msg;
-
-          setTypingNames((prev) => {
-            if (prev.includes(displayName)) {
-              return prev;
-            }
-
-            return [...prev, displayName];
-          });
-
-          const existing = typingTimers.get(displayName);
-
-          if (existing !== undefined) {
-            clearTimeout(existing);
-          }
-
-          const timer = setTimeout(() => {
-            setTypingNames((prev) => prev.filter((n) => n !== displayName));
-            typingTimers.delete(displayName);
-          }, TYPING_CLEAR_DELAY_MS);
-
-          typingTimers.set(displayName, timer);
-
-          break;
-        }
-        default: {
-          break;
-        }
-      }
-    };
-
-    socket.addEventListener("open", onOpen);
-    socket.addEventListener("message", onMessage);
-
-    return () => {
-      socket.removeEventListener("open", onOpen);
-      socket.removeEventListener("message", onMessage);
-      socket.close();
-      socketRef.current = null;
-
-      for (const timer of typingTimers.values()) {
-        clearTimeout(timer);
-      }
-
-      typingTimers.clear();
-      setTypingNames([]);
-    };
-  }, [resolvedDisplayName, id, router]);
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [optimisticMessages]);
-
-  const handleJoin = useCallback((joinName: string) => {
-    setOverrideDisplayName(joinName);
-  }, []);
+    if (snapshot.status === "done") {
+      void leaveRoom({ roomId: id });
+      router.push("/");
+    }
+  }, [snapshot.status, id, router]);
 
   const sendTypingThrottler = useThrottler(
     () => {
-      socketRef.current?.send(JSON.stringify({ type: "typing" }));
+      send({ type: "TYPING" });
     },
     { wait: TYPING_THROTTLE_MS },
   );
 
-  const sendMessage = () => {
+  const handleSendMessage = () => {
     const body = inputValue.trim();
 
-    if (!body || !socketRef.current || !resolvedDisplayName) return;
+    if (!body) return;
 
-    const optimistic: Message = {
-      authorDisplayName: resolvedDisplayName,
-      id: `optimistic-${Date.now().toString()}`,
-      rawInput: body,
-      sentAt: new Date().toISOString(),
-    };
-
-    startTransition(() => {
-      addOptimisticMessage(optimistic);
+    send({
+      body,
+      optimisticId: `optimistic-${nanoid()}`,
+      type: "SEND_MESSAGE",
     });
-    socketRef.current.send(JSON.stringify({ body, type: "message" }));
     sendTypingThrottler.cancel();
     setInputValue("");
   };
 
   const handleClearConfirmed = () => {
-    socketRef.current?.send(JSON.stringify({ type: "clear" }));
-    setMessages([]);
+    send({ type: "CLEAR" });
     setPendingAction(null);
   };
 
   const handleExitConfirmed = () => {
-    socketRef.current?.send(JSON.stringify({ type: "leave" }));
-    socketRef.current?.close();
-    void leaveRoom({ roomId: id });
-    router.push("/");
+    send({ type: "LEAVE" });
   };
 
   const handleConfirmCancel = () => {
     setPendingAction(null);
   };
-
-  if (!resolvedDisplayName) {
-    return <DisplayNameForm onJoin={handleJoin} roomId={id} />;
-  }
 
   return (
     <div
@@ -261,24 +101,23 @@ export const RoomClient = ({
         onClear={() => {
           setPendingAction("clear");
         }}
-        onCopyLink={copyRoomLink}
+        onCopyLink={() => {
+          void navigator.clipboard.writeText(globalThis.location.href);
+        }}
         onExit={() => {
           setPendingAction("exit");
         }}
         roomUrl={roomUrl}
       />
-      <ParticipantStrip
-        displayName={resolvedDisplayName}
-        participants={participants}
-      />
+      <ParticipantStrip displayName={displayName} participants={participants} />
       <TypingIndicator names={typingNames} />
       <MessageList
         bottomRef={bottomRef}
-        displayName={resolvedDisplayName}
-        messages={optimisticMessages}
+        displayName={displayName}
+        messages={messages}
       />
       <MessageInput
-        onSend={sendMessage}
+        onSend={handleSendMessage}
         onTyping={() => {
           sendTypingThrottler.maybeExecute();
         }}
