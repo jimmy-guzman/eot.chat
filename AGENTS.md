@@ -1,62 +1,126 @@
 # eot.chat — Agent Rules
 
-## Specs
+## Tech Stack
 
-The `docs/` folder contains the canonical specifications for this project. Implementation must match the specs. If code and a spec disagree, the spec is wrong — update the spec first, then write the code. Never silently diverge.
+- **Framework:** Next.js 16 (App Router, Turbopack, React Server Components)
+- **Language:** TypeScript (strict mode)
+- **Real-time:** PartyKit (Cloudflare workerd) — owns all room state
+- **Effect:** Effect-TS 3.x — used in `party/` and `src/server/` only, never in the browser
+- **State machine:** XState v5 — room WebSocket lifecycle in `src/app/r/[id]/_components/room-machine.ts`
+- **Actions:** `next-safe-action` + Valibot — type-safe server actions with schema validation
+- **Forms:** TanStack Form — form state and field context
+- **Design system:** PandaCSS — design tokens, recipes, and utility classes
+- **Linting:** ESLint 9 with `@jimmy.codes/eslint-config`
+- **Formatting:** oxfmt (Prettier-compatible, Rust-based)
+- **Testing:** Vitest + Testing Library + happy-dom (unit/component), Playwright (e2e), MSW (HTTP mocking)
+- **Package manager:** pnpm
 
-| Spec                        | What it covers                                                  |
-| --------------------------- | --------------------------------------------------------------- |
-| `docs/product/functions.md` | Screens, data model, URL structure, key constraints             |
-| `docs/product/visual.md`    | Color tokens, typography, illustration language                 |
-| `docs/product/catalog.md`   | Message component types, props schemas, AI classification rules |
-| `docs/architecture.md`      | System topology, data flow, PartyKit protocol, rate limiting    |
-| `docs/plan.md`              | Build phases, file map, milestone summary                       |
+## Project Structure
 
-## Supporting material (not specs)
+```txt
+party/                          # PartyKit server (Cloudflare workerd)
+  index.ts                      # Server: onRequest (HTTP), onConnect/onMessage/onClose (WS)
+  index.spec.ts
+  types.ts                      # Effect Schema wire types — ClientMessage, ServerMessage, Message, Participant
+  types.spec.ts
 
-| Path              | What it is                                                         |
-| ----------------- | ------------------------------------------------------------------ |
-| `docs/prompts/`   | AI prompts for generating design assets — not implementation rules |
-| `docs/reference/` | Mood images and wireframes — visual reference only                 |
+src/
+  app/                          # Next.js App Router
+    _actions/                   # Server Actions (next-safe-action + Valibot)
+      create-room.ts            # Generate ID → POST to PartyKit → set cookie → redirect
+      join-room.ts              # Set display-name cookie
+      leave-room.ts             # Delete display-name cookie
+    _components/                # Root route client components
+      create-room-form.tsx      # Landing page form (TanStack Form)
+      site-footer.tsx
+    r/[id]/
+      _components/              # Room route client components
+        room-client.tsx         # Root "use client" orchestrator (useMachine)
+        room-machine.ts         # XState v5 machine + PartySocket actor
+        room-machine.spec.ts
+        room-header.tsx
+        message-list.tsx
+        message-input.tsx
+        participant-strip.tsx
+        status-bar.tsx          # Server Component — receives StatusNotification prop
+        status-bar.spec.tsx
+        confirm-dialog.tsx
+      join/
+        _components/
+          display-name-form.tsx # Join form (TanStack Form)
+        page.tsx
+      error.tsx
+      layout.tsx
+      opengraph-image.tsx
+      page.tsx                  # Auth gate: reads cookie, fetches room name, redirects or renders
+    globals.css                 # PandaCSS @layer declaration
+    layout.tsx                  # Root layout — IBM Plex Mono font, metadata
+    opengraph-image.tsx
+    page.tsx                    # Landing page
 
-## Before writing any code
+  components/                   # Shared React components
+    form/                       # TanStack Form-connected UI components
+      submit-button.tsx         # Reads isSubmitting from form store
+      text-field.tsx            # Labeled input with inline validation error
 
-1. Read the relevant spec(s) for the area you are working in
-2. Read `node_modules/next/dist/docs/` for Next.js API guidance (see below)
-3. If a spec is ambiguous or missing detail, stop and ask — do not invent
+  lib/                          # Client-safe utilities (no server-only imports)
+    app-url.ts                  # Canonical app URL (Vercel env-aware)
+    form.ts                     # TanStack Form hook factory (useAppForm)
+    safe-action.ts              # next-safe-action client instance
+    schemas.ts                  # Valibot schemas (displayName, roomName, join, leave)
 
-## Progress tracking
+  server/                       # Server-only code (never imported by client components)
+    partykit-client.ts          # Effect HTTP client: getRoomName, createPartyKitRoom
+    partykit-client.spec.ts
 
-As you work through a phase, check off each item in `docs/progress.md` as it is completed — files, tests, and verification steps. Tick "Phase complete" once the phase commit lands on `main`.
+  testing/                      # Shared test infrastructure
+    mocks/server.ts             # MSW node server
+    utils.tsx                   # Custom render wrapper
+    vitest.setup.ts
 
----
+  env.ts                        # t3-oss/env-nextjs environment validation (Valibot)
 
-## Pausing
+e2e/
+  chat.spec.ts                  # Playwright happy-path E2E test
+  smoke.spec.ts
+  tsconfig.json
+```
 
-### Between phases
+## Architecture
 
-After completing a phase — committing and verifying all checks pass — stop. Post a short summary of what was built, then ask the user explicitly before starting the next phase. Do not begin Phase N+1 without a clear go-ahead.
+### Effect-TS boundaries
 
-### On uncertainty
+Effect is used as a **pipeline assembler on the server only** — never in the browser bundle.
 
-If a decision is not covered by a spec or these rules, do not invent — stop and ask. This includes ambiguous requirements, missing design detail, or any structural choice not addressed in `docs/`.
+| File                            | Pattern                               | APIs used                                              |
+| ------------------------------- | ------------------------------------- | ------------------------------------------------------ |
+| `party/types.ts`                | Schema definitions for wire types     | `Schema.Struct`, `Schema.Union`, `Schema.Literal`      |
+| `party/index.ts`                | Message routing + handler boundaries  | `Match.exhaustive`, `Effect.runPromise`, `Logger`      |
+| `src/server/partykit-client.ts` | HTTP client with typed errors + retry | `HttpClient`, `Config`, `Schedule`, `Data.TaggedError` |
 
-### On a debug loop
+React components never import Effect. XState actors and Next.js server actions call `Effect.runPromise` at their boundaries.
 
-If the same error persists after 3 consecutive fix attempts, stop. Report:
+### Key Patterns
 
-- What the error is
-- What was tried
-- What you think the likely cause is
+- **Server Actions** live in `src/app/_actions/`. Use `actionClient.inputSchema(schema).action(...)` from `@/lib/safe-action`. Errors are thrown as plain `Error` — the message surfaces as `serverError` on the client.
+- **PartyKit client** (`src/server/partykit-client.ts`) is server-only. It exports two Effect functions: `getRoomName(id)` and `createPartyKitRoom(id, name)`. Both map HTTP errors to typed errors (`PartyKitError`, `RoomNotFoundError`) and retry with exponential backoff. Callers unwrap with `Effect.runPromise(Effect.either(...))`.
+- **Room page auth gate** (`src/app/r/[id]/page.tsx`): reads `display-name-{id}` HttpOnly cookie. No cookie → redirect to `/r/{id}/join`. Room not found → redirect to `/`. Otherwise renders `<RoomClient>` with `displayName`, `name`, `id`, `roomUrl`.
+- **XState machine** (`room-machine.ts`): owns all real-time state — `messages`, `participants`, `typingNames`, `activeNotification`. The `socketActor` (`fromCallback`) creates a `PartySocketClient`, sends `join` on open, decodes incoming messages with `Schema.decodeUnknownSync(ServerMessageSchema)`, and forwards typed events to the machine. `room-client.tsx` is the only component that calls `useMachine`.
+- **TanStack Form**: forms use `useAppForm` from `@/lib/form`. Field components (`TextField`, `SubmitButton`) are in `src/components/form/` and wired into the hook factory via `createFormHook`. For submission, call `form.handleSubmit` — it validates and calls the server action. Show inline server errors from `action.result.serverError`.
+- **PandaCSS design system**: tokens → recipes → components. Never use raw CSS values — always use named tokens from `panda.config.ts`. Use `css()` for one-off styles, recipe functions (`button()`, `card()`, `badge()`, etc.) for component variants, and `cx()` to merge.
+- **`@party/*` alias**: wire types in `party/` are shared with the Next.js app. Import them using the `@party/*` alias (e.g. `import type { Message } from "@party/types"`), never with relative paths that traverse directory boundaries.
 
-Do not attempt a fourth fix without user input.
+### `src/lib/` vs `src/server/`
 
----
+| Directory     | Rule                                                                                                          |
+| ------------- | ------------------------------------------------------------------------------------------------------------- |
+| `src/lib/`    | Client-safe only — no server env vars, no Effect HTTP client, importable by both Server and Client Components |
+| `src/server/` | Server-only — may use `PARTYKIT_URL`, `@effect/platform`, Node APIs. Never imported by `"use client"` files   |
 
 ## Commands
 
 ```txt
-pnpm dev          # Start dev server
+pnpm dev          # Start dev server (Turbopack)
 pnpm build        # Production build
 pnpm lint         # Lint (ESLint)
 pnpm lint:fix     # Lint and auto-fix
@@ -86,7 +150,7 @@ If any step fails, fix the issue and re-run from that step. Do not move on until
 
 ## Conventions
 
-- **Path alias** `@/*` maps to `./src/*`.
+- **Path aliases:** `@/*` → `./src/*`, `@party/*` → `./party/*`, `styled-system/*` → `./styled-system/*`.
 - **Named exports** preferred over default exports (except Next.js pages and layouts).
 - Use `satisfies` for type narrowing on config objects.
 - Test files use the `.spec.ts` / `.spec.tsx` suffix and live next to the code they test.
@@ -95,7 +159,8 @@ If any step fails, fix the issue and re-run from that step. Do not move on until
 - Sort object keys and import statements alphabetically.
 - No comments in the codebase that are not JSDoc or TODO/FIXME notes.
 - **Kebab-case filenames** — all files and directories use kebab-case (e.g. `room-client.tsx`, `token-bucket.ts`). Next.js reserved filenames (`page.tsx`, `layout.tsx`, `route.ts`, `error.tsx`, etc.) are exempt.
-- **RSC boundaries** — keep `"use client"` as far down the tree as possible. Page files (`page.tsx`, `layout.tsx`) must be Server Components unless they contain no extractable static content. Extract interactive subtrees into a `_components/` folder co-located with the route (e.g. `src/app/_components/` for the root, `src/app/r/[id]/_components/` for the room route). Use `useTransition` for async form submissions — it provides `isPending` without manual `loading` state and keeps the UI responsive during the transition. Reserve `useOptimistic` for mutations that have a meaningful local preview (e.g. appending a sent message before the server broadcasts it back).
+- **RSC boundaries** — keep `"use client"` as far down the tree as possible. Page files (`page.tsx`, `layout.tsx`) must be Server Components unless they contain no extractable static content. Extract interactive subtrees into a `_components/` folder co-located with the route. `src/server/` files must never be imported from `"use client"` components.
+- **Environment variables** are validated in `src/env.ts` using `@t3-oss/env-nextjs` with Valibot. Import from `@/env` — never use `process.env` directly. Server var: `PARTYKIT_URL`. Client var: `NEXT_PUBLIC_PARTYKIT_HOST`.
 
 ---
 
@@ -115,7 +180,40 @@ These are caught by the linter, but following them preemptively avoids round-tri
 - Use `**` instead of `Math.pow()` (`prefer-exponentiation-operator`).
 - Do not use `??` or `||` fallbacks when the left-hand side type is already non-nullable (`@typescript-eslint/no-unnecessary-condition`).
 - Icons from `lucide-react` must use the `Icon` suffix (`PlusIcon` not `Plus`) — enforced in `eslint.config.ts`.
-- Effect `flatMap`: use `ServiceTag.pipe(Effect.flatMap(svc => svc.method()))` — not `Effect.flatMap(ServiceTag, fn)` (`unicorn/no-array-method-this-argument`).
+
+---
+
+## Testing Notes
+
+The project uses **happy-dom** as the test environment. MSW mocks the PartyKit HTTP API at the network layer — prefer MSW over module-level mocks for `src/server/partykit-client.ts`.
+
+### Mocking patterns
+
+- **PartyKit HTTP:** Use MSW handlers in `src/testing/mocks/server.ts`. The test env injects `PARTYKIT_URL=http://localhost:1999` and `NEXT_PUBLIC_PARTYKIT_HOST=localhost:1999`.
+- **Server actions:** Mock the action module (e.g. `vi.mock("@/app/_actions/create-room", () => ({ createRoom: vi.fn() }))`) to avoid `"use server"` context errors in component tests.
+- **XState actors:** Use `createActor(roomMachine, { input: { ... } })` directly in unit tests — no React rendering needed for machine logic.
+- **`@party/types` in tests:** The `@party/*` alias is resolved via `tsconfigPaths` in `vitest.config.ts` — no additional setup needed.
+
+### Known happy-dom limitations
+
+- **Clipboard:** `navigator.clipboard.writeText` always resolves — clipboard error paths are not testable.
+- **Radix/Base UI interactive:** pointer capture not implemented — dropdowns and dialogs can only be tested in their default rendered state.
+
+---
+
+## Pausing
+
+### Between phases
+
+After completing a phase — committing and verifying all checks pass — stop. Post a short summary of what was built, then ask the user explicitly before starting the next phase.
+
+### On uncertainty
+
+If a decision is not covered by a spec or these rules, do not invent — stop and ask. This includes ambiguous requirements, missing design detail, or any structural choice not addressed in `docs/`.
+
+### On a debug loop
+
+If the same error persists after 3 consecutive fix attempts, stop. Report what the error is, what was tried, and what the likely cause is. Do not attempt a fourth fix without user input.
 
 ---
 
@@ -124,8 +222,7 @@ These are caught by the linter, but following them preemptively avoids round-tri
 - **Branch naming:** `{type}-{short-description}` in kebab-case. Type prefix matches commit types: `feat-`, `fix-`, `refactor-`, `chore-`, `docs-`, `ci-`. Examples: `feat-room-page`, `fix-rate-limit-refill`.
 - **Commits:** Conventional Commits format with an emoji after the colon and lowercase descriptions. Format: `<type>: <emoji> <description>`. Subject line under 64 characters; wrap body at 72 characters.
 - **Commit emojis:** `feat` → `✨`, `fix` → `🐛`, `docs` → `📝`, `chore` → `🤖`, `ci` → `👷`, `test` → `✅`, `refactor` → `🔄`, `style` → `🎨`, `perf` → `⚡️`, `revert` → `⏪`, `release` → `🚀`.
-- **Commit cadence:** one commit per phase, after all four verification checks pass (`typecheck` → `lint` → `test` → `build`). Update `docs/progress.md` to reflect completion before committing. Commit message format: `feat: ✨ phase <n> — <phase name>` (e.g. `feat: ✨ phase 0 — foundation`).
-- All work goes through a branch and PR — no direct commits to `main`, including phase work.
+- All work goes through a branch and PR — no direct commits to `main`.
 - Branch off `main`, push, and open a PR with `gh pr create`. PR titles follow the same conventional commit format.
 
 ---
@@ -141,14 +238,6 @@ These are caught by the linter, but following them preemptively avoids round-tri
 - Add unnecessary `"use client"` directives — prefer Server Components.
 - Leave comments that are not JSDoc or TODO/FIXME notes.
 - Use redundant return types for internal functions where the return type is inferable — exceptions are exported functions and interface method signatures where the type is part of the public contract.
-- Introduce a new pattern or structural change without updating the relevant spec in `docs/` — ask if `AGENTS.md` also needs updating.
-
----
-
-<!-- BEGIN:nextjs-agent-rules -->
-
-# This is NOT the Next.js you know
-
-This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
-
-<!-- END:nextjs-agent-rules -->
+- Import from `src/server/` in client components — all `"use client"` files must only import from `src/lib/`, `src/components/`, `@party/*`, or external packages.
+- Use relative paths that cross the `party/` ↔ `src/` boundary — always use `@party/*`.
+- Introduce a new pattern or structural change without updating `AGENTS.md`.

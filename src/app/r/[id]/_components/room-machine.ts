@@ -1,12 +1,11 @@
+import type { Message, Participant } from "@party/types";
+
+import { ServerMessageSchema } from "@party/types";
 import { Schema } from "effect";
 import PartySocketClient from "partysocket";
 import { assign, enqueueActions, fromCallback, setup } from "xstate";
 
 import { env } from "@/env";
-
-import type { Message, Participant } from "../../../../../party/types";
-
-import { ServerMessageSchema } from "../../../../../party/types";
 
 export type StatusNotification =
   | null

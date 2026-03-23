@@ -1,7 +1,8 @@
+import type { Message, Participant } from "@party/types";
+
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createActor, fromCallback } from "xstate";
 
-import type { Message, Participant } from "../../../../../party/types";
 import type { SocketEvent } from "./room-machine";
 
 import { roomMachine } from "./room-machine";

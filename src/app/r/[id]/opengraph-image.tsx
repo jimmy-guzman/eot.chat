@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { Effect, Either } from "effect";
 import { ImageResponse } from "next/og";
 
-import { getRoomName } from "@/lib/partykit-client";
+import { getRoomName } from "@/server/partykit-client";
 
 export const size = { height: 630, width: 1200 };
 export const contentType = "image/png";

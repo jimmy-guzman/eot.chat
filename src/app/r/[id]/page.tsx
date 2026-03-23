@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import { cache } from "react";
 
 import { getAppUrl } from "@/lib/app-url";
-import { getRoomName } from "@/lib/partykit-client";
+import { getRoomName } from "@/server/partykit-client";
 
 import { RoomClient } from "./_components/room-client";
 
