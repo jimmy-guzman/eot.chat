@@ -1,4 +1,4 @@
-import { css } from "styled-system/css";
+import { css, cx } from "styled-system/css";
 
 import type { StatusNotification } from "./room-machine";
 
@@ -32,26 +32,37 @@ const formatNotification = (notification: StatusNotification): string => {
   }
 };
 
+const shellStyles = css({
+  fontSize: "xs",
+  lineHeight: "tight",
+  minHeight: "calc(2 * token(spacing.1) + 1lh)",
+  overflow: "hidden",
+  paddingX: "5",
+  paddingY: "1",
+  textOverflow: "ellipsis",
+  whiteSpace: "nowrap",
+});
+
+const activeStyles = css({
+  backgroundColor: "base-200",
+  borderBottom: "1px solid token(colors.base-300)",
+  color: "base-content-muted",
+});
+
 interface Props {
   notification: StatusNotification;
 }
 
 export const StatusBar = ({ notification }: Props) => {
-  if (!notification) return null;
+  const text = notification ? formatNotification(notification) : "";
+  const isActive = text.length > 0;
 
   return (
     <p
-      aria-live="polite"
-      className={css({
-        backgroundColor: "base-200",
-        borderBottom: "1px solid token(colors.base-300)",
-        color: "base-content-muted",
-        fontSize: "xs",
-        paddingX: "5",
-        paddingY: "1",
-      })}
+      aria-live={isActive ? "polite" : undefined}
+      className={cx(shellStyles, isActive && activeStyles)}
     >
-      {formatNotification(notification)}
+      {text}
     </p>
   );
 };

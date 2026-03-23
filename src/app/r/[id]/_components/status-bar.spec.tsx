@@ -6,10 +6,13 @@ import type { StatusNotification } from "./room-machine";
 import { StatusBar } from "./status-bar";
 
 describe("StatusBar", () => {
-  it("should render nothing when notification is null", () => {
-    const { container } = render(<StatusBar notification={null} />);
+  it("should reserve layout without live region when notification is null", () => {
+    render(<StatusBar notification={null} />);
 
-    expect(container).toBeEmptyDOMElement();
+    const bar = screen.getByRole("paragraph");
+
+    expect(bar).toHaveTextContent("");
+    expect(bar).not.toHaveAttribute("aria-live");
   });
 
   it("should render a polite live region when a notification is present", () => {
