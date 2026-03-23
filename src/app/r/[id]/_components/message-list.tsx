@@ -1,10 +1,9 @@
 "use client";
 
+import type { Message } from "@party/types";
 import type { RefObject } from "react";
 
 import { css } from "styled-system/css";
-
-import type { Message } from "../../../../../party/types";
 
 interface Props {
   bottomRef: RefObject<HTMLDivElement | null>;

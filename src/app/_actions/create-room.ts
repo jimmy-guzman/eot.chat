@@ -5,9 +5,9 @@ import { nanoid } from "nanoid";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
-import { createPartyKitRoom } from "@/lib/partykit-client";
 import { actionClient } from "@/lib/safe-action";
 import { createRoomSchema } from "@/lib/schemas";
+import { createPartyKitRoom } from "@/server/partykit-client";
 
 export const createRoom = actionClient
   .inputSchema(createRoomSchema)

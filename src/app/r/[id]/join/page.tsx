@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { css, cx } from "styled-system/css";
 import { card } from "styled-system/recipes";
 
-import { getRoomName } from "@/lib/partykit-client";
+import { getRoomName } from "@/server/partykit-client";
 
 import { DisplayNameForm } from "./_components/display-name-form";
 

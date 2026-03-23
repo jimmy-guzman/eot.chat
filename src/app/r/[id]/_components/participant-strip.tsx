@@ -1,9 +1,9 @@
 "use client";
 
+import type { Participant } from "@party/types";
+
 import { css } from "styled-system/css";
 import { badge } from "styled-system/recipes";
-
-import type { Participant } from "../../../../../party/types";
 
 interface Props {
   displayName: string;
