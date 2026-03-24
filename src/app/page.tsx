@@ -56,10 +56,7 @@ export default function HomePage() {
             })}
           >
             Already have a room code?{" "}
-            <Link
-              className={link()}
-              href="/join"
-            >
+            <Link className={link()} href="/join">
               Join a room
             </Link>
             .

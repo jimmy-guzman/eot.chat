@@ -407,7 +407,15 @@ export default defineConfig({
             },
           },
           className: "dialog",
-          slots: ["backdrop", "body", "content", "description", "footer", "header", "title"],
+          slots: [
+            "backdrop",
+            "body",
+            "content",
+            "description",
+            "footer",
+            "header",
+            "title",
+          ],
         }),
         menu: defineSlotRecipe({
           base: {

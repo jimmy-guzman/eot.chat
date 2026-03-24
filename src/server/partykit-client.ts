@@ -105,7 +105,9 @@ export const getRoomMetadata = (
     Effect.flatMap((base) => {
       return HttpClient.get(roomUrl(base, id)).pipe(
         Effect.flatMap(HttpClientResponse.filterStatusOk),
-        Effect.flatMap(HttpClientResponse.schemaBodyJson(RawRoomResponseSchema)),
+        Effect.flatMap(
+          HttpClientResponse.schemaBodyJson(RawRoomResponseSchema),
+        ),
         Effect.map(normalizeRoomMetadata),
         Effect.mapError((e) => {
           if (e._tag === "ParseError") {
@@ -203,7 +205,9 @@ export const registerJoinCode = (input: {
   );
 };
 
-export const unregisterJoinCode = (joinCode: string): Effect.Effect<void, PartyKitError> => {
+export const unregisterJoinCode = (
+  joinCode: string,
+): Effect.Effect<void, PartyKitError> => {
   return Config.string("PARTYKIT_URL").pipe(
     Effect.orDie,
     Effect.flatMap((base) => {
@@ -211,7 +215,9 @@ export const unregisterJoinCode = (joinCode: string): Effect.Effect<void, PartyK
         HttpClientRequest.post(registryUrl(base)).pipe(
           HttpClientRequest.setHeader("Content-Type", "application/json"),
           HttpClientRequest.setHeader("X-Action", "unregister"),
-          HttpClientRequest.bodyUnsafeJson({ joinCode: joinCode.toLowerCase() }),
+          HttpClientRequest.bodyUnsafeJson({
+            joinCode: joinCode.toLowerCase(),
+          }),
         ),
       ).pipe(
         Effect.flatMap(HttpClientResponse.filterStatusOk),
@@ -249,7 +255,9 @@ export const resolveJoinCode = (
         HttpClientRequest.post(registryUrl(base)).pipe(
           HttpClientRequest.setHeader("Content-Type", "application/json"),
           HttpClientRequest.setHeader("X-Action", "resolve"),
-          HttpClientRequest.bodyUnsafeJson({ joinCode: joinCode.toLowerCase() }),
+          HttpClientRequest.bodyUnsafeJson({
+            joinCode: joinCode.toLowerCase(),
+          }),
         ),
       ).pipe(
         Effect.flatMap(HttpClientResponse.filterStatusOk),

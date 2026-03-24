@@ -71,10 +71,7 @@ export default async function JoinRoomPage({ searchParams }: Props) {
             })}
           >
             Need a new room?{" "}
-            <Link
-              className={link()}
-              href="/"
-            >
+            <Link className={link()} href="/">
               Create one
             </Link>
             .

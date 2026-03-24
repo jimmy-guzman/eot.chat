@@ -14,8 +14,7 @@ describe("getRoomName", () => {
     server.use(
       http.get(roomEndpoint("abc"), () => {
         return HttpResponse.json({ id: "abc", name: "My Room" });
-      },
-      ),
+      }),
     );
 
     const result = await Effect.runPromise(Effect.either(getRoomName("abc")));

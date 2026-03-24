@@ -334,8 +334,14 @@ describe("Server.onMessage — join", () => {
     const conn1 = makeConn("conn-1");
     const conn2 = makeConn("conn-2");
 
-    await s.onMessage(await joinMessage("test-room", "Alice", "session-a"), conn1);
-    await s.onMessage(await joinMessage("test-room", "Alice", "session-b"), conn2);
+    await s.onMessage(
+      await joinMessage("test-room", "Alice", "session-a"),
+      conn1,
+    );
+    await s.onMessage(
+      await joinMessage("test-room", "Alice", "session-b"),
+      conn2,
+    );
 
     expect(room.broadcast).toHaveBeenCalledOnce();
 
@@ -358,13 +364,19 @@ describe("Server.onMessage — join", () => {
     const room = makeRoom({ connections, storage });
     const s = new Server(room);
 
-    await s.onMessage(await joinMessage("test-room", "Alice", "session-a"), conn1);
+    await s.onMessage(
+      await joinMessage("test-room", "Alice", "session-a"),
+      conn1,
+    );
 
     const broadcastMock = room.broadcast as MockFn;
 
     broadcastMock.mockClear();
 
-    await s.onMessage(await joinMessage("test-room", "Alice", "session-a"), conn2);
+    await s.onMessage(
+      await joinMessage("test-room", "Alice", "session-a"),
+      conn2,
+    );
 
     expect(conn1.close).toHaveBeenCalledWith(4000, "replaced");
     expect(conn2.send).toHaveBeenCalledOnce();
