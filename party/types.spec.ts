@@ -12,10 +12,17 @@ describe("ClientMessageSchema", () => {
   it("should decode a valid join message", () => {
     const result = Schema.decodeUnknownSync(ClientMessageSchema)({
       displayName: "Alice",
+      sessionId: "sid-1",
+      sessionToken: "tok",
       type: "join",
     });
 
-    expect(result).toStrictEqual({ displayName: "Alice", type: "join" });
+    expect(result).toStrictEqual({
+      displayName: "Alice",
+      sessionId: "sid-1",
+      sessionToken: "tok",
+      type: "join",
+    });
   });
 
   it("should decode a valid message message", () => {
@@ -115,11 +122,13 @@ describe("ParticipantSchema", () => {
     const result = Schema.decodeUnknownSync(ParticipantSchema)({
       displayName: "Bob",
       joinedAt: "2024-01-01T00:00:00.000Z",
+      sessionId: "sid-1",
     });
 
     expect(result).toStrictEqual({
       displayName: "Bob",
       joinedAt: "2024-01-01T00:00:00.000Z",
+      sessionId: "sid-1",
     });
   });
 });

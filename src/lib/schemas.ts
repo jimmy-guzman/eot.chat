@@ -19,11 +19,22 @@ export const createRoomSchema = v.object({
   roomName: roomNameSchema,
 });
 
+export const joinCodeSchema = v.pipe(
+  v.string(),
+  v.trim(),
+  v.minLength(1, "Room code is required"),
+  v.maxLength(32, "Room code is too long"),
+);
+
 export const joinRoomSchema = v.object({
   displayName: displayNameSchema,
-  roomId: v.pipe(v.string(), v.minLength(1)),
+  joinCode: joinCodeSchema,
 });
 
 export const leaveRoomSchema = v.object({
+  roomId: v.pipe(v.string(), v.minLength(1)),
+});
+
+export const rotateJoinCodeSchema = v.object({
   roomId: v.pipe(v.string(), v.minLength(1)),
 });

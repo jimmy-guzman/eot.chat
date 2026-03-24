@@ -53,7 +53,7 @@ export const CreateRoomForm = () => {
               <field.TextField
                 autoComplete="nickname"
                 label="Your name"
-                placeholder="e.g. Ada"
+                placeholder="e.g. Alice"
               />
             );
           }}

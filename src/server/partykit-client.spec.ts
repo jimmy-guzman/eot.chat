@@ -12,8 +12,9 @@ const roomEndpoint = (id: string): string => `${BASE}/parties/main/${id}`;
 describe("getRoomName", () => {
   it("should return the room name on a 200 response", async () => {
     server.use(
-      http.get(roomEndpoint("abc"), () =>
-        HttpResponse.json({ name: "My Room" }),
+      http.get(roomEndpoint("abc"), () => {
+        return HttpResponse.json({ id: "abc", name: "My Room" });
+      },
       ),
     );
 
@@ -98,7 +99,13 @@ describe("createPartyKitRoom", () => {
     );
 
     const result = await Effect.runPromise(
-      Effect.either(createPartyKitRoom("new-room", "New Room")),
+      Effect.either(
+        createPartyKitRoom("new-room", {
+          hostSecret: "host-secret",
+          joinCode: "abc123",
+          name: "New Room",
+        }),
+      ),
     );
 
     expect(result).toStrictEqual(Either.right(undefined));
@@ -116,7 +123,13 @@ describe("createPartyKitRoom", () => {
     );
 
     const result = await Effect.runPromise(
-      Effect.either(createPartyKitRoom("fail-create", "Room")),
+      Effect.either(
+        createPartyKitRoom("fail-create", {
+          hostSecret: "host-secret",
+          joinCode: "abc123",
+          name: "Room",
+        }),
+      ),
     );
 
     expect(Either.isLeft(result)).toBe(true);

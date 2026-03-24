@@ -9,6 +9,7 @@ import { useEffect, useRef, useState } from "react";
 import { css } from "styled-system/css";
 
 import { leaveRoom } from "@/app/_actions/leave-room";
+import { rotateJoinCode } from "@/app/_actions/rotate-join-code";
 import { formatDuration } from "@/lib/format-duration";
 
 import { ConfirmDialog } from "./confirm-dialog";
@@ -42,22 +43,39 @@ const roomChromeClass = css({
   minHeight: "0",
 });
 
-type PendingAction = "clear" | "exit" | null;
+type PendingAction = "clear" | "exit" | "rotate" | null;
 
 interface Props {
   displayName: string;
   id: string;
+  isRoomHost: boolean;
+  joinCode: string;
   name: string;
   roomUrl: string;
+  sessionId: string;
+  sessionToken: string;
 }
 
-export const RoomClient = ({ displayName, id, name, roomUrl }: Props) => {
+export const RoomClient = ({
+  displayName,
+  id,
+  isRoomHost,
+  joinCode,
+  name,
+  roomUrl,
+  sessionId,
+  sessionToken,
+}: Props) => {
   const router = useRouter();
   const [snapshot, send, actorRef] = useMachine(roomMachine, {
-    input: { displayName, id },
+    input: { displayName, id, sessionId, sessionToken },
   });
 
   const initialized = useSelector(actorRef, (s) => s.context.initialized);
+  const currentDisplayName = useSelector(
+    actorRef,
+    (s) => s.context.displayName,
+  );
   const messages = useSelector(actorRef, (s) => s.context.messages);
   const participants = useSelector(actorRef, (s) => s.context.participants);
 
@@ -73,6 +91,8 @@ export const RoomClient = ({ displayName, id, name, roomUrl }: Props) => {
 
   const [inputValue, setInputValue] = useState("");
   const [pendingAction, setPendingAction] = useState<PendingAction>(null);
+  const [rotateSubmitting, setRotateSubmitting] = useState(false);
+  const [rotateError, setRotateError] = useState<null | string>(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -83,7 +103,9 @@ export const RoomClient = ({ displayName, id, name, roomUrl }: Props) => {
     if (snapshot.status === "done") {
       const { reason } = snapshot.output;
 
-      void leaveRoom({ roomId: id });
+      if (reason !== "replaced") {
+        void leaveRoom({ roomId: id });
+      }
 
       if (reason === "left") {
         router.push("/");
@@ -121,8 +143,26 @@ export const RoomClient = ({ displayName, id, name, roomUrl }: Props) => {
     send({ type: "LEAVE" });
   };
 
+  const handleRotateConfirmed = async () => {
+    setRotateSubmitting(true);
+    setRotateError(null);
+    const result = await rotateJoinCode({ roomId: id });
+
+    setRotateSubmitting(false);
+
+    if (result.serverError) {
+      setRotateError("Could not rotate code. Try again.");
+
+      return;
+    }
+
+    setPendingAction(null);
+    router.refresh();
+  };
+
   const handleConfirmCancel = () => {
     setPendingAction(null);
+    setRotateError(null);
   };
 
   return (
@@ -137,26 +177,34 @@ export const RoomClient = ({ displayName, id, name, roomUrl }: Props) => {
       {initialized ? (
         <div className={roomChromeClass}>
           <RoomHeader
+            isRoomHost={isRoomHost}
             name={name}
             onClear={() => {
               setPendingAction("clear");
             }}
-            onCopyLink={() => {
-              void navigator.clipboard.writeText(globalThis.location.href);
+            onCopyJoinCode={() => {
+              void navigator.clipboard.writeText(joinCode);
+            }}
+            onCopyRoomLink={() => {
+              void navigator.clipboard.writeText(roomUrl);
             }}
             onExit={() => {
               setPendingAction("exit");
             }}
+            onRotateJoinCode={() => {
+              setRotateError(null);
+              setPendingAction("rotate");
+            }}
             roomUrl={roomUrl}
           />
           <ParticipantStrip
-            displayName={displayName}
+            displayName={currentDisplayName}
             participants={participants}
           />
           <StatusBar notification={statusNotification} />
           <MessageList
             bottomRef={bottomRef}
-            displayName={displayName}
+            displayName={currentDisplayName}
             messages={messages}
           />
           <MessageInput
@@ -185,6 +233,34 @@ export const RoomClient = ({ displayName, id, name, roomUrl }: Props) => {
             open={pendingAction === "exit"}
             title="Exit Room?"
           />
+          <ConfirmDialog
+            closeOnConfirm={false}
+            confirmDisabled={rotateSubmitting}
+            confirmLabel="Rotate"
+            description={
+              rotateError ? (
+                <>
+                  Anyone with the old join code will need the new code to join.{" "}
+                  <span className={css({ color: "error-text" })}>
+                    {rotateError}
+                  </span>
+                </>
+              ) : (
+                "Anyone with the old join code will need the new code to join."
+              )
+            }
+            onCancel={handleConfirmCancel}
+            onConfirm={handleRotateConfirmed}
+            open={pendingAction === "rotate"}
+            title="Rotate Join Code?"
+          />
+        </div>
+      ) : snapshot.status === "done" &&
+        snapshot.output.reason === "replaced" ? (
+        <div aria-live="polite" className={connectingShellClass} role="status">
+          <p className={connectingTextClass}>
+            This room is open in another tab.
+          </p>
         </div>
       ) : (
         <div aria-live="polite" className={connectingShellClass} role="status">

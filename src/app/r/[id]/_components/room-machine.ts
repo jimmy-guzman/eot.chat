@@ -17,21 +17,25 @@ export type StatusNotification =
 interface RoomContext {
   activeNotification: StatusNotification;
   displayName: string;
-  exitReason: "error" | "left" | null;
+  exitReason: "error" | "left" | "replaced" | null;
   id: string;
   initialized: boolean;
   messages: Message[];
   participants: Participant[];
+  sessionId: string;
+  sessionToken: string;
   typingNames: string[];
 }
 
 interface RoomInput {
   displayName: string;
   id: string;
+  sessionId: string;
+  sessionToken: string;
 }
 
 interface RoomOutput {
-  reason: "error" | "left";
+  reason: "error" | "left" | "replaced";
 }
 
 export type SocketEvent =
@@ -57,6 +61,7 @@ type RoomEvent =
   | { type: "CLEAR" }
   | { type: "LEAVE" }
   | { type: "SOCKET_ERROR" }
+  | { type: "SOCKET_REPLACED" }
   | { type: "STATUS_EXPIRED" }
   | { type: "TYPING" };
 
@@ -64,9 +69,11 @@ const STATUS_NOTIFICATION_DURATION_MS = 3000;
 
 const decodeServerMessage = Schema.decodeUnknownSync(ServerMessageSchema);
 
+const CLOSE_CODE_REPLACED = 4000;
+
 const socketActor = fromCallback<
   SocketEvent,
-  { displayName: string; id: string }
+  { displayName: string; id: string; sessionId: string; sessionToken: string }
 >(({ input, receive, sendBack }) => {
   const socket = new PartySocketClient({
     host: env.NEXT_PUBLIC_PARTYKIT_HOST,
@@ -76,8 +83,19 @@ const socketActor = fromCallback<
 
   const onOpen = () => {
     socket.send(
-      JSON.stringify({ displayName: input.displayName, type: "join" }),
+      JSON.stringify({
+        displayName: input.displayName,
+        sessionId: input.sessionId,
+        sessionToken: input.sessionToken,
+        type: "join",
+      }),
     );
+  };
+
+  const onClose = (event: CloseEvent) => {
+    if (event.code === CLOSE_CODE_REPLACED) {
+      sendBack({ type: "SOCKET_REPLACED" });
+    }
   };
 
   const onMessage = (event: MessageEvent<string>) => {
@@ -151,8 +169,9 @@ const socketActor = fromCallback<
     }
   };
 
-  socket.addEventListener("open", onOpen);
+  socket.addEventListener("close", onClose);
   socket.addEventListener("message", onMessage);
+  socket.addEventListener("open", onOpen);
 
   receive((event) => {
     switch (event.type) {
@@ -165,7 +184,12 @@ const socketActor = fromCallback<
       }
       case "JOIN": {
         socket.send(
-          JSON.stringify({ displayName: event.displayName, type: "join" }),
+          JSON.stringify({
+            displayName: event.displayName,
+            sessionId: input.sessionId,
+            sessionToken: input.sessionToken,
+            type: "join",
+          }),
         );
 
         break;
@@ -196,8 +220,9 @@ const socketActor = fromCallback<
   });
 
   return () => {
-    socket.removeEventListener("open", onOpen);
+    socket.removeEventListener("close", onClose);
     socket.removeEventListener("message", onMessage);
+    socket.removeEventListener("open", onOpen);
     socket.send(JSON.stringify({ type: "leave" }));
     socket.close();
   };
@@ -221,6 +246,8 @@ export const roomMachine = setup({
       initialized: false,
       messages: [],
       participants: [],
+      sessionId: input.sessionId,
+      sessionToken: input.sessionToken,
       typingNames: [],
     };
   },
@@ -233,7 +260,12 @@ export const roomMachine = setup({
       invoke: {
         id: "socket",
         input: ({ context }) => {
-          return { displayName: context.displayName, id: context.id };
+          return {
+            displayName: context.displayName,
+            id: context.id,
+            sessionId: context.sessionId,
+            sessionToken: context.sessionToken,
+          };
         },
         src: "socketActor",
       },
@@ -367,6 +399,10 @@ export const roomMachine = setup({
               },
             });
           }),
+        },
+        SOCKET_REPLACED: {
+          actions: assign({ exitReason: "replaced" }),
+          target: "error",
         },
         SOCKET_TYPING: {
           actions: enqueueActions(({ enqueue, event }) => {

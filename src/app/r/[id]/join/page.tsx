@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
 
 import { Effect, Either } from "effect";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { css, cx } from "styled-system/css";
 import { card } from "styled-system/recipes";
 
+import { env } from "@/env";
 import { getRoomName } from "@/server/partykit-client";
+import { verifyRoomSessionToken } from "@/server/room-token";
 
 import { DisplayNameForm } from "./_components/display-name-form";
 
@@ -25,6 +28,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function JoinPage({ params }: Props) {
   const { id } = await params;
+
+  const cookieStore = await cookies();
+  const displayNameCookie = cookieStore.get(`display-name-${id}`)?.value;
+  const sessionCookie = cookieStore.get(`room-session-${id}`)?.value;
+
+  if (displayNameCookie && sessionCookie) {
+    const verified = await verifyRoomSessionToken(
+      sessionCookie,
+      env.ROOM_CRYPTO_SECRET,
+    );
+
+    if (verified?.roomId === id) {
+      redirect(`/r/${id}`);
+    }
+  }
 
   const result = await Effect.runPromise(Effect.either(getRoomName(id)));
 

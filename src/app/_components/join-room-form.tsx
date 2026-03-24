@@ -1,7 +1,6 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useQueryState } from "nuqs";
 import { useState } from "react";
 import { css } from "styled-system/css";
 
@@ -10,25 +9,32 @@ import { useAppForm } from "@/lib/form";
 import { joinRoomSchema } from "@/lib/schemas";
 
 interface Props {
-  roomId: string;
+  initialJoinCode?: string;
 }
 
-export const DisplayNameForm = ({ roomId }: Props) => {
+export const JoinRoomForm = ({ initialJoinCode = "" }: Props) => {
   const router = useRouter();
-  const [initialDisplayName] = useQueryState("displayName");
   const [serverError, setServerError] = useState<null | string>(null);
 
   const form = useAppForm({
-    defaultValues: { displayName: initialDisplayName ?? "", joinCode: roomId },
+    defaultValues: { displayName: "", joinCode: initialJoinCode },
     onSubmit: async ({ value }) => {
       setServerError(null);
       const result = await joinRoom({
         displayName: value.displayName,
-        joinCode: roomId,
+        joinCode: value.joinCode,
       });
 
       if (result.serverError) {
-        setServerError("Something went wrong. Please try again.");
+        setServerError("Room code not found. Check the code and try again.");
+
+        return;
+      }
+
+      const roomId = result.data?.roomId;
+
+      if (!roomId) {
+        setServerError("Room code not found. Check the code and try again.");
 
         return;
       }
@@ -48,6 +54,20 @@ export const DisplayNameForm = ({ roomId }: Props) => {
       }}
     >
       <div className={css({ marginBottom: "4" })}>
+        <form.AppField name="joinCode">
+          {(field) => {
+            return (
+              <field.TextField
+                autoComplete="off"
+                label="Room code"
+                placeholder="e.g. 8k3p2q7w"
+              />
+            );
+          }}
+        </form.AppField>
+      </div>
+
+      <div className={css({ marginBottom: "6" })}>
         <form.AppField name="displayName">
           {(field) => {
             return (
@@ -75,7 +95,7 @@ export const DisplayNameForm = ({ roomId }: Props) => {
       ) : null}
 
       <form.AppForm>
-        <form.SubmitButton label="Enter Room" />
+        <form.SubmitButton label="Join Room" />
       </form.AppForm>
     </form>
   );

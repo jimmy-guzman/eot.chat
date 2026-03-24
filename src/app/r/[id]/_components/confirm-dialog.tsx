@@ -1,17 +1,25 @@
 "use client";
 
+import type { ReactNode } from "react";
+
 import { AlertDialog } from "@base-ui/react/alert-dialog";
 import { alertDialog, button } from "styled-system/recipes";
 
 interface Props {
-  description: string;
+  closeOnConfirm?: boolean;
+  confirmDisabled?: boolean;
+  confirmLabel?: string;
+  description: ReactNode;
   onCancel: () => void;
-  onConfirm: () => void;
+  onConfirm: () => Promise<void> | void;
   open: boolean;
   title: string;
 }
 
 export const ConfirmDialog = ({
+  closeOnConfirm = true,
+  confirmDisabled = false,
+  confirmLabel = "Confirm",
   description,
   onCancel,
   onConfirm,
@@ -38,12 +46,27 @@ export const ConfirmDialog = ({
             >
               Cancel
             </AlertDialog.Close>
-            <AlertDialog.Close
-              className={button({ size: "sm", variant: "danger" })}
-              onClick={onConfirm}
-            >
-              Confirm
-            </AlertDialog.Close>
+            {closeOnConfirm ? (
+              <AlertDialog.Close
+                className={button({ size: "sm", variant: "danger" })}
+                onClick={() => {
+                  void onConfirm();
+                }}
+              >
+                {confirmLabel}
+              </AlertDialog.Close>
+            ) : (
+              <button
+                className={button({ size: "sm", variant: "danger" })}
+                disabled={confirmDisabled}
+                onClick={() => {
+                  void onConfirm();
+                }}
+                type="button"
+              >
+                {confirmLabel}
+              </button>
+            )}
           </div>
         </AlertDialog.Popup>
       </AlertDialog.Portal>

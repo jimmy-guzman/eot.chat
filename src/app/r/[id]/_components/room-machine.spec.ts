@@ -21,14 +21,18 @@ const makeMessage = (overrides: Partial<Message> = {}): Message => {
 };
 
 const makeParticipant = (displayName: string): Participant => {
-  return { displayName, joinedAt: "2024-01-01T00:00:00.000Z" };
+  return {
+    displayName,
+    joinedAt: "2024-01-01T00:00:00.000Z",
+    sessionId: "session-1",
+  };
 };
 
 const noopCleanup = () => undefined;
 
 const noopSocketActor = fromCallback<
   SocketEvent,
-  { displayName: string; id: string }
+  { displayName: string; id: string; sessionId: string; sessionToken: string }
 >(() => noopCleanup);
 
 const testMachine = roomMachine.provide({
@@ -37,7 +41,12 @@ const testMachine = roomMachine.provide({
 
 const makeActor = () => {
   const actor = createActor(testMachine, {
-    input: { displayName: testDisplayName, id: testId },
+    input: {
+      displayName: testDisplayName,
+      id: testId,
+      sessionId: "test-session-id",
+      sessionToken: "test-session-token",
+    },
   });
 
   actor.start();
@@ -315,6 +324,17 @@ describe("roomMachine", () => {
 
     expect(snapshot.status).toBe("done");
     expect(snapshot.output?.reason).toBe("error");
+  });
+
+  it("should transition to error final state with reason replaced on SOCKET_REPLACED", () => {
+    const actor = makeActor();
+
+    actor.send({ type: "SOCKET_REPLACED" });
+
+    const snapshot = actor.getSnapshot();
+
+    expect(snapshot.status).toBe("done");
+    expect(snapshot.output?.reason).toBe("replaced");
   });
 
   it("should transition to left final state on LEAVE", () => {

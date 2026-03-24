@@ -122,10 +122,10 @@ Messages live in PartyKit's in-memory room state. They are sent to new participa
 
 ## Key Constraints
 
-- No user accounts or authentication beyond knowing the room link
-- The room ID is the secret — share the link only with intended participants
+- No user accounts or authentication beyond knowing the room link and join code
+- Share the room URL (including `?code=` when copied from the app) only with intended participants
 - Display names are scoped to a single room session
 - Rooms are identified by a short URL-safe ID
-- The shareable link (`/r/<room-id>`) is the primary invite mechanism
+- The shareable room URL includes the join code as a query parameter (`/r/<room-id>?code=<join-code>`) for easier sharing; joining still requires completing the join flow and a room session cookie after join
 - Rooms and messages are ephemeral — no database, no persistence after dissolution
 - Messages are cleared immediately when any participant leaves, or when any participant manually triggers a clear
