@@ -19,6 +19,7 @@ interface RoomContext {
   displayName: string;
   exitReason: "error" | "left" | null;
   id: string;
+  initialized: boolean;
   messages: Message[];
   participants: Participant[];
   typingNames: string[];
@@ -217,6 +218,7 @@ export const roomMachine = setup({
       displayName: input.displayName,
       exitReason: null,
       id: input.id,
+      initialized: false,
       messages: [],
       participants: [],
       typingNames: [],
@@ -290,6 +292,7 @@ export const roomMachine = setup({
         },
         SOCKET_INIT: {
           actions: assign({
+            initialized: true,
             messages: ({ event }) => event.messages,
             participants: ({ event }) => event.participants,
           }),

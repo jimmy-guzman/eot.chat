@@ -6,6 +6,36 @@ import type { RefObject } from "react";
 import { css, cx } from "styled-system/css";
 import { motionEnter } from "styled-system/recipes";
 
+const scrollRegionClass = css({
+  flex: "1",
+  overflowY: "auto",
+  padding: "5",
+});
+
+const centeredStatusClass = cx(
+  motionEnter({ preset: "fade" }),
+  css({
+    alignItems: "center",
+    display: "flex",
+    flexDirection: "column",
+    gap: "3",
+    justifyContent: "center",
+    paddingY: "10",
+  }),
+);
+
+const mutedTextClass = css({
+  color: "base-content-muted",
+  fontSize: "sm",
+  textAlign: "center",
+});
+
+const threadClass = css({
+  display: "flex",
+  flexDirection: "column",
+  gap: "4",
+});
+
 interface Props {
   bottomRef: RefObject<HTMLDivElement | null>;
   displayName: string;
@@ -14,45 +44,13 @@ interface Props {
 
 export const MessageList = ({ bottomRef, displayName, messages }: Props) => {
   return (
-    <div
-      className={css({
-        flex: "1",
-        overflowY: "auto",
-        padding: "5",
-      })}
-    >
+    <div className={scrollRegionClass}>
       {messages.length === 0 ? (
-        <div
-          className={cx(
-            motionEnter({ preset: "fade" }),
-            css({
-              alignItems: "center",
-              display: "flex",
-              flexDirection: "column",
-              gap: "3",
-              justifyContent: "center",
-              paddingY: "10",
-            }),
-          )}
-        >
-          <p
-            className={css({
-              color: "base-content-muted",
-              fontSize: "sm",
-              textAlign: "center",
-            })}
-          >
-            The room is waiting…
-          </p>
+        <div className={centeredStatusClass}>
+          <p className={mutedTextClass}>The room is waiting…</p>
         </div>
       ) : null}
-      <div
-        className={css({
-          display: "flex",
-          flexDirection: "column",
-          gap: "4",
-        })}
-      >
+      <div className={threadClass}>
         {messages.map((msg) => {
           const isOwn = msg.authorDisplayName === displayName;
 

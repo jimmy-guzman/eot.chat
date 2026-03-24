@@ -14,6 +14,17 @@ import { badge } from "styled-system/recipes";
 
 import { layoutListSpring } from "@/lib/layout-list-spring";
 
+const stripClass = css({
+  backgroundColor: "base-200",
+  borderBottom: "1px solid token(colors.base-300)",
+  display: "flex",
+  gap: "2",
+  listStyle: "none",
+  margin: "0",
+  overflowX: "auto",
+  padding: "2 5",
+});
+
 interface Props {
   displayName: string;
   participants: Participant[];
@@ -22,24 +33,10 @@ interface Props {
 export const ParticipantStrip = ({ displayName, participants }: Props) => {
   const reduceMotion = useReducedMotion();
 
-  if (participants.length === 0) return null;
-
   return (
     <LazyMotion features={domMax}>
       <LayoutGroup>
-        <ul
-          aria-label="Participants"
-          className={css({
-            backgroundColor: "base-200",
-            borderBottom: "1px solid token(colors.base-300)",
-            display: "flex",
-            gap: "2",
-            listStyle: "none",
-            margin: "0",
-            overflowX: "auto",
-            padding: "2 5",
-          })}
-        >
+        <ul aria-label="Participants" className={stripClass}>
           {participants.map((p) => {
             return (
               <m.li
