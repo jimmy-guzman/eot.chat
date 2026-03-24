@@ -6,20 +6,13 @@ import { css, cx } from "styled-system/css";
 import { button, input } from "styled-system/recipes";
 
 interface Props {
-  disabled?: boolean;
   onSend: () => void;
   onTyping: () => void;
   setValue: (value: string) => void;
   value: string;
 }
 
-export const MessageInput = ({
-  disabled = false,
-  onSend,
-  onTyping,
-  setValue,
-  value,
-}: Props) => {
+export const MessageInput = ({ onSend, onTyping, setValue, value }: Props) => {
   const handleSubmit = (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
     onSend();
@@ -56,7 +49,6 @@ export const MessageInput = ({
             width: "auto",
           }),
         )}
-        disabled={disabled}
         onChange={(e) => {
           setValue(e.target.value);
 
@@ -71,7 +63,7 @@ export const MessageInput = ({
       <button
         aria-label="Send message"
         className={button({ variant: "primary" })}
-        disabled={disabled || !value.trim()}
+        disabled={!value.trim()}
         type="submit"
       >
         Send

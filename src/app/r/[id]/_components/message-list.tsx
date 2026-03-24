@@ -39,82 +39,69 @@ const threadClass = css({
 interface Props {
   bottomRef: RefObject<HTMLDivElement | null>;
   displayName: string;
-  initialized: boolean;
   messages: Message[];
 }
 
-export const MessageList = ({
-  bottomRef,
-  displayName,
-  initialized,
-  messages,
-}: Props) => {
+export const MessageList = ({ bottomRef, displayName, messages }: Props) => {
   return (
-    <div aria-busy={!initialized} className={scrollRegionClass}>
-      {initialized ? null : (
-        <div aria-live="polite" className={centeredStatusClass} role="status">
-          <p className={mutedTextClass}>Connecting…</p>
-        </div>
-      )}
-      {initialized && messages.length === 0 ? (
+    <div className={scrollRegionClass}>
+      {messages.length === 0 ? (
         <div className={centeredStatusClass}>
           <p className={mutedTextClass}>The room is waiting…</p>
         </div>
       ) : null}
       <div className={threadClass}>
-        {initialized
-          ? messages.map((msg) => {
-              const isOwn = msg.authorDisplayName === displayName;
+        {messages.map((msg) => {
+          const isOwn = msg.authorDisplayName === displayName;
 
-              return (
-                <div
-                  className={cx(
-                    motionEnter({ preset: "raise" }),
-                    css({
-                      alignItems: "flex-start",
-                      alignSelf: isOwn ? "flex-end" : "flex-start",
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "1",
-                    }),
-                  )}
-                  key={msg.id}
+          return (
+            <div
+              className={cx(
+                motionEnter({ preset: "raise" }),
+                css({
+                  alignItems: "flex-start",
+                  alignSelf: isOwn ? "flex-end" : "flex-start",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "1",
+                }),
+              )}
+              key={msg.id}
+            >
+              <span
+                className={css({
+                  color: "base-content-muted",
+                  fontSize: "xs",
+                  fontWeight: "bold",
+                  paddingX: "1",
+                })}
+              >
+                {msg.authorDisplayName}
+              </span>
+              <div
+                className={css({
+                  backgroundColor: isOwn ? "base-300" : "base-200",
+                  borderRadius: "md",
+                  boxShadow: "sm",
+                  maxWidth: "bubble",
+                  padding: "3",
+                  width: "fit-content",
+                })}
+              >
+                <p
+                  className={css({
+                    color: "base-content",
+                    fontSize: "base",
+                    lineHeight: "body",
+                    margin: "0",
+                  })}
                 >
-                  <span
-                    className={css({
-                      color: "base-content-muted",
-                      fontSize: "xs",
-                      fontWeight: "bold",
-                      paddingX: "1",
-                    })}
-                  >
-                    {msg.authorDisplayName}
-                  </span>
-                  <div
-                    className={css({
-                      backgroundColor: isOwn ? "base-300" : "base-200",
-                      borderRadius: "md",
-                      boxShadow: "sm",
-                      maxWidth: "bubble",
-                      padding: "3",
-                      width: "fit-content",
-                    })}
-                  >
-                    <p
-                      className={css({
-                        color: "base-content",
-                        fontSize: "base",
-                        lineHeight: "body",
-                        margin: "0",
-                      })}
-                    >
-                      {msg.rawInput}
-                    </p>
-                  </div>
-                </div>
-              );
-            })
-          : null}
+                  {msg.rawInput}
+                </p>
+              </div>
+            </div>
+          );
+        })}
       </div>
       <div ref={bottomRef} />
     </div>
