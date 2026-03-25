@@ -1,69 +1,15 @@
-import type { Metadata } from "next";
-
-import { Effect, Either } from "effect";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { cache } from "react";
 
 import { env } from "@/env";
 import { getAppUrl } from "@/lib/app-url";
-import { getRoomMetadata, getRoomName } from "@/server/partykit-client";
+import { fetchRoomMetadata, fetchRoomName } from "@/server/room-queries";
 import { verifyRoomSessionToken } from "@/server/room-token";
 
 import { RoomClient } from "../_components/room-client";
 
 interface Props {
   params: Promise<{ id: string }>;
-}
-
-const fetchRoomName = cache(async (id: string): Promise<null | string> => {
-  const result = await Effect.runPromise(Effect.either(getRoomName(id)));
-
-  if (Either.isLeft(result)) {
-    if (result.left._tag === "RoomNotFoundError") return null;
-
-    throw result.left;
-  }
-
-  return result.right;
-});
-
-const fetchRoomMetadata = cache(async (id: string) => {
-  const result = await Effect.runPromise(Effect.either(getRoomMetadata(id)));
-
-  if (Either.isLeft(result)) {
-    if (result.left._tag === "RoomNotFoundError") return null;
-
-    throw result.left;
-  }
-
-  return result.right;
-});
-
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { id } = await params;
-  const name = await fetchRoomName(id);
-
-  if (!name) return {};
-
-  const imageUrl = `${getAppUrl()}/r/${id}/opengraph-image`;
-
-  return {
-    description: `Join the room and start chatting.`,
-    openGraph: {
-      description: `Join the room and start chatting.`,
-      images: [imageUrl],
-      title: name,
-      type: "website",
-    },
-    title: name,
-    twitter: {
-      card: "summary_large_image",
-      description: `Join the room and start chatting.`,
-      images: [imageUrl],
-      title: name,
-    },
-  };
 }
 
 export default async function RoomPage({ params }: Props) {

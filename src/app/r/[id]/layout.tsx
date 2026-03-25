@@ -1,13 +1,12 @@
-import { Effect, Either } from "effect";
+import type { Metadata } from "next";
+
 import { cookies, headers } from "next/headers";
-import Link from "next/link";
 import { redirect } from "next/navigation";
-import { cache } from "react";
-import { css, cx } from "styled-system/css";
-import { card, link } from "styled-system/recipes";
+import { userAgentFromString } from "next/server";
 
 import { env } from "@/env";
-import { getRoomMetadata, getRoomName } from "@/server/partykit-client";
+import { getAppUrl } from "@/lib/app-url";
+import { fetchRoomMetadata, fetchRoomName } from "@/server/room-queries";
 import { verifyRoomSessionToken } from "@/server/room-token";
 
 interface Props {
@@ -15,49 +14,31 @@ interface Props {
   room: React.ReactNode;
 }
 
-const fetchRoomName = cache(async (id: string): Promise<null | string> => {
-  const result = await Effect.runPromise(Effect.either(getRoomName(id)));
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { id } = await params;
+  const name = await fetchRoomName(id);
 
-  if (Either.isLeft(result)) {
-    if (result.left._tag === "RoomNotFoundError") return null;
+  if (!name) return {};
 
-    throw result.left;
-  }
+  const imageUrl = `${getAppUrl()}/r/${id}/opengraph-image`;
 
-  return result.right;
-});
-
-const fetchRoomMetadata = cache(async (id: string) => {
-  const result = await Effect.runPromise(Effect.either(getRoomMetadata(id)));
-
-  if (Either.isLeft(result)) {
-    if (result.left._tag === "RoomNotFoundError") return null;
-
-    throw result.left;
-  }
-
-  return result.right;
-});
-
-const getIncomingCode = async (): Promise<null | string> => {
-  const headerStore = await headers();
-  const referer = headerStore.get("referer");
-  const nextUrl = headerStore.get("x-url") ?? headerStore.get("next-url");
-
-  for (const raw of [nextUrl, referer]) {
-    if (!raw) continue;
-
-    try {
-      const code = new URL(raw).searchParams.get("code");
-
-      if (code) return code;
-    } catch {
-      continue;
-    }
-  }
-
-  return null;
-};
+  return {
+    description: `Join the room and start chatting.`,
+    openGraph: {
+      description: `Join the room and start chatting.`,
+      images: [imageUrl],
+      title: name,
+      type: "website",
+    },
+    title: name,
+    twitter: {
+      card: "summary_large_image",
+      description: `Join the room and start chatting.`,
+      images: [imageUrl],
+      title: name,
+    },
+  };
+}
 
 export default async function RoomLayout({ params, room }: Props) {
   const { id } = await params;
@@ -74,68 +55,23 @@ export default async function RoomLayout({ params, room }: Props) {
   const sessionCookie = cookieStore.get(`room-session-${id}`)?.value;
   const sessionId = cookieStore.get(`room-session-id-${id}`)?.value;
 
-  let isAuthenticated = false;
-
   if (sessionCookie && sessionId) {
     const verified = await verifyRoomSessionToken(
       sessionCookie,
       env.ROOM_CRYPTO_SECRET,
     );
 
-    isAuthenticated = verified?.roomId === id;
+    if (verified?.roomId === id) {
+      return <>{room}</>;
+    }
   }
 
-  if (isAuthenticated) {
-    return <>{room}</>;
+  const headerStore = await headers();
+  const { isBot } = userAgentFromString(headerStore.get("user-agent") ?? "");
+
+  if (isBot) {
+    return null;
   }
 
-  const incomingCode = await getIncomingCode();
-  const joinHref = incomingCode
-    ? `/join?code=${encodeURIComponent(incomingCode)}`
-    : "/join";
-
-  return (
-    <main
-      className={css({
-        alignItems: "center",
-        backgroundColor: "base-100",
-        display: "flex",
-        justifyContent: "center",
-        minHeight: "100dvh",
-        padding: "6",
-      })}
-    >
-      <div
-        className={cx(
-          card(),
-          css({ maxWidth: "card", padding: "8", width: "100%" }),
-        )}
-      >
-        <h1
-          className={css({
-            color: "accent",
-            fontSize: "2xl",
-            fontWeight: "extrabold",
-            letterSpacing: "display",
-            marginBottom: "2",
-          })}
-        >
-          {name}
-        </h1>
-        <p
-          className={css({
-            color: "base-content-muted",
-            fontSize: "sm",
-            lineHeight: "body",
-            marginBottom: "6",
-          })}
-        >
-          You need a join code to enter this room.
-        </p>
-        <Link className={link()} href={joinHref}>
-          Join room
-        </Link>
-      </div>
-    </main>
-  );
+  redirect(`/join?code=${encodeURIComponent(meta.joinCode)}`);
 }
