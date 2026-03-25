@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { userAgentFromString } from "next/server";
 
 import { env } from "@/env";
 import { getAppUrl } from "@/lib/app-url";
@@ -63,6 +64,13 @@ export default async function RoomLayout({ params, room }: Props) {
     if (verified?.roomId === id) {
       return <>{room}</>;
     }
+  }
+
+  const headerStore = await headers();
+  const { isBot } = userAgentFromString(headerStore.get("user-agent") ?? "");
+
+  if (isBot) {
+    return null;
   }
 
   redirect(`/join?code=${encodeURIComponent(meta.joinCode)}`);
