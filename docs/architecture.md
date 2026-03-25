@@ -48,7 +48,7 @@ Effect computations run inside standard `Promise` boundaries (`Effect.runPromise
                                         └──────────────────────────────────────┘
 ```
 
-**Next.js on Vercel** — UI shell only. No API routes for room management. No database client. Serves the landing page and room page. Server Actions (next-safe-action) handle room creation and joining. All room logic is delegated to PartyKit.
+**Next.js on Vercel** — UI shell only. No API routes for room management. No database client. Serves the landing page, join pages, and room page. Server Actions (next-safe-action) handle room creation, joining, leaving, and join code rotation. All room logic is delegated to PartyKit.
 
 **PartyKit hosted** — `workerd` runtime (Cloudflare-based). Owns all room logic: creation, participant tracking, message history, and room dissolution. Uses `onRequest` for HTTP room creation and `onConnect` / `onMessage` for WebSocket real-time messaging.
 
@@ -99,7 +99,7 @@ Returns the room name if the room exists.
 
 **Response:** `200 { id, name }` if the room exists; `404` if not.
 
-Used by the Next.js room page (`/r/[id]/page.tsx`) at render time to fetch the room name for display, and to redirect to `/` if the room does not exist.
+Used by the Next.js room layout (`/r/[id]/layout.tsx`) and room page (`/r/[id]/@room/page.tsx`) at render time to fetch the room name for display, and to redirect to `/` if the room does not exist.
 
 ### `POST /parties/main/:id` with header `X-Action: create`
 
@@ -173,31 +173,40 @@ Server  → set HttpOnly cookie display-name-{id}
         → redirect(/r/{id})
 ```
 
-### Enter the Room Page (creator)
+### Enter the Room Page (authenticated)
 
 ```
-Server Component → reads display-name-{id} cookie
-                 → passes displayName prop to <RoomClient>
-Browser → PartyKit WebSocket connect to room <id>
-        → { type: "join", displayName }
-        ← { type: "init", messages[], participants[] }   (full history)
-        ← { type: "joined", participant, participants[] } (broadcast to others)
+layout.tsx        → reads room-session-{id} cookie
+                  → verifyRoomSessionToken → valid
+                  → renders @room slot (passes through to RoomClient)
+@room/page.tsx    → reads display-name-{id} cookie
+                  → if missing: redirect(/r/{id}/join)
+Browser           → PartyKit WebSocket connect to room <id>
+                  → { type: "join", displayName }
+                  ← { type: "init", messages[], participants[] }   (full history)
+                  ← { type: "joined", participant, participants[] } (broadcast to others)
 ```
 
-### Enter the Room Page (joiner via link)
+### Enter the Room Page (unauthenticated)
 
 ```
-Server Component → reads display-name-{id} cookie → not found
-                 → passes displayName: null to <RoomClient>
-Browser → show inline DisplayNameForm
-User    → enters displayName, submits joinRoom Server Action
-Server  → sets display-name-{id} cookie
-        → returns (no redirect)
-Browser → onJoin callback → sets overrideDisplayName state
-        → PartyKit WebSocket connect to room <id>
-        → { type: "join", displayName }
-        ← { type: "init", messages[], participants[] }
-        ← { type: "joined", participant, participants[] } (broadcast to others)
+layout.tsx → reads room-session-{id} cookie → missing or invalid
+           → renders gate UI (200 response — no HTTP redirect)
+           → "Join room" link → /join?code=<code> (if ?code= was in original URL)
+                              → /join             (if no code in URL)
+```
+
+The gate always returns HTTP 200 so crawlers receive the correct OG metadata from `generateMetadata` in `@room/page.tsx` regardless of auth state.
+
+### Join a Room (via /join or /r/[id]/join)
+
+```
+Browser → submit joinRoom Server Action { displayName, joinCode }
+Server  → resolveJoinCode(joinCode) → roomId (PartyKit HTTP lookup)
+        → mintRoomSessionToken(roomId)
+        → set cookies: display-name-{roomId}, room-session-{roomId}, room-session-id-{roomId}
+        → return { displayName, roomId }
+Browser → router.push(/r/{roomId})
 ```
 
 If `room.storage` has no `name` (room does not exist), PartyKit sends `{ type: "error", reason: "room not found" }` and closes the connection. The room page redirects to `/`.
@@ -264,10 +273,15 @@ A room is dissolved when the last participant disconnects. PartyKit handles this
 
 ## Environment Variables
 
-| Variable                    | Used by | Description                                        |
-| --------------------------- | ------- | -------------------------------------------------- |
-| `NEXT_PUBLIC_PARTYKIT_HOST` | Browser | PartyKit host, e.g. `eot-chat.<user>.partykit.dev` |
+| Variable                        | Runtime                  | Description                                                                                                |
+| ------------------------------- | ------------------------ | ---------------------------------------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_PARTYKIT_HOST`     | Browser + Server         | PartyKit host, e.g. `eot-chat.<user>.partykit.dev`                                                         |
+| `PARTYKIT_URL`                  | Server only              | Full PartyKit base URL, e.g. `https://eot-chat.<user>.partykit.dev`. Used by Effect HTTP client            |
+| `ROOM_CRYPTO_SECRET`            | Server + PartyKit        | Shared secret (≥ 32 chars) for signing and verifying room session JWTs. Must be identical in both runtimes |
+| `VERCEL_ENV`                    | Server (build + runtime) | Vercel environment: `production`, `preview`, or `development`                                              |
+| `VERCEL_URL`                    | Server (build + runtime) | Current deployment URL (e.g. `eot-git-feat-foo.vercel.app`). Used as `metadataBase` fallback               |
+| `VERCEL_PROJECT_PRODUCTION_URL` | Server (build + runtime) | Shortest production domain (e.g. `eot.chat`). Used as `metadataBase` in production                         |
 
-PartyKit env vars are set via `partykit env add` (stored in PartyKit's hosted secrets, accessible via `this.room.env`).
+`ROOM_CRYPTO_SECRET` must be set in **both** PartyKit (via `npx partykit env add ROOM_CRYPTO_SECRET`) and the Next.js hosting environment (Vercel project settings). If they differ, all room joins will fail with an authorization error.
 
-Next.js env vars are set in Vercel project settings or `.env.local` for development.
+`VERCEL_*` variables are automatically injected by Vercel — do not set them manually. `NEXT_PUBLIC_PARTYKIT_HOST` and `PARTYKIT_URL` are set in Vercel project settings or `.env.local` for local development.

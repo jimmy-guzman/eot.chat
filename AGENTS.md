@@ -29,12 +29,21 @@ src/
   app/                          # Next.js App Router
     _actions/                   # Server Actions (next-safe-action + Valibot)
       create-room.ts            # Generate ID → POST to PartyKit → set cookie → redirect
-      join-room.ts              # Set display-name cookie
-      leave-room.ts             # Delete display-name cookie
+      join-room.ts              # Resolve join code → set session cookies → return roomId
+      leave-room.ts             # Delete all room-scoped cookies
+      rotate-join-code.ts       # Host-only: rotate join code on PartyKit → return new code
     _components/                # Root route client components
       create-room-form.tsx      # Landing page form (TanStack Form)
+      join-room-form.tsx        # Global join form — accepts initialJoinCode from ?code= param
+      nuqs-provider.tsx         # NuqsAdapter for search param state
       site-footer.tsx
+    join/
+      page.tsx                  # /join — global join page, reads ?code= search param
+      search-params.ts          # nuqs loader for ?code= param
     r/[id]/
+      @room/
+        default.tsx             # Parallel route fallback (returns null)
+        page.tsx                # Authenticated room render + generateMetadata
       _components/              # Room route client components
         room-client.tsx         # Root "use client" orchestrator (useMachine)
         room-machine.ts         # XState v5 machine + PartySocket actor
@@ -48,15 +57,14 @@ src/
         confirm-dialog.tsx
       join/
         _components/
-          display-name-form.tsx # Join form (TanStack Form)
-        page.tsx
+          display-name-form.tsx # Room-scoped join form (TanStack Form)
+        page.tsx                # /r/[id]/join — display name entry for known room
       error.tsx
-      layout.tsx
-      opengraph-image.tsx
-      page.tsx                  # Auth gate: reads cookie, fetches room name, redirects or renders
+      layout.tsx                # Auth gate: verifies session, renders @room slot or gate UI
+      opengraph-image.tsx       # Per-room OG image (fetches room name from PartyKit)
     globals.css                 # PandaCSS @layer declaration
-    layout.tsx                  # Root layout — IBM Plex Mono font, metadata
-    opengraph-image.tsx
+    layout.tsx                  # Root layout — IBM Plex Mono font, metadataBase
+    opengraph-image.tsx         # Root OG image (static EOT wordmark)
     page.tsx                    # Landing page
 
   components/                   # Shared React components
@@ -173,7 +181,7 @@ If any step fails, fix the issue and re-run from that step. Do not move on until
 - Sort object keys and import statements alphabetically.
 - No comments in the codebase that are not JSDoc or TODO/FIXME notes.
 - **Kebab-case filenames** — all files and directories use kebab-case (e.g. `room-client.tsx`, `token-bucket.ts`). Next.js reserved filenames (`page.tsx`, `layout.tsx`, `route.ts`, `error.tsx`, etc.) are exempt.
-- **RSC boundaries** — keep `"use client"` as far down the tree as possible. Page files (`page.tsx`, `layout.tsx`) must be Server Components unless they contain no extractable static content. Extract interactive subtrees into a `_components/` folder co-located with the route. `src/server/` files must never be imported from `"use client"` components.
+- **RSC boundaries** — keep `"use client"` as far down the tree as possible. Page files (`page.tsx`, `layout.tsx`) must be Server Components unless they contain no extractable static content. Extract interactive subtrees into a `_components/` folder co-located with the route. `src/server/` files must never be imported from `"use client"` components. `layout.tsx` may serve as an auth gate — verify session server-side and conditionally render a parallel route slot (authenticated path) or an inline interstitial (unauthenticated path) to keep the HTTP response always 200 so crawlers receive correct OG metadata.
 - **Environment variables** are validated in `src/env.ts` using `@t3-oss/env-nextjs` with Valibot. Import from `@/env` — never use `process.env` directly. Server var: `PARTYKIT_URL`. Client var: `NEXT_PUBLIC_PARTYKIT_HOST`.
 
 ---
@@ -212,6 +220,17 @@ The project uses **happy-dom** as the test environment. MSW mocks the PartyKit H
 
 - **Clipboard:** `navigator.clipboard.writeText` always resolves — clipboard error paths are not testable.
 - **Radix/Base UI interactive:** pointer capture not implemented — dropdowns and dialogs can only be tested in their default rendered state.
+
+---
+
+## Documentation
+
+After **every** set of changes, update the relevant docs before committing:
+
+- **`AGENTS.md`** — update the Project Structure tree if files were added, moved, or deleted; update any conventions, rules, or descriptions that changed.
+- **`docs/architecture.md`** — update data flow diagrams, endpoint descriptions, environment variable tables, and system topology if the runtime behaviour changed.
+
+If a change introduces a new pattern or structural convention not yet covered in either document, add it. Do not leave docs stale.
 
 ---
 
@@ -254,7 +273,7 @@ If the same error persists after 3 consecutive fix attempts, stop. Report what t
 - Use redundant return types for internal functions where the return type is inferable — exceptions are exported functions and interface method signatures where the type is part of the public contract.
 - Import from `src/server/` in client components — all `"use client"` files must only import from `src/lib/`, `src/components/`, `@party/*`, or external packages.
 - Use relative paths that cross the `party/` ↔ `src/` boundary — always use `@party/*`.
-- Introduce a new pattern or structural change without updating `AGENTS.md`.
+- Introduce a new pattern or structural change without updating `AGENTS.md` and `docs/architecture.md`.
 
 ---
 
