@@ -1,4 +1,4 @@
-import { cookies, headers } from "next/headers";
+import { cookies } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { css, cx } from "styled-system/css";
@@ -12,26 +12,6 @@ interface Props {
   params: Promise<{ id: string }>;
   room: React.ReactNode;
 }
-
-const getIncomingCode = async (): Promise<null | string> => {
-  const headerStore = await headers();
-  const referer = headerStore.get("referer");
-  const nextUrl = headerStore.get("x-url") ?? headerStore.get("next-url");
-
-  for (const raw of [nextUrl, referer]) {
-    if (!raw) continue;
-
-    try {
-      const code = new URL(raw).searchParams.get("code");
-
-      if (code) return code;
-    } catch {
-      continue;
-    }
-  }
-
-  return null;
-};
 
 export default async function RoomLayout({ params, room }: Props) {
   const { id } = await params;
@@ -63,10 +43,7 @@ export default async function RoomLayout({ params, room }: Props) {
     return <>{room}</>;
   }
 
-  const incomingCode = await getIncomingCode();
-  const joinHref = incomingCode
-    ? `/join?code=${encodeURIComponent(incomingCode)}`
-    : "/join";
+  const joinHref = `/join?code=${encodeURIComponent(meta.joinCode)}`;
 
   return (
     <main
