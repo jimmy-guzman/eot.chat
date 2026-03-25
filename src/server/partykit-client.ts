@@ -31,7 +31,7 @@ const RawRoomResponseSchema = Schema.Struct({
 
 export interface RoomMetadata {
   id: string;
-  joinCode: string;
+  joinCode: string | undefined;
   joinCodeVersion: number;
   name: string;
 }
@@ -41,7 +41,7 @@ const normalizeRoomMetadata = (
 ): RoomMetadata => {
   return {
     id: raw.id,
-    joinCode: raw.joinCode ?? raw.id,
+    joinCode: raw.joinCode,
     joinCodeVersion: raw.joinCodeVersion ?? 1,
     name: raw.name,
   };
@@ -105,20 +105,16 @@ export const getRoomMetadata = (
     Effect.flatMap((base) => {
       return HttpClient.get(roomUrl(base, id)).pipe(
         Effect.flatMap(HttpClientResponse.filterStatusOk),
-        Effect.flatMap(
-          HttpClientResponse.schemaBodyJson(RawRoomResponseSchema),
-        ),
-        Effect.map(normalizeRoomMetadata),
-        Effect.mapError((e) => {
-          if (e._tag === "ParseError") {
-            return new PartyKitError({ cause: e });
-          }
-
-          return mapHttpError(e);
+        Effect.mapError(mapHttpError),
+        Effect.flatMap((res) => {
+          return HttpClientResponse.schemaBodyJson(RawRoomResponseSchema)(
+            res,
+          ).pipe(Effect.orDie);
         }),
+        Effect.map(normalizeRoomMetadata),
         Effect.retry({
           schedule: retryPolicy,
-          while: (e) => e._tag === "PartyKitError",
+          while: shouldRetryPartyKitHttpFailure,
         }),
         Effect.scoped,
       );
@@ -269,15 +265,13 @@ export const resolveJoinCode = (
         ),
       ).pipe(
         Effect.flatMap(HttpClientResponse.filterStatusOk),
-        Effect.flatMap(HttpClientResponse.schemaBodyJson(ResolveSchema)),
-        Effect.map((b) => b.roomId),
-        Effect.mapError((e) => {
-          if (e._tag === "ParseError") {
-            return new PartyKitError({ cause: e });
-          }
-
-          return mapResolveError(e);
+        Effect.mapError(mapResolveError),
+        Effect.flatMap((res) => {
+          return HttpClientResponse.schemaBodyJson(ResolveSchema)(res).pipe(
+            Effect.orDie,
+          );
         }),
+        Effect.map((b) => b.roomId),
         Effect.retry({
           schedule: retryPolicy,
           while: (e) => e._tag === "PartyKitError",
@@ -317,17 +311,15 @@ export const rotateJoinCodeOnRoom = (input: {
         ),
       ).pipe(
         Effect.flatMap(HttpClientResponse.filterStatusOk),
-        Effect.flatMap(HttpClientResponse.schemaBodyJson(RotateSchema)),
-        Effect.mapError((e) => {
-          if (e._tag === "ParseError") {
-            return new PartyKitError({ cause: e });
-          }
-
-          return mapHttpError(e);
+        Effect.mapError(mapHttpError),
+        Effect.flatMap((res) => {
+          return HttpClientResponse.schemaBodyJson(RotateSchema)(res).pipe(
+            Effect.orDie,
+          );
         }),
         Effect.retry({
           schedule: retryPolicy,
-          while: (e) => e._tag === "PartyKitError",
+          while: shouldRetryPartyKitHttpFailure,
         }),
         Effect.scoped,
       );

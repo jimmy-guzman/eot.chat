@@ -80,7 +80,7 @@ export default async function RoomPage({ params }: Props) {
 
   const meta = await fetchRoomMetadata(id);
 
-  if (!meta) redirect("/");
+  if (!meta?.joinCode) redirect("/");
 
   const joinRedirect = `/join?code=${encodeURIComponent(meta.joinCode)}`;
 

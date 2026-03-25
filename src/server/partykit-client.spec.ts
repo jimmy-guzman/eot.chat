@@ -73,19 +73,14 @@ describe("getRoomName", () => {
     expect(calls).toBe(1);
   });
 
-  it("should return PartyKitError when the response body is invalid JSON schema", async () => {
+  it("should throw a defect when the response body is invalid JSON schema", async () => {
     server.use(
       http.get(roomEndpoint("bad-body"), () => {
         return HttpResponse.json({ unexpected: true });
       }),
     );
 
-    const result = await Effect.runPromise(
-      Effect.either(getRoomName("bad-body")),
-    );
-
-    expect(Either.isLeft(result)).toBe(true);
-    expect(Either.isLeft(result) && result.left._tag).toBe("PartyKitError");
+    await expect(Effect.runPromise(getRoomName("bad-body"))).rejects.toThrow();
   });
 });
 
