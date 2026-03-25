@@ -83,6 +83,7 @@ src/
   server/                       # Server-only code (never imported by client components)
     partykit-client.ts          # Effect HTTP client: getRoomName, createPartyKitRoom
     partykit-client.spec.ts
+    room-queries.ts             # cache()-wrapped RSC data loaders: fetchRoomName, fetchRoomMetadata
 
   testing/                      # Shared test infrastructure
     mocks/server.ts             # MSW node server

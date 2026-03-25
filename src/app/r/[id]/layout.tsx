@@ -1,43 +1,17 @@
-import { Effect, Either } from "effect";
 import { cookies, headers } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { cache } from "react";
 import { css, cx } from "styled-system/css";
 import { card, link } from "styled-system/recipes";
 
 import { env } from "@/env";
-import { getRoomMetadata, getRoomName } from "@/server/partykit-client";
+import { fetchRoomMetadata, fetchRoomName } from "@/server/room-queries";
 import { verifyRoomSessionToken } from "@/server/room-token";
 
 interface Props {
   params: Promise<{ id: string }>;
   room: React.ReactNode;
 }
-
-const fetchRoomName = cache(async (id: string): Promise<null | string> => {
-  const result = await Effect.runPromise(Effect.either(getRoomName(id)));
-
-  if (Either.isLeft(result)) {
-    if (result.left._tag === "RoomNotFoundError") return null;
-
-    throw result.left;
-  }
-
-  return result.right;
-});
-
-const fetchRoomMetadata = cache(async (id: string) => {
-  const result = await Effect.runPromise(Effect.either(getRoomMetadata(id)));
-
-  if (Either.isLeft(result)) {
-    if (result.left._tag === "RoomNotFoundError") return null;
-
-    throw result.left;
-  }
-
-  return result.right;
-});
 
 const getIncomingCode = async (): Promise<null | string> => {
   const headerStore = await headers();
