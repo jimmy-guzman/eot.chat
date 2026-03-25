@@ -106,6 +106,9 @@ export default class Server implements Party.Server {
                 senderId: sender.id,
               },
             );
+            sender.send(
+              JSON.stringify({ reason: "already joined", type: "error" }),
+            );
 
             return;
           }
