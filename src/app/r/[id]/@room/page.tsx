@@ -46,10 +46,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   if (!name) return {};
 
+  const imageUrl = `${getAppUrl()}/r/${id}/opengraph-image`;
+
   return {
     description: `Join the room and start chatting.`,
     openGraph: {
       description: `Join the room and start chatting.`,
+      images: [imageUrl],
       title: name,
       type: "website",
     },
@@ -57,6 +60,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     twitter: {
       card: "summary_large_image",
       description: `Join the room and start chatting.`,
+      images: [imageUrl],
       title: name,
     },
   };
