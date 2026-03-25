@@ -43,6 +43,14 @@ const fromBase64Url = (str: string): ArrayBuffer => {
   return bytes.buffer;
 };
 
+const tryFromBase64Url = (str: string) => {
+  try {
+    return fromBase64Url(str);
+  } catch {
+    return null;
+  }
+};
+
 export const mintRoomSessionToken = async (
   roomId: string,
   secret: string,
@@ -66,7 +74,9 @@ export const verifyRoomSessionToken = async (
   if (dot === -1) return null;
 
   const encoded = token.slice(0, dot);
-  const sig = fromBase64Url(token.slice(dot + 1));
+  const sig = tryFromBase64Url(token.slice(dot + 1));
+
+  if (!sig) return null;
 
   const key = await importKey(secret);
   const valid = await crypto.subtle.verify(

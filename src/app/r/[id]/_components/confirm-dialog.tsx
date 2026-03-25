@@ -49,8 +49,9 @@ export const ConfirmDialog = ({
             {closeOnConfirm ? (
               <AlertDialog.Close
                 className={button({ size: "sm", variant: "danger" })}
+                disabled={confirmDisabled}
                 onClick={() => {
-                  void onConfirm();
+                  if (!confirmDisabled) void onConfirm();
                 }}
               >
                 {confirmLabel}

@@ -22,8 +22,9 @@ export const createRoomSchema = v.object({
 export const joinCodeSchema = v.pipe(
   v.string(),
   v.trim(),
-  v.minLength(1, "Room code is required"),
-  v.maxLength(32, "Room code is too long"),
+  v.minLength(6, "Room code is required"),
+  v.maxLength(6, "Room code is too long"),
+  v.regex(/^[2-9a-hjkmnp-z]+$/, "Invalid room code"),
 );
 
 export const joinRoomSchema = v.object({

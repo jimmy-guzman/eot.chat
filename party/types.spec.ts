@@ -58,6 +58,26 @@ describe("ClientMessageSchema", () => {
     expect(Either.isLeft(result)).toBe(true);
   });
 
+  it("should return Left for a join message missing sessionId", () => {
+    const result = Schema.decodeUnknownEither(ClientMessageSchema)({
+      displayName: "Alice",
+      sessionToken: "tok",
+      type: "join",
+    });
+
+    expect(Either.isLeft(result)).toBe(true);
+  });
+
+  it("should return Left for a join message missing sessionToken", () => {
+    const result = Schema.decodeUnknownEither(ClientMessageSchema)({
+      displayName: "Alice",
+      sessionId: "sid-1",
+      type: "join",
+    });
+
+    expect(Either.isLeft(result)).toBe(true);
+  });
+
   it("should return Left for a message message missing body", () => {
     const result = Schema.decodeUnknownEither(ClientMessageSchema)({
       type: "message",
@@ -122,13 +142,11 @@ describe("ParticipantSchema", () => {
     const result = Schema.decodeUnknownSync(ParticipantSchema)({
       displayName: "Bob",
       joinedAt: "2024-01-01T00:00:00.000Z",
-      sessionId: "sid-1",
     });
 
     expect(result).toStrictEqual({
       displayName: "Bob",
       joinedAt: "2024-01-01T00:00:00.000Z",
-      sessionId: "sid-1",
     });
   });
 });

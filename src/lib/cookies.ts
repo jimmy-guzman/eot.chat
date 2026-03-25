@@ -7,6 +7,7 @@ const COOKIE_OPTIONS = {
   httpOnly: true,
   maxAge: COOKIE_MAX_AGE,
   sameSite: "lax",
+  secure: process.env.NODE_ENV === "production",
 } as const;
 
 interface RoomSessionCookieOptions {
@@ -41,7 +42,7 @@ export const setRoomSessionCookies = (
 
   cookieStore.set(`room-session-${roomId}`, sessionToken, {
     ...COOKIE_OPTIONS,
-    path: "/",
+    path: `/r/${roomId}`,
   });
 
   cookieStore.set(`room-session-id-${roomId}`, sessionId, {

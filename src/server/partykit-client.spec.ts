@@ -91,8 +91,12 @@ describe("getRoomName", () => {
 
 describe("createPartyKitRoom", () => {
   it("should succeed on a 200 response", async () => {
+    let capturedBody: unknown;
+
     server.use(
-      http.post(roomEndpoint("new-room"), () => {
+      http.post(roomEndpoint("new-room"), async ({ request }) => {
+        capturedBody = await request.json();
+
         return HttpResponse.json({ name: "New Room" });
       }),
     );
@@ -108,6 +112,11 @@ describe("createPartyKitRoom", () => {
     );
 
     expect(result).toStrictEqual(Either.right(undefined));
+    expect(capturedBody).toStrictEqual({
+      hostSecret: "host-secret",
+      joinCode: "abc123",
+      name: "New Room",
+    });
   });
 
   it("should return PartyKitError on a 500 response after retries", async () => {

@@ -32,8 +32,9 @@ export default async function JoinPage({ params }: Props) {
   const cookieStore = await cookies();
   const displayNameCookie = cookieStore.get(`display-name-${id}`)?.value;
   const sessionCookie = cookieStore.get(`room-session-${id}`)?.value;
+  const sessionId = cookieStore.get(`room-session-id-${id}`)?.value;
 
-  if (displayNameCookie && sessionCookie) {
+  if (displayNameCookie && sessionCookie && sessionId) {
     const verified = await verifyRoomSessionToken(
       sessionCookie,
       env.ROOM_CRYPTO_SECRET,

@@ -16,28 +16,7 @@ import { RoomClient } from "./_components/room-client";
 
 interface Props {
   params: Promise<{ id: string }>;
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
-
-const pickCodeQuery = (
-  sp: Record<string, string | string[] | undefined>,
-): string | undefined => {
-  const raw = sp.code;
-
-  if (typeof raw === "string") {
-    const trimmed = raw.trim();
-
-    return trimmed.length > 0 ? trimmed : undefined;
-  }
-
-  if (Array.isArray(raw) && typeof raw[0] === "string") {
-    const trimmed = raw[0].trim();
-
-    return trimmed.length > 0 ? trimmed : undefined;
-  }
-
-  return undefined;
-};
 
 const fetchRoomName = cache(async (id: string): Promise<null | string> => {
   const result = await Effect.runPromise(Effect.either(getRoomName(id)));
@@ -87,16 +66,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function RoomPage({ params, searchParams }: Props) {
+export default async function RoomPage({ params }: Props) {
   const { id } = await params;
   const name = await fetchRoomName(id);
 
   if (!name) redirect("/");
-
-  const query = pickCodeQuery(await searchParams);
-  const joinRedirect = query
-    ? `/join?code=${encodeURIComponent(query)}`
-    : "/join";
 
   const cookieStore = await cookies();
   const displayName = cookieStore.get(`display-name-${id}`)?.value;
@@ -107,6 +81,8 @@ export default async function RoomPage({ params, searchParams }: Props) {
   const meta = await fetchRoomMetadata(id);
 
   if (!meta) redirect("/");
+
+  const joinRedirect = `/join?code=${encodeURIComponent(meta.joinCode)}`;
 
   if (!sessionCookie || !sessionId) {
     redirect(joinRedirect);

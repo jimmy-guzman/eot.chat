@@ -285,13 +285,17 @@ describe("Server.onConnect", () => {
     expect(conn.close).toHaveBeenCalledOnce();
   });
 
-  it("should cancel a pending expiry alarm when a connection opens", async () => {
+  it("should cancel a pending expiry alarm when a participant successfully joins", async () => {
     const storage = makeStorage({ name: "My Room" });
     const room = makeRoom({ storage });
     const s = new Server(room);
     const conn = makeConn();
 
     await s.onConnect(conn);
+
+    expect(storage.deleteAlarm).not.toHaveBeenCalled();
+
+    await s.onMessage(await joinMessage("test-room", "Alice"), conn);
 
     expect(storage.deleteAlarm).toHaveBeenCalledOnce();
   });

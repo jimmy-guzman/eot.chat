@@ -27,13 +27,13 @@ export const DisplayNameForm = ({ roomId }: Props) => {
         joinCode: roomId,
       });
 
-      if (result.serverError) {
+      if (result.serverError || !result.data?.roomId) {
         setServerError("Something went wrong. Please try again.");
 
         return;
       }
 
-      router.push(`/r/${roomId}`);
+      router.push(`/r/${result.data.roomId}`);
     },
     validators: {
       onSubmit: joinRoomSchema,

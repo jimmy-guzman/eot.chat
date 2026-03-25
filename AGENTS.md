@@ -117,9 +117,23 @@ pnpm e2e:ui       # Run e2e tests with UI
 
 ## Secrets
 
-`partykit.json` contains a `vars.ROOM_CRYPTO_SECRET` placeholder for local development only. It is **not** the production secret and must never be used in production.
+`ROOM_CRYPTO_SECRET` is used by **both** the PartyKit worker (to verify session tokens on join) and the Next.js server (to mint session tokens in server actions). Both runtimes must use the **identical** value — if they differ, token verification will fail and every join will be rejected with `unauthorized`.
 
-For production, set the real secret via the PartyKit CLI:
+### Local development
+
+`partykit.json` contains a `vars.ROOM_CRYPTO_SECRET` placeholder for local development only. Copy the same value into `.env.local` so both runtimes agree:
+
+```txt
+# partykit.json vars.ROOM_CRYPTO_SECRET
+ROOM_CRYPTO_SECRET="dev-only-replace-for-prod-min-32-chars"
+
+# .env.local — must be identical
+ROOM_CRYPTO_SECRET="dev-only-replace-for-prod-min-32-chars"
+```
+
+### Production
+
+Set the real secret via the PartyKit CLI, then copy the same value into your hosting provider's environment (e.g. Vercel):
 
 ```txt
 npx partykit env add ROOM_CRYPTO_SECRET

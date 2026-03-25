@@ -18,9 +18,22 @@ const conflictRetry = Schedule.recurs(7).pipe(
   }),
 );
 
-const rotateCode = (roomId: string, hostSecret: string) => {
+const reserveNewCode = (roomId: string) => {
   return Effect.gen(function* () {
     const newJoinCode = generateJoinCode();
+
+    yield* registerJoinCode({ joinCode: newJoinCode, roomId });
+
+    return newJoinCode;
+  });
+};
+
+const rotateCode = (roomId: string, hostSecret: string) => {
+  return Effect.gen(function* () {
+    const newJoinCode = yield* reserveNewCode(roomId).pipe(
+      Effect.retry(conflictRetry),
+    );
+
     const { previousJoinCode } = yield* rotateJoinCodeOnRoom({
       hostSecret,
       newJoinCode,
@@ -28,9 +41,6 @@ const rotateCode = (roomId: string, hostSecret: string) => {
     });
 
     yield* unregisterJoinCode(previousJoinCode);
-    yield* registerJoinCode({ joinCode: newJoinCode, roomId }).pipe(
-      Effect.retry(conflictRetry),
-    );
 
     return newJoinCode;
   });

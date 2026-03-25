@@ -20,11 +20,14 @@ const makeMessage = (overrides: Partial<Message> = {}): Message => {
   };
 };
 
-const makeParticipant = (displayName: string): Participant => {
+const makeParticipant = (
+  displayName: string,
+  overrides?: Partial<Participant>,
+): Participant => {
   return {
     displayName,
     joinedAt: "2024-01-01T00:00:00.000Z",
-    sessionId: "session-1",
+    ...overrides,
   };
 };
 

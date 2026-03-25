@@ -169,11 +169,15 @@ export const registerJoinCode = (input: {
   joinCode: string;
   roomId: string;
 }): Effect.Effect<void, PartyKitError> => {
-  return Config.string("PARTYKIT_URL").pipe(
+  return Config.all({
+    base: Config.string("PARTYKIT_URL"),
+    secret: Config.string("ROOM_CRYPTO_SECRET"),
+  }).pipe(
     Effect.orDie,
-    Effect.flatMap((base) => {
+    Effect.flatMap(({ base, secret }) => {
       return HttpClient.execute(
         HttpClientRequest.post(registryUrl(base)).pipe(
+          HttpClientRequest.setHeader("Authorization", `Bearer ${secret}`),
           HttpClientRequest.setHeader("Content-Type", "application/json"),
           HttpClientRequest.setHeader("X-Action", "register"),
           HttpClientRequest.bodyUnsafeJson({
@@ -208,11 +212,15 @@ export const registerJoinCode = (input: {
 export const unregisterJoinCode = (
   joinCode: string,
 ): Effect.Effect<void, PartyKitError> => {
-  return Config.string("PARTYKIT_URL").pipe(
+  return Config.all({
+    base: Config.string("PARTYKIT_URL"),
+    secret: Config.string("ROOM_CRYPTO_SECRET"),
+  }).pipe(
     Effect.orDie,
-    Effect.flatMap((base) => {
+    Effect.flatMap(({ base, secret }) => {
       return HttpClient.execute(
         HttpClientRequest.post(registryUrl(base)).pipe(
+          HttpClientRequest.setHeader("Authorization", `Bearer ${secret}`),
           HttpClientRequest.setHeader("Content-Type", "application/json"),
           HttpClientRequest.setHeader("X-Action", "unregister"),
           HttpClientRequest.bodyUnsafeJson({

@@ -3,7 +3,7 @@ import type * as Party from "partykit/server";
 import { Effect, Logger, Match, Schema } from "effect";
 import { nanoid } from "nanoid";
 
-import type { Message, Participant } from "./types";
+import type { Message, Participant, ParticipantInternal } from "./types";
 
 import { JOIN_REGISTRY_ROOM_ID } from "./constants";
 import { verifyRoomSessionToken } from "./room-token";
@@ -19,6 +19,19 @@ import {
 
 const JOIN_CODE_STORAGE_PREFIX = "jc:";
 
+const toPublicParticipant = ({
+  displayName,
+  joinedAt,
+}: ParticipantInternal) => ({ displayName, joinedAt });
+
+const parseJsonBody = async (req: Party.Request) => {
+  try {
+    return { ok: true, value: await req.json() };
+  } catch {
+    return { ok: false };
+  }
+};
+
 interface ConnectionState {
   displayName: string;
   sessionId: string;
@@ -26,7 +39,7 @@ interface ConnectionState {
 
 export default class Server implements Party.Server {
   private readonly messages: Message[] = [];
-  private readonly participants = new Map<string, Participant>();
+  private readonly participants = new Map<string, ParticipantInternal>();
   private readonly registryHits = new Map<string, number[]>();
 
   constructor(readonly room: Party.Room) {}
@@ -55,8 +68,6 @@ export default class Server implements Party.Server {
 
       return;
     }
-
-    await this.room.storage.deleteAlarm();
 
     await Effect.runPromise(
       Effect.logDebug("onConnect: ready", {
@@ -144,13 +155,17 @@ export default class Server implements Party.Server {
             }
           }
 
-          const participant: Participant = {
+          yield* Effect.promise(() => this.room.storage.deleteAlarm());
+
+          const joinedAt = new Date().toISOString();
+          const participantInternal: ParticipantInternal = {
             displayName,
-            joinedAt: new Date().toISOString(),
+            joinedAt,
             sessionId,
           };
+          const participant: Participant = { displayName, joinedAt };
 
-          this.participants.set(sender.id, participant);
+          this.participants.set(sender.id, participantInternal);
           sender.setState({ displayName, sessionId });
 
           yield* Effect.logInfo("join: participant joined", {
@@ -158,10 +173,14 @@ export default class Server implements Party.Server {
             participantCount: this.participants.size,
           });
 
+          const publicParticipants = [...this.participants.values()].map(
+            toPublicParticipant,
+          );
+
           this.room.broadcast(
             JSON.stringify({
               participant,
-              participants: [...this.participants.values()],
+              participants: publicParticipants,
               type: "joined",
             }),
             [sender.id],
@@ -170,7 +189,7 @@ export default class Server implements Party.Server {
           sender.send(
             JSON.stringify({
               messages: this.messages,
-              participants: [...this.participants.values()],
+              participants: publicParticipants,
               type: "init",
             }),
           );
@@ -342,8 +361,14 @@ export default class Server implements Party.Server {
       return new Response("Conflict", { headers: corsHeaders, status: 409 });
     }
 
+    const parsed = await parseJsonBody(req);
+
+    if (!parsed.ok) {
+      return new Response("Bad Request", { headers: corsHeaders, status: 400 });
+    }
+
     const decoded = Schema.decodeUnknownEither(CreateRoomBodySchema)(
-      await req.json(),
+      parsed.value,
     );
 
     if (decoded._tag === "Left") {
@@ -409,7 +434,7 @@ export default class Server implements Party.Server {
     this.room.broadcast(
       JSON.stringify({
         displayName: participant.displayName,
-        participants: [...this.participants.values()],
+        participants: [...this.participants.values()].map(toPublicParticipant),
         type: "left",
       }),
     );
@@ -444,13 +469,39 @@ export default class Server implements Party.Server {
       req.headers.get("x-forwarded-for") ??
       "unknown";
 
-    const rawBody: unknown = await req.json();
+    const parsed = await parseJsonBody(req);
+
+    if (!parsed.ok) {
+      return new Response("Bad Request", { headers: corsHeaders, status: 400 });
+    }
+
+    const { value: rawBody } = parsed;
     const badRequest = new Response("Bad Request", {
       headers: corsHeaders,
       status: 400,
     });
 
+    const registrySecret = this.room.env.ROOM_CRYPTO_SECRET as
+      | string
+      | undefined;
+    const authHeader = req.headers.get("Authorization");
+    const isAuthorized =
+      registrySecret && authHeader === `Bearer ${registrySecret}`;
+
     if (action === "register") {
+      if (!isAuthorized) {
+        await Effect.runPromise(
+          Effect.logWarning("registry: unauthorized register attempt", {
+            clientKey,
+          }).pipe(Effect.provide(Logger.json)),
+        );
+
+        return new Response("Unauthorized", {
+          headers: corsHeaders,
+          status: 401,
+        });
+      }
+
       const decoded = Schema.decodeUnknownEither(RegisterBodySchema)(rawBody);
 
       if (decoded._tag === "Left") return badRequest;
@@ -480,6 +531,19 @@ export default class Server implements Party.Server {
     }
 
     if (action === "unregister") {
+      if (!isAuthorized) {
+        await Effect.runPromise(
+          Effect.logWarning("registry: unauthorized unregister attempt", {
+            clientKey,
+          }).pipe(Effect.provide(Logger.json)),
+        );
+
+        return new Response("Unauthorized", {
+          headers: corsHeaders,
+          status: 401,
+        });
+      }
+
       const decoded = Schema.decodeUnknownEither(UnregisterBodySchema)(rawBody);
 
       if (decoded._tag === "Left") return badRequest;
@@ -543,8 +607,14 @@ export default class Server implements Party.Server {
     req: Party.Request,
     corsHeaders: Record<string, string>,
   ): Promise<Response> {
+    const parsed = await parseJsonBody(req);
+
+    if (!parsed.ok) {
+      return new Response("Bad Request", { headers: corsHeaders, status: 400 });
+    }
+
     const decoded = Schema.decodeUnknownEither(RotateJoinCodeBodySchema)(
-      await req.json(),
+      parsed.value,
     );
 
     if (decoded._tag === "Left") {

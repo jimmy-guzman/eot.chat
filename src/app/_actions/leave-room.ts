@@ -24,6 +24,6 @@ export const leaveRoom = actionClient
     });
     cookieStore.delete({
       name: `room-session-${roomId}`,
-      path: "/",
+      path: `/r/${roomId}`,
     });
   });

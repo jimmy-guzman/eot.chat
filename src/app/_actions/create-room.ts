@@ -21,18 +21,27 @@ const conflictRetry = Schedule.recurs(7).pipe(
   }),
 );
 
+const registerWithNewCode = (roomId: string) => {
+  return Effect.gen(function* () {
+    const joinCode = generateJoinCode();
+
+    yield* registerJoinCode({ joinCode, roomId });
+
+    return joinCode;
+  });
+};
+
 const createRoomWithCode = (
   id: string,
   roomName: string,
   hostSecret: string,
 ) => {
   return Effect.gen(function* () {
-    const joinCode = generateJoinCode();
-
-    yield* createPartyKitRoom(id, { hostSecret, joinCode, name: roomName });
-    yield* registerJoinCode({ joinCode, roomId: id }).pipe(
+    const joinCode = yield* registerWithNewCode(id).pipe(
       Effect.retry(conflictRetry),
     );
+
+    yield* createPartyKitRoom(id, { hostSecret, joinCode, name: roomName });
 
     return joinCode;
   });

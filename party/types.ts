@@ -5,6 +5,11 @@ export const ROOM_EXPIRY_MS = 60 * 60 * 1000;
 export const ParticipantSchema = Schema.Struct({
   displayName: Schema.String,
   joinedAt: Schema.String,
+});
+
+export const ParticipantInternalSchema = Schema.Struct({
+  displayName: Schema.String,
+  joinedAt: Schema.String,
   sessionId: Schema.String,
 });
 
@@ -89,4 +94,7 @@ export const UnregisterBodySchema = Schema.Struct({
 export type ClientMessage = Schema.Schema.Type<typeof ClientMessageSchema>;
 export type Message = Schema.Schema.Type<typeof MessageSchema>;
 export type Participant = Schema.Schema.Type<typeof ParticipantSchema>;
+export type ParticipantInternal = Schema.Schema.Type<
+  typeof ParticipantInternalSchema
+>;
 export type ServerMessage = Schema.Schema.Type<typeof ServerMessageSchema>;

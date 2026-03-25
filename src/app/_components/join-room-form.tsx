@@ -60,7 +60,7 @@ export const JoinRoomForm = ({ initialJoinCode = "" }: Props) => {
               <field.TextField
                 autoComplete="off"
                 label="Room code"
-                placeholder="e.g. 8k3p2q7w"
+                placeholder="e.g. 8k3p2q"
               />
             );
           }}
