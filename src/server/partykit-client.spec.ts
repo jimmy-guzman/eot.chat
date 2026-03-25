@@ -80,7 +80,9 @@ describe("getRoomName", () => {
       }),
     );
 
-    await expect(Effect.runPromise(getRoomName("bad-body"))).rejects.toThrow();
+    await expect(Effect.runPromise(getRoomName("bad-body"))).rejects.toThrow(
+      /is missing/,
+    );
   });
 });
 
