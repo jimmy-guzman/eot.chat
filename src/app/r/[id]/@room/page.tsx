@@ -5,18 +5,15 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { cache } from "react";
 
-import type { RoomMetadata } from "@/server/partykit-client";
-
 import { env } from "@/env";
 import { getAppUrl } from "@/lib/app-url";
 import { getRoomMetadata, getRoomName } from "@/server/partykit-client";
 import { verifyRoomSessionToken } from "@/server/room-token";
 
-import { RoomClient } from "./_components/room-client";
+import { RoomClient } from "../_components/room-client";
 
 interface Props {
   params: Promise<{ id: string }>;
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
 const fetchRoomName = cache(async (id: string): Promise<null | string> => {
@@ -31,19 +28,17 @@ const fetchRoomName = cache(async (id: string): Promise<null | string> => {
   return result.right;
 });
 
-const fetchRoomMetadata = cache(
-  async (id: string): Promise<null | RoomMetadata> => {
-    const result = await Effect.runPromise(Effect.either(getRoomMetadata(id)));
+const fetchRoomMetadata = cache(async (id: string) => {
+  const result = await Effect.runPromise(Effect.either(getRoomMetadata(id)));
 
-    if (Either.isLeft(result)) {
-      if (result.left._tag === "RoomNotFoundError") return null;
+  if (Either.isLeft(result)) {
+    if (result.left._tag === "RoomNotFoundError") return null;
 
-      throw result.left;
-    }
+    throw result.left;
+  }
 
-    return result.right;
-  },
-);
+  return result.right;
+});
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
@@ -51,10 +46,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   if (!name) return {};
 
+  const imageUrl = `${getAppUrl()}/r/${id}/opengraph-image`;
+
   return {
     description: `Join the room and start chatting.`,
     openGraph: {
       description: `Join the room and start chatting.`,
+      images: [imageUrl],
       title: name,
       type: "website",
     },
@@ -62,14 +60,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     twitter: {
       card: "summary_large_image",
       description: `Join the room and start chatting.`,
+      images: [imageUrl],
       title: name,
     },
   };
 }
 
-export default async function RoomPage({ params, searchParams }: Props) {
+export default async function RoomPage({ params }: Props) {
   const { id } = await params;
-  const { code } = await searchParams;
   const name = await fetchRoomName(id);
 
   if (!name) redirect("/");
@@ -84,13 +82,8 @@ export default async function RoomPage({ params, searchParams }: Props) {
 
   if (!meta?.joinCode) redirect("/");
 
-  const incomingCode = Array.isArray(code) ? code[0] : code;
-  const joinRedirect = incomingCode
-    ? `/join?code=${encodeURIComponent(incomingCode)}`
-    : "/join";
-
   if (!sessionCookie || !sessionId) {
-    redirect(joinRedirect);
+    redirect("/");
   }
 
   const verified = await verifyRoomSessionToken(
@@ -99,7 +92,7 @@ export default async function RoomPage({ params, searchParams }: Props) {
   );
 
   if (verified?.roomId !== id) {
-    redirect(joinRedirect);
+    redirect("/");
   }
 
   if (!displayName) {
