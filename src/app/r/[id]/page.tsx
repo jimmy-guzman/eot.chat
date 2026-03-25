@@ -16,6 +16,7 @@ import { RoomClient } from "./_components/room-client";
 
 interface Props {
   params: Promise<{ id: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
 const fetchRoomName = cache(async (id: string): Promise<null | string> => {
@@ -66,8 +67,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function RoomPage({ params }: Props) {
+export default async function RoomPage({ params, searchParams }: Props) {
   const { id } = await params;
+  const { code } = await searchParams;
   const name = await fetchRoomName(id);
 
   if (!name) redirect("/");
@@ -82,7 +84,10 @@ export default async function RoomPage({ params }: Props) {
 
   if (!meta?.joinCode) redirect("/");
 
-  const joinRedirect = `/join?code=${encodeURIComponent(meta.joinCode)}`;
+  const incomingCode = Array.isArray(code) ? code[0] : code;
+  const joinRedirect = incomingCode
+    ? `/join?code=${encodeURIComponent(incomingCode)}`
+    : "/join";
 
   if (!sessionCookie || !sessionId) {
     redirect(joinRedirect);
