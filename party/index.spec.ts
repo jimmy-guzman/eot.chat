@@ -2,10 +2,14 @@ import type * as Party from "partykit/server";
 
 import { describe, expect, it, vi } from "vitest";
 
+import { mintRoomSessionToken } from "@/server/room-token";
+
 import Server from "./index";
 import { ROOM_EXPIRY_MS } from "./types";
 
 type MockFn = ReturnType<typeof vi.fn>;
+
+type MockConn = ReturnType<typeof makeConn>;
 
 const makeStorage = (initial: Record<string, unknown> = {}) => {
   const store = new Map<string, unknown>(Object.entries(initial));
@@ -36,16 +40,23 @@ const makeStorage = (initial: Record<string, unknown> = {}) => {
 
 const makeRoom = (
   overrides: Partial<{
+    connections: Map<string, MockConn>;
     env: Record<string, unknown>;
     id: string;
     storage: ReturnType<typeof makeStorage>;
   }> = {},
 ): Party.Room => {
   const storage = overrides.storage ?? makeStorage();
+  const connections: Map<string, MockConn> = overrides.connections ?? new Map();
 
   return {
     broadcast: vi.fn(),
-    env: overrides.env ?? {},
+    env: overrides.env ?? {
+      ROOM_CRYPTO_SECRET: process.env.ROOM_CRYPTO_SECRET ?? "",
+    },
+    getConnection: vi.fn((id: string): MockConn | null => {
+      return connections.get(id) ?? null;
+    }),
     id: overrides.id ?? "test-room",
     storage,
   } as unknown as Party.Room;
@@ -93,6 +104,21 @@ const makeRequest = (
   } as unknown as Party.Request;
 };
 
+const joinMessage = async (
+  roomId: string,
+  displayName: string,
+  sessionId = "session-1",
+): Promise<string> => {
+  const secret = process.env.ROOM_CRYPTO_SECRET ?? "";
+
+  return JSON.stringify({
+    displayName,
+    sessionId,
+    sessionToken: await mintRoomSessionToken(roomId, secret),
+    type: "join",
+  });
+};
+
 describe("Server.onRequest", () => {
   it("should create a room and return 200 with id and name", async () => {
     const storage = makeStorage();
@@ -102,16 +128,24 @@ describe("Server.onRequest", () => {
     const req = makeRequest(
       "POST",
       { "X-Action": "create" },
-      { name: "My Room" },
+      {
+        hostSecret: "host-secret",
+        joinCode: "abc123",
+        name: "My Room",
+      },
     );
     const res = await s.onRequest(req);
 
     expect(res.status).toBe(200);
     await expect(res.json()).resolves.toStrictEqual({
       id: "abc123",
+      joinCode: "abc123",
+      joinCodeVersion: 1,
       name: "My Room",
     });
     expect(storage.put).toHaveBeenCalledWith("name", "My Room");
+    expect(storage.put).toHaveBeenCalledWith("joinCode", "abc123");
+    expect(storage.put).toHaveBeenCalledWith("hostSecret", "host-secret");
   });
 
   it("should return 405 when method is not GET or POST", async () => {
@@ -125,7 +159,11 @@ describe("Server.onRequest", () => {
   });
 
   it("should return room name on GET when room exists", async () => {
-    const storage = makeStorage({ name: "My Room" });
+    const storage = makeStorage({
+      joinCode: "ab2cd3",
+      joinCodeVersion: 1,
+      name: "My Room",
+    });
     const room = makeRoom({ id: "abc123", storage });
     const s = new Server(room);
 
@@ -135,6 +173,8 @@ describe("Server.onRequest", () => {
     expect(res.status).toBe(200);
     await expect(res.json()).resolves.toStrictEqual({
       id: "abc123",
+      joinCode: "ab2cd3",
+      joinCodeVersion: 1,
       name: "My Room",
     });
   });
@@ -167,7 +207,11 @@ describe("Server.onRequest", () => {
     const req = makeRequest(
       "POST",
       { "X-Action": "create" },
-      { name: "New Room" },
+      {
+        hostSecret: "host-secret",
+        joinCode: "xyz789",
+        name: "New Room",
+      },
     );
     const res = await s.onRequest(req);
 
@@ -184,11 +228,33 @@ describe("Server.onRequest", () => {
     expect(res.status).toBe(400);
   });
 
+  it("should return 400 when joinCode is missing", async () => {
+    const room = makeRoom();
+    const s = new Server(room);
+
+    const req = makeRequest(
+      "POST",
+      { "X-Action": "create" },
+      { hostSecret: "host-secret", name: "Room" },
+    );
+    const res = await s.onRequest(req);
+
+    expect(res.status).toBe(400);
+  });
+
   it("should return 400 when name is blank", async () => {
     const room = makeRoom();
     const s = new Server(room);
 
-    const req = makeRequest("POST", { "X-Action": "create" }, { name: "   " });
+    const req = makeRequest(
+      "POST",
+      { "X-Action": "create" },
+      {
+        hostSecret: "host-secret",
+        joinCode: "abc123",
+        name: "   ",
+      },
+    );
     const res = await s.onRequest(req);
 
     expect(res.status).toBe(400);
@@ -196,7 +262,7 @@ describe("Server.onRequest", () => {
 });
 
 describe("Server.onConnect", () => {
-  it("should send init when room exists", async () => {
+  it("should not send init until the client joins over WebSocket", async () => {
     const storage = makeStorage({ name: "My Room" });
     const room = makeRoom({ storage });
     const s = new Server(room);
@@ -204,15 +270,7 @@ describe("Server.onConnect", () => {
 
     await s.onConnect(conn);
 
-    expect(conn.send).toHaveBeenCalledOnce();
-
-    const sent = JSON.parse(conn.send.mock.calls[0][0] as string) as unknown;
-
-    expect(sent).toMatchObject({
-      messages: [],
-      participants: [],
-      type: "init",
-    });
+    expect(conn.send).not.toHaveBeenCalled();
     expect(conn.close).not.toHaveBeenCalled();
   });
 
@@ -231,13 +289,17 @@ describe("Server.onConnect", () => {
     expect(conn.close).toHaveBeenCalledOnce();
   });
 
-  it("should cancel a pending expiry alarm when a connection opens", async () => {
+  it("should cancel a pending expiry alarm when a participant successfully joins", async () => {
     const storage = makeStorage({ name: "My Room" });
     const room = makeRoom({ storage });
     const s = new Server(room);
     const conn = makeConn();
 
     await s.onConnect(conn);
+
+    expect(storage.deleteAlarm).not.toHaveBeenCalled();
+
+    await s.onMessage(await joinMessage("test-room", "Alice"), conn);
 
     expect(storage.deleteAlarm).toHaveBeenCalledOnce();
   });
@@ -250,10 +312,7 @@ describe("Server.onMessage — join", () => {
     const s = new Server(room);
     const conn = makeConn("conn-1");
 
-    await s.onMessage(
-      JSON.stringify({ displayName: "Alice", type: "join" }),
-      conn,
-    );
+    await s.onMessage(await joinMessage("test-room", "Alice"), conn);
 
     expect(conn.send).toHaveBeenCalledOnce();
 
@@ -270,10 +329,13 @@ describe("Server.onMessage — join", () => {
     ) as unknown;
 
     expect(broadcasted).toMatchObject({ type: "joined" });
-    expect(conn.setState).toHaveBeenCalledWith({ displayName: "Alice" });
+    expect(conn.setState).toHaveBeenCalledWith({
+      displayName: "Alice",
+      sessionId: "session-1",
+    });
   });
 
-  it("should not add a duplicate displayName", async () => {
+  it("should reject a different session using a duplicate displayName", async () => {
     const storage = makeStorage({ name: "My Room" });
     const room = makeRoom({ storage });
     const s = new Server(room);
@@ -281,15 +343,90 @@ describe("Server.onMessage — join", () => {
     const conn2 = makeConn("conn-2");
 
     await s.onMessage(
-      JSON.stringify({ displayName: "Alice", type: "join" }),
+      await joinMessage("test-room", "Alice", "session-a"),
       conn1,
     );
     await s.onMessage(
-      JSON.stringify({ displayName: "Alice", type: "join" }),
+      await joinMessage("test-room", "Alice", "session-b"),
       conn2,
     );
 
     expect(room.broadcast).toHaveBeenCalledOnce();
+
+    const sent = JSON.parse(conn2.send.mock.calls[0][0] as string) as {
+      reason: string;
+      type: string;
+    };
+
+    expect(sent).toStrictEqual({
+      reason: "display name taken",
+      type: "error",
+    });
+  });
+
+  it("should evict the previous tab and allow the new tab when same sessionId joins with duplicate displayName", async () => {
+    const conn1 = makeConn("conn-1");
+    const conn2 = makeConn("conn-2");
+    const connections = new Map([["conn-1", conn1]]);
+    const storage = makeStorage({ name: "My Room" });
+    const room = makeRoom({ connections, storage });
+    const s = new Server(room);
+
+    await s.onMessage(
+      await joinMessage("test-room", "Alice", "session-a"),
+      conn1,
+    );
+
+    const broadcastMock = room.broadcast as MockFn;
+
+    broadcastMock.mockClear();
+
+    await s.onMessage(
+      await joinMessage("test-room", "Alice", "session-a"),
+      conn2,
+    );
+
+    expect(conn1.close).toHaveBeenCalledWith(4000, "replaced");
+    expect(conn2.send).toHaveBeenCalledOnce();
+
+    const sent = JSON.parse(conn2.send.mock.calls[0][0] as string) as {
+      type: string;
+    };
+
+    expect(sent).toMatchObject({ type: "init" });
+    expect(broadcastMock).toHaveBeenCalledOnce();
+
+    const broadcasted = JSON.parse(
+      broadcastMock.mock.calls[0][0] as string,
+    ) as { type: string };
+
+    expect(broadcasted).toMatchObject({ type: "joined" });
+  });
+
+  it("should reject join when session token is invalid", async () => {
+    const storage = makeStorage({ name: "My Room" });
+    const room = makeRoom({ storage });
+    const s = new Server(room);
+    const conn = makeConn();
+
+    await s.onMessage(
+      JSON.stringify({
+        displayName: "Alice",
+        sessionId: "session-1",
+        sessionToken: "invalid",
+        type: "join",
+      }),
+      conn,
+    );
+
+    expect(conn.send).toHaveBeenCalledOnce();
+
+    const sent = JSON.parse(conn.send.mock.calls[0][0] as string) as {
+      reason: string;
+      type: string;
+    };
+
+    expect(sent).toStrictEqual({ reason: "unauthorized", type: "error" });
   });
 });
 
@@ -300,10 +437,7 @@ describe("Server.onMessage — message", () => {
     const s = new Server(room);
     const conn = makeConn("conn-1");
 
-    await s.onMessage(
-      JSON.stringify({ displayName: "Alice", type: "join" }),
-      conn,
-    );
+    await s.onMessage(await joinMessage("test-room", "Alice"), conn);
 
     const broadcastMock = room.broadcast as MockFn;
 
@@ -331,10 +465,7 @@ describe("Server.onMessage — message", () => {
     const s = new Server(room);
     const conn = makeConn("conn-1");
 
-    await s.onMessage(
-      JSON.stringify({ displayName: "Alice", type: "join" }),
-      conn,
-    );
+    await s.onMessage(await joinMessage("test-room", "Alice"), conn);
 
     const broadcastMock = room.broadcast as MockFn;
 
@@ -353,10 +484,7 @@ describe("Server.onMessage — leave", () => {
     const s = new Server(room);
     const conn = makeConn("conn-1");
 
-    await s.onMessage(
-      JSON.stringify({ displayName: "Alice", type: "join" }),
-      conn,
-    );
+    await s.onMessage(await joinMessage("test-room", "Alice"), conn);
 
     const broadcastMock = room.broadcast as MockFn;
 
@@ -383,10 +511,7 @@ describe("Server.onMessage — leave", () => {
     const s = new Server(room);
     const conn = makeConn("conn-1");
 
-    await s.onMessage(
-      JSON.stringify({ displayName: "Alice", type: "join" }),
-      conn,
-    );
+    await s.onMessage(await joinMessage("test-room", "Alice"), conn);
     await s.onMessage(JSON.stringify({ type: "leave" }), conn);
 
     expect(storage.setAlarm).toHaveBeenCalledOnce();
@@ -409,14 +534,8 @@ describe("Server.onMessage — leave", () => {
     const conn1 = makeConn("conn-1");
     const conn2 = makeConn("conn-2");
 
-    await s.onMessage(
-      JSON.stringify({ displayName: "Alice", type: "join" }),
-      conn1,
-    );
-    await s.onMessage(
-      JSON.stringify({ displayName: "Bob", type: "join" }),
-      conn2,
-    );
+    await s.onMessage(await joinMessage("test-room", "Alice"), conn1);
+    await s.onMessage(await joinMessage("test-room", "Bob"), conn2);
     await s.onMessage(JSON.stringify({ type: "leave" }), conn1);
 
     expect(storage.setAlarm).not.toHaveBeenCalled();
@@ -430,10 +549,7 @@ describe("Server.onClose", () => {
     const s = new Server(room);
     const conn = makeConn("conn-1");
 
-    await s.onMessage(
-      JSON.stringify({ displayName: "Alice", type: "join" }),
-      conn,
-    );
+    await s.onMessage(await joinMessage("test-room", "Alice"), conn);
     await s.onClose(conn);
 
     expect(storage.setAlarm).toHaveBeenCalledOnce();
@@ -447,14 +563,8 @@ describe("Server.onClose", () => {
     const conn1 = makeConn("conn-1");
     const conn2 = makeConn("conn-2");
 
-    await s.onMessage(
-      JSON.stringify({ displayName: "Alice", type: "join" }),
-      conn1,
-    );
-    await s.onMessage(
-      JSON.stringify({ displayName: "Bob", type: "join" }),
-      conn2,
-    );
+    await s.onMessage(await joinMessage("test-room", "Alice"), conn1);
+    await s.onMessage(await joinMessage("test-room", "Bob"), conn2);
     await s.onClose(conn1);
 
     expect(storage.setAlarm).not.toHaveBeenCalled();
@@ -466,10 +576,7 @@ describe("Server.onClose", () => {
     const s = new Server(room);
     const conn = makeConn("conn-1");
 
-    await s.onMessage(
-      JSON.stringify({ displayName: "Alice", type: "join" }),
-      conn,
-    );
+    await s.onMessage(await joinMessage("test-room", "Alice"), conn);
 
     const broadcastMock = room.broadcast as MockFn;
 
@@ -493,14 +600,8 @@ describe("Server.onClose", () => {
     const conn1 = makeConn("conn-1");
     const conn2 = makeConn("conn-2");
 
-    await s.onMessage(
-      JSON.stringify({ displayName: "Alice", type: "join" }),
-      conn1,
-    );
-    await s.onMessage(
-      JSON.stringify({ displayName: "Bob", type: "join" }),
-      conn2,
-    );
+    await s.onMessage(await joinMessage("test-room", "Alice"), conn1);
+    await s.onMessage(await joinMessage("test-room", "Bob"), conn2);
     await s.onMessage(
       JSON.stringify({ body: "fruit", type: "message" }),
       conn1,
@@ -509,7 +610,7 @@ describe("Server.onClose", () => {
     await s.onClose(conn1);
 
     const broadcastMock = room.broadcast as MockFn;
-    const lastInit = broadcastMock.mock.calls
+    const lastLeft = broadcastMock.mock.calls
       .map(([raw]) => JSON.parse(raw as string) as unknown)
       .findLast((c) => (c as { type: string }).type === "left") as
       | undefined
@@ -518,11 +619,16 @@ describe("Server.onClose", () => {
           type: string;
         };
 
-    expect(lastInit).toMatchObject({ type: "left" });
+    expect(lastLeft).toMatchObject({ type: "left" });
 
-    conn2.send.mockClear();
-    await s.onConnect(conn2);
-    const initSent = JSON.parse(conn2.send.mock.calls[0][0] as string) as {
+    const conn3 = makeConn("conn-3");
+
+    await s.onConnect(conn3);
+    await s.onMessage(await joinMessage("test-room", "Carol"), conn3);
+
+    const initSent = JSON.parse(
+      conn3.send.mock.calls.at(-1)?.[0] as string,
+    ) as {
       messages: unknown[];
       type: string;
     };
@@ -539,10 +645,7 @@ describe("Server.onMessage — clear", () => {
     const s = new Server(room);
     const conn = makeConn("conn-1");
 
-    await s.onMessage(
-      JSON.stringify({ displayName: "Alice", type: "join" }),
-      conn,
-    );
+    await s.onMessage(await joinMessage("test-room", "Alice"), conn);
     await s.onMessage(JSON.stringify({ body: "hello", type: "message" }), conn);
 
     const broadcastMock = room.broadcast as MockFn;
@@ -593,14 +696,8 @@ describe("Server.onMessage — clear", () => {
     const conn1 = makeConn("conn-1");
     const conn2 = makeConn("conn-2");
 
-    await s.onMessage(
-      JSON.stringify({ displayName: "Alice", type: "join" }),
-      conn1,
-    );
-    await s.onMessage(
-      JSON.stringify({ displayName: "Bob", type: "join" }),
-      conn2,
-    );
+    await s.onMessage(await joinMessage("test-room", "Alice"), conn1);
+    await s.onMessage(await joinMessage("test-room", "Bob"), conn2);
     await s.onMessage(
       JSON.stringify({ body: "hello", type: "message" }),
       conn1,
@@ -664,10 +761,7 @@ describe("Server.onMessage — typing", () => {
     const s = new Server(room);
     const conn = makeConn("conn-1");
 
-    await s.onMessage(
-      JSON.stringify({ displayName: "Alice", type: "join" }),
-      conn,
-    );
+    await s.onMessage(await joinMessage("test-room", "Alice"), conn);
 
     const broadcastMock = room.broadcast as MockFn;
 

@@ -163,6 +163,29 @@ export default defineConfig({
           },
           className: "label",
         },
+        link: {
+          base: {
+            _focusVisible: { boxShadow: "glow.sm", outline: "none" },
+            _hover: { opacity: 1 },
+            color: "accent",
+            textDecoration: "underline",
+            textUnderlineOffset: "2px",
+            transition: "opacity 80ms ease-out",
+          },
+          className: "link",
+          defaultVariants: {
+            tone: "default",
+          },
+          variants: {
+            tone: {
+              default: {},
+              muted: {
+                color: "base-content",
+                opacity: 0.75,
+              },
+            },
+          },
+        },
         motionEnter: {
           base: {
             "@media (prefers-reduced-motion: reduce)": {
@@ -289,6 +312,110 @@ export default defineConfig({
           },
           className: "alert-dialog",
           slots: ["actions", "backdrop", "description", "popup", "title"],
+        }),
+        dialog: defineSlotRecipe({
+          base: {
+            backdrop: {
+              "&[data-ending-style]": { opacity: 0 },
+              "&[data-starting-style]": { opacity: 0 },
+              "@media (prefers-reduced-motion: reduce)": {
+                "&[data-ending-style], &[data-starting-style]": { opacity: 1 },
+                "transition": "none",
+              },
+              "backgroundColor": "rgba(13,14,16,0.85)",
+              "inset": "0",
+              "minHeight": "100dvh",
+              "opacity": 1,
+              "position": "fixed",
+              "transition":
+                "opacity token(durations.motion.normal) token(easings.motion.standard)",
+            },
+            body: {
+              display: "flex",
+              flexDirection: "column",
+              gap: "4",
+              marginBottom: "6",
+            },
+            content: {
+              "&[data-ending-style]": {
+                opacity: 0,
+                transform: "translate(-50%, -48%) scale(0.98)",
+              },
+              "&[data-starting-style]": {
+                opacity: 0,
+                transform: "translate(-50%, -48%) scale(0.98)",
+              },
+              "@media (min-width: 40rem)": {
+                maxWidth: "token(sizes.bubble)",
+              },
+              "@media (prefers-reduced-motion: reduce)": {
+                "&[data-ending-style], &[data-starting-style]": {
+                  opacity: 1,
+                  transform: "translate(-50%, -50%) scale(1)",
+                },
+                "transition": "none",
+              },
+              "backgroundColor": "base-200",
+              "border": "1px solid token(colors.base-300)",
+              "borderRadius": "lg",
+              "boxShadow": "lg",
+              "display": "grid",
+              "gap": "4",
+              "left": "50%",
+              "maxHeight": "min(90dvh, 32rem)",
+              "maxWidth": "calc(100vw - token(spacing.6))",
+              "opacity": 1,
+              "overflowY": "auto",
+              "padding": "6",
+              "position": "fixed",
+              "top": "50%",
+              "transform": "translate(-50%, -50%) scale(1)",
+              "transition":
+                "opacity token(durations.motion.normal) token(easings.motion.standard), transform token(durations.motion.normal) token(easings.motion.standard)",
+              "width": "100%",
+            },
+            description: {
+              color: "base-content-muted",
+              fontSize: "sm",
+              lineHeight: "body",
+            },
+            footer: {
+              "@media (min-width: 40rem)": {
+                flexDirection: "row",
+              },
+              "display": "flex",
+              "flexDirection": "column-reverse",
+              "gap": "3",
+              "justifyContent": "flex-end",
+            },
+            header: {
+              "@media (min-width: 40rem)": {
+                textAlign: "left",
+              },
+              "display": "flex",
+              "flexDirection": "column",
+              "gap": "2",
+              "marginBottom": "2",
+              "textAlign": "center",
+            },
+            title: {
+              color: "base-content",
+              fontSize: "lg",
+              fontWeight: "bold",
+              letterSpacing: "tight",
+              lineHeight: "tight",
+            },
+          },
+          className: "dialog",
+          slots: [
+            "backdrop",
+            "body",
+            "content",
+            "description",
+            "footer",
+            "header",
+            "title",
+          ],
         }),
         menu: defineSlotRecipe({
           base: {

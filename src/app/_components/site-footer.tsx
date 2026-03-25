@@ -1,4 +1,5 @@
 import { css } from "styled-system/css";
+import { link } from "styled-system/recipes";
 
 export const SiteFooter = () => {
   const year = new Date().getFullYear();
@@ -25,12 +26,7 @@ export const SiteFooter = () => {
       <p>
         {`© ${year.toString()} `}
         <a
-          className={css({
-            _hover: { opacity: 1 },
-            textDecoration: "underline",
-            textUnderlineOffset: "3px",
-            transition: "opacity 80ms ease-out",
-          })}
+          className={link({ tone: "muted" })}
           href="https://www.jimmy.codes/"
           rel="noopener noreferrer"
           target="_blank"

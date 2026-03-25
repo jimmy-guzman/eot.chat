@@ -6,6 +6,8 @@ import { IBM_Plex_Mono } from "next/font/google";
 
 import { getAppUrl } from "@/lib/app-url";
 
+import { NuqsProvider } from "./_components/nuqs-provider";
+
 const ibmPlexMono = IBM_Plex_Mono({
   subsets: ["latin"],
   variable: "--font-mono",
@@ -42,7 +44,9 @@ export default function RootLayout({
       <head>
         <meta content="dark" name="color-scheme" />
       </head>
-      <body>{children}</body>
+      <body>
+        <NuqsProvider>{children}</NuqsProvider>
+      </body>
     </html>
   );
 }

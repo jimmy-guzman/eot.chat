@@ -12,10 +12,17 @@ describe("ClientMessageSchema", () => {
   it("should decode a valid join message", () => {
     const result = Schema.decodeUnknownSync(ClientMessageSchema)({
       displayName: "Alice",
+      sessionId: "sid-1",
+      sessionToken: "tok",
       type: "join",
     });
 
-    expect(result).toStrictEqual({ displayName: "Alice", type: "join" });
+    expect(result).toStrictEqual({
+      displayName: "Alice",
+      sessionId: "sid-1",
+      sessionToken: "tok",
+      type: "join",
+    });
   });
 
   it("should decode a valid message message", () => {
@@ -45,6 +52,26 @@ describe("ClientMessageSchema", () => {
 
   it("should return Left for a join message missing displayName", () => {
     const result = Schema.decodeUnknownEither(ClientMessageSchema)({
+      type: "join",
+    });
+
+    expect(Either.isLeft(result)).toBe(true);
+  });
+
+  it("should return Left for a join message missing sessionId", () => {
+    const result = Schema.decodeUnknownEither(ClientMessageSchema)({
+      displayName: "Alice",
+      sessionToken: "tok",
+      type: "join",
+    });
+
+    expect(Either.isLeft(result)).toBe(true);
+  });
+
+  it("should return Left for a join message missing sessionToken", () => {
+    const result = Schema.decodeUnknownEither(ClientMessageSchema)({
+      displayName: "Alice",
+      sessionId: "sid-1",
       type: "join",
     });
 

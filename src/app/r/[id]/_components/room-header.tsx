@@ -6,18 +6,24 @@ import { css } from "styled-system/css";
 import { button, menu } from "styled-system/recipes";
 
 interface Props {
+  isRoomHost: boolean;
   name: string;
   onClear: () => void;
-  onCopyLink: () => void;
+  onCopyJoinCode: () => void;
+  onCopyRoomLink: () => void;
   onExit: () => void;
+  onRotateJoinCode: () => void;
   roomUrl: string;
 }
 
 export const RoomHeader = ({
+  isRoomHost,
   name,
   onClear,
-  onCopyLink,
+  onCopyJoinCode,
+  onCopyRoomLink,
   onExit,
+  onRotateJoinCode,
   roomUrl,
 }: Props) => {
   const menuClasses = menu();
@@ -54,7 +60,7 @@ export const RoomHeader = ({
           <button
             aria-label="Copy room link to clipboard"
             className={button({ size: "sm", variant: "secondary" })}
-            onClick={onCopyLink}
+            onClick={onCopyRoomLink}
             type="button"
           >
             Copy Link
@@ -69,9 +75,27 @@ export const RoomHeader = ({
             <Menu.Portal>
               <Menu.Positioner align="end" sideOffset={6}>
                 <Menu.Popup className={menuClasses.popup}>
+                  <Menu.Item
+                    className={menuClasses.item}
+                    onClick={onCopyJoinCode}
+                  >
+                    Copy Join Code
+                  </Menu.Item>
+                  <Menu.Separator className={menuClasses.separator} />
                   <Menu.Item className={menuClasses.item} onClick={onClear}>
                     Clear Chat
                   </Menu.Item>
+                  {isRoomHost ? (
+                    <>
+                      <Menu.Separator className={menuClasses.separator} />
+                      <Menu.Item
+                        className={menuClasses.item}
+                        onClick={onRotateJoinCode}
+                      >
+                        Rotate Join Code
+                      </Menu.Item>
+                    </>
+                  ) : null}
                   <Menu.Separator className={menuClasses.separator} />
                   <Menu.Item
                     className={menu({ variant: "danger" }).item}

@@ -1,13 +1,14 @@
 {
   "cSpell.words": [
     "codegen",
+    "eot",
     "excalidraw",
+    "nuqs",
     "openrouter",
     "oxfmt",
     "pandacss",
     "Partykit",
     "partysocket",
-    "eot",
     "supabase"
   ],
   "css.lint.unknownAtRules": "ignore",

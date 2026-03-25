@@ -12,5 +12,6 @@ export const env = createEnv({
   extends: [vercel()],
   server: {
     PARTYKIT_URL: v.pipe(v.string(), v.url()),
+    ROOM_CRYPTO_SECRET: v.pipe(v.string(), v.minLength(32)),
   },
 });

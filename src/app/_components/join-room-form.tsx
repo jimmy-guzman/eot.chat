@@ -1,27 +1,48 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { css } from "styled-system/css";
 
-import { createRoom } from "@/app/_actions/create-room";
+import { joinRoom } from "@/app/_actions/join-room";
 import { useAppForm } from "@/lib/form";
-import { createRoomSchema } from "@/lib/schemas";
+import { joinRoomSchema } from "@/lib/schemas";
 
-export const CreateRoomForm = () => {
+interface Props {
+  initialJoinCode?: string;
+}
+
+export const JoinRoomForm = ({ initialJoinCode = "" }: Props) => {
+  const router = useRouter();
   const [serverError, setServerError] = useState<null | string>(null);
 
   const form = useAppForm({
-    defaultValues: { displayName: "", roomName: "" },
+    defaultValues: { displayName: "", joinCode: initialJoinCode },
     onSubmit: async ({ value }) => {
       setServerError(null);
-      const result = await createRoom(value);
+      const result = await joinRoom({
+        displayName: value.displayName,
+        joinCode: value.joinCode,
+      });
 
       if (result.serverError) {
-        setServerError("Something went wrong. Please try again.");
+        setServerError("Room code not found. Check the code and try again.");
+
+        return;
       }
+
+      const roomId = result.data?.roomId;
+
+      if (!roomId) {
+        setServerError("Room code not found. Check the code and try again.");
+
+        return;
+      }
+
+      router.push(`/r/${roomId}`);
     },
     validators: {
-      onSubmit: createRoomSchema,
+      onSubmit: joinRoomSchema,
     },
   });
 
@@ -33,13 +54,13 @@ export const CreateRoomForm = () => {
       }}
     >
       <div className={css({ marginBottom: "4" })}>
-        <form.AppField name="roomName">
+        <form.AppField name="joinCode">
           {(field) => {
             return (
               <field.TextField
                 autoComplete="off"
-                label="Room name"
-                placeholder="e.g. Friday Standup"
+                label="Room code"
+                placeholder="e.g. 8k3p2q"
               />
             );
           }}
@@ -74,7 +95,7 @@ export const CreateRoomForm = () => {
       ) : null}
 
       <form.AppForm>
-        <form.SubmitButton label="Create a Room" />
+        <form.SubmitButton label="Join Room" />
       </form.AppForm>
     </form>
   );

@@ -1,40 +1,42 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useQueryState } from "nuqs";
 import { useState } from "react";
 import { css } from "styled-system/css";
-import * as v from "valibot";
 
 import { joinRoom } from "@/app/_actions/join-room";
 import { useAppForm } from "@/lib/form";
-import { displayNameSchema } from "@/lib/schemas";
+import { joinRoomSchema } from "@/lib/schemas";
 
 interface Props {
-  roomId: string;
+  joinCode: string;
 }
 
-const formSchema = v.object({ displayName: displayNameSchema });
-
-export const DisplayNameForm = ({ roomId }: Props) => {
+export const DisplayNameForm = ({ joinCode }: Props) => {
   const router = useRouter();
+  const [initialDisplayName] = useQueryState("displayName");
   const [serverError, setServerError] = useState<null | string>(null);
 
   const form = useAppForm({
-    defaultValues: { displayName: "" },
+    defaultValues: { displayName: initialDisplayName ?? "", joinCode },
     onSubmit: async ({ value }) => {
       setServerError(null);
-      const result = await joinRoom({ displayName: value.displayName, roomId });
+      const result = await joinRoom({
+        displayName: value.displayName,
+        joinCode,
+      });
 
-      if (result.serverError) {
+      if (result.serverError || !result.data?.roomId) {
         setServerError("Something went wrong. Please try again.");
 
         return;
       }
 
-      router.push(`/r/${roomId}`);
+      router.push(`/r/${result.data.roomId}`);
     },
     validators: {
-      onSubmit: formSchema,
+      onSubmit: joinRoomSchema,
     },
   });
 
@@ -52,7 +54,7 @@ export const DisplayNameForm = ({ roomId }: Props) => {
               <field.TextField
                 autoComplete="nickname"
                 label="Your name"
-                placeholder="e.g. Ada"
+                placeholder="e.g. Alice"
               />
             );
           }}

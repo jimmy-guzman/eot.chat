@@ -12,9 +12,9 @@ const roomEndpoint = (id: string): string => `${BASE}/parties/main/${id}`;
 describe("getRoomName", () => {
   it("should return the room name on a 200 response", async () => {
     server.use(
-      http.get(roomEndpoint("abc"), () =>
-        HttpResponse.json({ name: "My Room" }),
-      ),
+      http.get(roomEndpoint("abc"), () => {
+        return HttpResponse.json({ id: "abc", name: "My Room" });
+      }),
     );
 
     const result = await Effect.runPromise(Effect.either(getRoomName("abc")));
@@ -73,35 +73,47 @@ describe("getRoomName", () => {
     expect(calls).toBe(1);
   });
 
-  it("should return PartyKitError when the response body is invalid JSON schema", async () => {
+  it("should throw a defect when the response body is invalid JSON schema", async () => {
     server.use(
       http.get(roomEndpoint("bad-body"), () => {
         return HttpResponse.json({ unexpected: true });
       }),
     );
 
-    const result = await Effect.runPromise(
-      Effect.either(getRoomName("bad-body")),
+    await expect(Effect.runPromise(getRoomName("bad-body"))).rejects.toThrow(
+      /is missing/,
     );
-
-    expect(Either.isLeft(result)).toBe(true);
-    expect(Either.isLeft(result) && result.left._tag).toBe("PartyKitError");
   });
 });
 
 describe("createPartyKitRoom", () => {
   it("should succeed on a 200 response", async () => {
+    let capturedBody: unknown;
+
     server.use(
-      http.post(roomEndpoint("new-room"), () => {
+      http.post(roomEndpoint("new-room"), async ({ request }) => {
+        capturedBody = await request.json();
+
         return HttpResponse.json({ name: "New Room" });
       }),
     );
 
     const result = await Effect.runPromise(
-      Effect.either(createPartyKitRoom("new-room", "New Room")),
+      Effect.either(
+        createPartyKitRoom("new-room", {
+          hostSecret: "host-secret",
+          joinCode: "abc123",
+          name: "New Room",
+        }),
+      ),
     );
 
     expect(result).toStrictEqual(Either.right(undefined));
+    expect(capturedBody).toStrictEqual({
+      hostSecret: "host-secret",
+      joinCode: "abc123",
+      name: "New Room",
+    });
   });
 
   it("should return PartyKitError on a 500 response after retries", async () => {
@@ -116,7 +128,13 @@ describe("createPartyKitRoom", () => {
     );
 
     const result = await Effect.runPromise(
-      Effect.either(createPartyKitRoom("fail-create", "Room")),
+      Effect.either(
+        createPartyKitRoom("fail-create", {
+          hostSecret: "host-secret",
+          joinCode: "abc123",
+          name: "Room",
+        }),
+      ),
     );
 
     expect(Either.isLeft(result)).toBe(true);

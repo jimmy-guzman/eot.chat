@@ -1,34 +1,71 @@
 "use server";
 
-import { Effect, Either } from "effect";
-import { nanoid } from "nanoid";
+import { Effect, Schedule } from "effect";
+import { customAlphabet, nanoid } from "nanoid";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
+import { env } from "@/env";
+import { setRoomSessionCookies } from "@/lib/cookies";
+import { generateJoinCode } from "@/lib/join-code";
 import { actionClient } from "@/lib/safe-action";
 import { createRoomSchema } from "@/lib/schemas";
-import { createPartyKitRoom } from "@/server/partykit-client";
+import { createPartyKitRoom, registerJoinCode } from "@/server/partykit-client";
+import { mintRoomSessionToken } from "@/server/room-token";
+
+const generateRoomId = customAlphabet("23456789abcdefghjkmnpqrstuvwxyz", 8);
+
+const conflictRetry = Schedule.recurs(7).pipe(
+  Schedule.whileInput((e: { _tag: string; status?: number }) => {
+    return e._tag === "PartyKitError" && e.status === 409;
+  }),
+);
+
+const registerWithNewCode = (roomId: string) => {
+  return Effect.gen(function* () {
+    const joinCode = generateJoinCode();
+
+    yield* registerJoinCode({ joinCode, roomId });
+
+    return joinCode;
+  });
+};
+
+const createRoomWithCode = (
+  id: string,
+  roomName: string,
+  hostSecret: string,
+) => {
+  return Effect.gen(function* () {
+    const joinCode = yield* registerWithNewCode(id).pipe(
+      Effect.retry(conflictRetry),
+    );
+
+    yield* createPartyKitRoom(id, { hostSecret, joinCode, name: roomName });
+
+    return joinCode;
+  });
+};
 
 export const createRoom = actionClient
   .inputSchema(createRoomSchema)
   .action(async ({ parsedInput: { displayName, roomName } }) => {
-    const id = nanoid();
+    const id = generateRoomId();
+    const hostSecret = nanoid(48);
 
-    const result = await Effect.runPromise(
-      Effect.either(createPartyKitRoom(id, roomName)),
-    );
+    await Effect.runPromise(createRoomWithCode(id, roomName, hostSecret));
 
-    if (Either.isLeft(result)) {
-      throw new Error(`Failed to create room: ${result.left._tag}`);
-    }
+    const [cookieStore, sessionToken] = await Promise.all([
+      cookies(),
+      mintRoomSessionToken(id, env.ROOM_CRYPTO_SECRET),
+    ]);
 
-    const cookieStore = await cookies();
-
-    cookieStore.set(`display-name-${id}`, displayName, {
-      httpOnly: true,
-      maxAge: 86_400,
-      path: `/r/${id}`,
-      sameSite: "lax",
+    setRoomSessionCookies(cookieStore, {
+      displayName: displayName.trim(),
+      hostSecret,
+      roomId: id,
+      sessionId: nanoid(16),
+      sessionToken,
     });
 
     redirect(`/r/${id}`);

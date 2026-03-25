@@ -1,11 +1,26 @@
+import type { Metadata } from "next";
+
 import Link from "next/link";
 import { css, cx } from "styled-system/css";
 import { card, link } from "styled-system/recipes";
 
-import { CreateRoomForm } from "./_components/create-room-form";
-import { SiteFooter } from "./_components/site-footer";
+import { JoinRoomForm } from "@/app/_components/join-room-form";
+import { SiteFooter } from "@/app/_components/site-footer";
 
-export default function HomePage() {
+import { loadJoinPageSearchParams } from "./search-params";
+
+interface Props {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}
+
+export const metadata: Metadata = {
+  title: "Join a room",
+};
+
+export default async function JoinRoomPage({ searchParams }: Props) {
+  const params = await loadJoinPageSearchParams(searchParams);
+  const { code } = params;
+
   return (
     <>
       <main
@@ -33,7 +48,7 @@ export default function HomePage() {
               marginBottom: "2",
             })}
           >
-            EOT
+            Join Room
           </h1>
           <p
             className={css({
@@ -44,9 +59,9 @@ export default function HomePage() {
               opacity: 0.6,
             })}
           >
-            End of transmission.
+            Enter a room code to join.
           </p>
-          <CreateRoomForm />
+          <JoinRoomForm initialJoinCode={code} />
           <p
             className={css({
               color: "base-content-muted",
@@ -55,9 +70,9 @@ export default function HomePage() {
               textAlign: "center",
             })}
           >
-            Already have a room code?{" "}
-            <Link className={link()} href="/join">
-              Join a room
+            Need a new room?{" "}
+            <Link className={link()} href="/">
+              Create one
             </Link>
             .
           </p>

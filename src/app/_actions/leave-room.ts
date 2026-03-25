@@ -14,4 +14,16 @@ export const leaveRoom = actionClient
       name: `display-name-${roomId}`,
       path: `/r/${roomId}`,
     });
+    cookieStore.delete({
+      name: `room-host-${roomId}`,
+      path: `/r/${roomId}`,
+    });
+    cookieStore.delete({
+      name: `room-session-id-${roomId}`,
+      path: `/r/${roomId}`,
+    });
+    cookieStore.delete({
+      name: `room-session-${roomId}`,
+      path: `/r/${roomId}`,
+    });
   });

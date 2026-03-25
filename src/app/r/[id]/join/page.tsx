@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
 
 import { Effect, Either } from "effect";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { css, cx } from "styled-system/css";
 import { card } from "styled-system/recipes";
 
-import { getRoomName } from "@/server/partykit-client";
+import { env } from "@/env";
+import { getRoomMetadata } from "@/server/partykit-client";
+import { verifyRoomSessionToken } from "@/server/room-token";
 
 import { DisplayNameForm } from "./_components/display-name-form";
 
@@ -13,20 +16,30 @@ interface Props {
   params: Promise<{ id: string }>;
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { id } = await params;
-
-  void id;
-
-  return {
-    title: "Join the room",
-  };
+export function generateMetadata(_: Props): Metadata {
+  return { title: "Join the room" };
 }
 
 export default async function JoinPage({ params }: Props) {
   const { id } = await params;
 
-  const result = await Effect.runPromise(Effect.either(getRoomName(id)));
+  const cookieStore = await cookies();
+  const displayNameCookie = cookieStore.get(`display-name-${id}`)?.value;
+  const sessionCookie = cookieStore.get(`room-session-${id}`)?.value;
+  const sessionId = cookieStore.get(`room-session-id-${id}`)?.value;
+
+  if (displayNameCookie && sessionCookie && sessionId) {
+    const verified = await verifyRoomSessionToken(
+      sessionCookie,
+      env.ROOM_CRYPTO_SECRET,
+    );
+
+    if (verified?.roomId === id) {
+      redirect(`/r/${id}`);
+    }
+  }
+
+  const result = await Effect.runPromise(Effect.either(getRoomMetadata(id)));
 
   if (Either.isLeft(result)) {
     if (result.left._tag === "RoomNotFoundError") {
@@ -35,6 +48,10 @@ export default async function JoinPage({ params }: Props) {
 
     throw result.left;
   }
+
+  const meta = result.right;
+
+  if (!meta.joinCode) redirect("/");
 
   return (
     <main
@@ -74,7 +91,7 @@ export default async function JoinPage({ params }: Props) {
         >
           What should we call you?
         </p>
-        <DisplayNameForm roomId={id} />
+        <DisplayNameForm joinCode={meta.joinCode} />
       </div>
     </main>
   );

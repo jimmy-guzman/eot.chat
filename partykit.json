@@ -2,5 +2,8 @@
   "$schema": "https://www.partykit.io/schema.json",
   "name": "eot-chat-party",
   "main": "party/index.ts",
-  "compatibilityDate": "2026-03-21"
+  "compatibilityDate": "2026-03-21",
+  "vars": {
+    "ROOM_CRYPTO_SECRET": "dev-only-replace-for-prod-min-32-chars"
+  }
 }

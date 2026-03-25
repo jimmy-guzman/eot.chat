@@ -7,6 +7,12 @@ export const ParticipantSchema = Schema.Struct({
   joinedAt: Schema.String,
 });
 
+export const ParticipantInternalSchema = Schema.Struct({
+  displayName: Schema.String,
+  joinedAt: Schema.String,
+  sessionId: Schema.String,
+});
+
 export const MessageSchema = Schema.Struct({
   authorDisplayName: Schema.String,
   id: Schema.String,
@@ -16,7 +22,12 @@ export const MessageSchema = Schema.Struct({
 
 export const ClientMessageSchema = Schema.Union(
   Schema.Struct({ type: Schema.Literal("clear") }),
-  Schema.Struct({ displayName: Schema.String, type: Schema.Literal("join") }),
+  Schema.Struct({
+    displayName: Schema.String,
+    sessionId: Schema.String,
+    sessionToken: Schema.String,
+    type: Schema.Literal("join"),
+  }),
   Schema.Struct({ type: Schema.Literal("leave") }),
   Schema.Struct({ body: Schema.String, type: Schema.Literal("message") }),
   Schema.Struct({ type: Schema.Literal("typing") }),
@@ -56,7 +67,34 @@ export const ServerMessageSchema = Schema.Union(
   }),
 );
 
+export const CreateRoomBodySchema = Schema.Struct({
+  hostSecret: Schema.String,
+  joinCode: Schema.String,
+  name: Schema.String,
+});
+
+export const RegisterBodySchema = Schema.Struct({
+  joinCode: Schema.String,
+  roomId: Schema.String,
+});
+
+export const ResolveBodySchema = Schema.Struct({
+  joinCode: Schema.String,
+});
+
+export const RotateJoinCodeBodySchema = Schema.Struct({
+  hostSecret: Schema.String,
+  newJoinCode: Schema.String,
+});
+
+export const UnregisterBodySchema = Schema.Struct({
+  joinCode: Schema.String,
+});
+
 export type ClientMessage = Schema.Schema.Type<typeof ClientMessageSchema>;
 export type Message = Schema.Schema.Type<typeof MessageSchema>;
 export type Participant = Schema.Schema.Type<typeof ParticipantSchema>;
+export type ParticipantInternal = Schema.Schema.Type<
+  typeof ParticipantInternalSchema
+>;
 export type ServerMessage = Schema.Schema.Type<typeof ServerMessageSchema>;

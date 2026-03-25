@@ -8,9 +8,9 @@
 - **Effect:** Effect-TS 3.x — used in `party/` and `src/server/` only, never in the browser
 - **State machine:** XState v5 — room WebSocket lifecycle in `src/app/r/[id]/_components/room-machine.ts`
 - **Actions:** `next-safe-action` + Valibot — type-safe server actions with schema validation
-- **Forms:** TanStack Form — form state and field context
+- **Forms:** TanStack Form — form state and field context; `SubmitButton` is only for full-width page flows (`block` primary). Modal footers compose `button({ size: "sm", ... })` with `useStore(form.store, (s) => s.isSubmitting)`.
 - **Design system:** PandaCSS — design tokens, recipes, and utility classes
-- **UI motion:** PandaCSS-first — use `durations.motion.{fast,normal,slow}`, `easings.motion.standard`, keyframes `enterFade` / `enterRaise`, and the `motionEnter` recipe (`preset`: `fade` | `raise`) for mount enter animations; overlay/dialog motion belongs on slot recipes (e.g. `alertDialog`). Compose with `motionEnter()` + `css()` via `cx()`. **`motion`** (`motion/react`) is allowed only for **`ParticipantStrip`** layout (`LazyMotion` + `domMax`, `layout` on chips): import spring config from `src/lib/layout-list-spring.ts`, use `useReducedMotion()`, and do not add Motion elsewhere without updating this doc
+- **UI motion:** PandaCSS-first — use `durations.motion.{fast,normal,slow}`, `easings.motion.standard`, keyframes `enterFade` / `enterRaise`, and the `motionEnter` recipe (`preset`: `fade` | `raise`) for mount enter animations; overlay/dialog motion belongs on slot recipes: generic **`dialog`** (shadcn-style slots: `backdrop`, `content`, `header`, `title`, `description`, `body`, `footer`) for `Dialog` modals, and **`alertDialog`** for `AlertDialog` confirms. Compose with `motionEnter()` + `css()` via `cx()`. **`motion`** (`motion/react`) is allowed only for **`ParticipantStrip`** layout (`LazyMotion` + `domMax`, `layout` on chips): import spring config from `src/lib/layout-list-spring.ts`, use `useReducedMotion()`, and do not add Motion elsewhere without updating this doc
 - **Linting:** ESLint 9 with `@jimmy.codes/eslint-config`
 - **Formatting:** oxfmt (Prettier-compatible, Rust-based)
 - **Testing:** Vitest + Testing Library + happy-dom (unit/component), Playwright (e2e), MSW (HTTP mocking)
@@ -69,6 +69,7 @@ src/
     form.ts                     # TanStack Form hook factory (useAppForm)
     layout-list-spring.ts       # Motion layout spring preset (ParticipantStrip only)
     safe-action.ts              # next-safe-action client instance
+    join-code.ts                # Shared join code generator (nanoid alphabet)
     schemas.ts                  # Valibot schemas (displayName, roomName, join, leave)
 
   server/                       # Server-only code (never imported by client components)
@@ -112,6 +113,36 @@ pnpm typecheck    # Type check (tsc)
 pnpm test         # Run tests (Vitest)
 pnpm e2e          # Run e2e tests (Playwright)
 pnpm e2e:ui       # Run e2e tests with UI
+```
+
+## Secrets
+
+`ROOM_CRYPTO_SECRET` is used by **both** the PartyKit worker (to verify session tokens on join) and the Next.js server (to mint session tokens in server actions). Both runtimes must use the **identical** value — if they differ, token verification will fail and every join will be rejected with `unauthorized`.
+
+### Local development
+
+`partykit.json` contains a `vars.ROOM_CRYPTO_SECRET` placeholder for local development only. Copy the same value into `.env.local` so both runtimes agree:
+
+```txt
+# partykit.json vars.ROOM_CRYPTO_SECRET
+ROOM_CRYPTO_SECRET="dev-only-replace-for-prod-min-32-chars"
+
+# .env.local — must be identical
+ROOM_CRYPTO_SECRET="dev-only-replace-for-prod-min-32-chars"
+```
+
+### Production
+
+Set the real secret via the PartyKit CLI, then copy the same value into your hosting provider's environment (e.g. Vercel):
+
+```txt
+npx partykit env add ROOM_CRYPTO_SECRET
+```
+
+The value must be at least 32 characters. Generate one with:
+
+```txt
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
 
 ---
