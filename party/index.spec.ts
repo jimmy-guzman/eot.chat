@@ -159,7 +159,11 @@ describe("Server.onRequest", () => {
   });
 
   it("should return room name on GET when room exists", async () => {
-    const storage = makeStorage({ name: "My Room" });
+    const storage = makeStorage({
+      joinCode: "ab2cd3",
+      joinCodeVersion: 1,
+      name: "My Room",
+    });
     const room = makeRoom({ id: "abc123", storage });
     const s = new Server(room);
 
@@ -169,7 +173,7 @@ describe("Server.onRequest", () => {
     expect(res.status).toBe(200);
     await expect(res.json()).resolves.toStrictEqual({
       id: "abc123",
-      joinCode: "abc123",
+      joinCode: "ab2cd3",
       joinCodeVersion: 1,
       name: "My Room",
     });

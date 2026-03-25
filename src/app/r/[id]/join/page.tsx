@@ -7,7 +7,7 @@ import { css, cx } from "styled-system/css";
 import { card } from "styled-system/recipes";
 
 import { env } from "@/env";
-import { getRoomName } from "@/server/partykit-client";
+import { getRoomMetadata } from "@/server/partykit-client";
 import { verifyRoomSessionToken } from "@/server/room-token";
 
 import { DisplayNameForm } from "./_components/display-name-form";
@@ -16,14 +16,8 @@ interface Props {
   params: Promise<{ id: string }>;
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { id } = await params;
-
-  void id;
-
-  return {
-    title: "Join the room",
-  };
+export function generateMetadata(_: Props): Metadata {
+  return { title: "Join the room" };
 }
 
 export default async function JoinPage({ params }: Props) {
@@ -45,7 +39,7 @@ export default async function JoinPage({ params }: Props) {
     }
   }
 
-  const result = await Effect.runPromise(Effect.either(getRoomName(id)));
+  const result = await Effect.runPromise(Effect.either(getRoomMetadata(id)));
 
   if (Either.isLeft(result)) {
     if (result.left._tag === "RoomNotFoundError") {
@@ -54,6 +48,10 @@ export default async function JoinPage({ params }: Props) {
 
     throw result.left;
   }
+
+  const meta = result.right;
+
+  if (!meta.joinCode) redirect("/");
 
   return (
     <main
@@ -93,7 +91,7 @@ export default async function JoinPage({ params }: Props) {
         >
           What should we call you?
         </p>
-        <DisplayNameForm roomId={id} />
+        <DisplayNameForm joinCode={meta.joinCode} />
       </div>
     </main>
   );

@@ -10,21 +10,21 @@ import { useAppForm } from "@/lib/form";
 import { joinRoomSchema } from "@/lib/schemas";
 
 interface Props {
-  roomId: string;
+  joinCode: string;
 }
 
-export const DisplayNameForm = ({ roomId }: Props) => {
+export const DisplayNameForm = ({ joinCode }: Props) => {
   const router = useRouter();
   const [initialDisplayName] = useQueryState("displayName");
   const [serverError, setServerError] = useState<null | string>(null);
 
   const form = useAppForm({
-    defaultValues: { displayName: initialDisplayName ?? "", joinCode: roomId },
+    defaultValues: { displayName: initialDisplayName ?? "", joinCode },
     onSubmit: async ({ value }) => {
       setServerError(null);
       const result = await joinRoom({
         displayName: value.displayName,
-        joinCode: roomId,
+        joinCode,
       });
 
       if (result.serverError || !result.data?.roomId) {

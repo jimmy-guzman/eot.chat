@@ -140,7 +140,10 @@ export const createPartyKitRoom = (
         HttpClientRequest.post(roomUrl(base, id)).pipe(
           HttpClientRequest.setHeader("Content-Type", "application/json"),
           HttpClientRequest.setHeader("X-Action", "create"),
-          HttpClientRequest.bodyUnsafeJson(body),
+          HttpClientRequest.bodyUnsafeJson({
+            ...body,
+            joinCode: body.joinCode.toLowerCase(),
+          }),
         ),
       ).pipe(
         Effect.flatMap(HttpClientResponse.filterStatusOk),
@@ -274,7 +277,9 @@ export const resolveJoinCode = (
         Effect.map((b) => b.roomId),
         Effect.retry({
           schedule: retryPolicy,
-          while: (e) => e._tag === "PartyKitError",
+          while: (e) => {
+            return e._tag === "PartyKitError" && shouldRetryPartyKitError(e);
+          },
         }),
         Effect.scoped,
       );

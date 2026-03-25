@@ -99,6 +99,17 @@ export default class Server implements Party.Server {
     const program = Match.value(msg).pipe(
       Match.when({ type: "join" }, (joinMsg) => {
         return Effect.gen(this, function* () {
+          if (this.participants.has(sender.id)) {
+            yield* Effect.logWarning(
+              "join: sender already registered, ignoring",
+              {
+                senderId: sender.id,
+              },
+            );
+
+            return;
+          }
+
           const { displayName, sessionId, sessionToken } = joinMsg;
           const secret = this.room.env.ROOM_CRYPTO_SECRET as string | undefined;
 
@@ -302,7 +313,7 @@ export default class Server implements Party.Server {
       return Response.json(
         {
           id: this.room.id,
-          joinCode: joinCode ?? this.room.id,
+          joinCode,
           joinCodeVersion,
           name,
         },

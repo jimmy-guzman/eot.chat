@@ -27,23 +27,24 @@ There are no user accounts — identity is a display name chosen at entry.
 
 **Navigation:**
 
-- The landing page (`/`) is the only screen here. There is no Join tab — joiners navigate directly to `/r/<room-id>` via the shared link.
+- The landing page (`/`) is the only screen here. After creating a room the creator is taken directly into it. Share the join link (`/join?code=<join-code>`) with intended participants.
 
 ---
 
-### Screen 2 — Join (display name prompt)
+### Screen 2 — Join
 
-**Purpose:** When a user opens `/r/<room-id>` without a stored display name for that room, the room page shows an inline prompt before admitting them.
+**Purpose:** Entry point for a user who has received a join link (`/join?code=<join-code>`).
 
 **Inputs:**
 
+- `joinCode` — pre-filled from the `?code=` query parameter, editable.
 - `displayName` — string, required. The name this user will appear as in the room.
 
 **Action:**
 
-- `Enter Room` button — stores the display name and connects the user to the room.
+- `Enter Room` button — validates the join code, sets a session cookie, and redirects to `/r/<room-id>`.
 
-**Note:** There is no password. The room ID in the URL is the only access control — if you have the link, you can join.
+**Note:** The join code is the only access control. Navigating directly to `/r/<room-id>` without a valid session redirects back to `/join`.
 
 ---
 

@@ -51,7 +51,7 @@ export const ConfirmDialog = ({
                 className={button({ size: "sm", variant: "danger" })}
                 disabled={confirmDisabled}
                 onClick={() => {
-                  if (!confirmDisabled) void onConfirm();
+                  void onConfirm();
                 }}
               >
                 {confirmLabel}
