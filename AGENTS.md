@@ -91,6 +91,7 @@ src/
     vitest.setup.ts
 
   env.ts                        # t3-oss/env-nextjs environment validation (Valibot)
+  proxy.ts                      # Next.js Proxy (replaces middleware) — injects x-url header so layouts can read the full request URL including query params
 
 e2e/
   chat.spec.ts                  # Playwright happy-path E2E test
